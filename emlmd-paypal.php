@@ -278,9 +278,9 @@ class EM_Limmud_Paypal {
     ?>
         <script src="https://www.paypal.com/sdk/js?client-id=<?php 
             if (get_option('dbem_paypal_status') == "live") { 
-                echo get_option('dbem_paypal_live_client_id');; 
+                echo get_option('dbem_paypal_live_client_id'); 
             } else { 
-                echo get_option('dbem_paypal_sandbox_client_id');; 
+                echo get_option('dbem_paypal_sandbox_client_id'); 
             } ?>&currency=<?php echo get_option('dbem_bookings_currency', 'ILS') ?>"></script>
         <div id="paypal-button-container" style="display: none; max-width: 360px;"></div>
         <script type="text/javascript">

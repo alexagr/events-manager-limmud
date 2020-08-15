@@ -78,7 +78,9 @@ class EM_Limmud_Options {
             <table class='form-table'>
                 <?php
                     em_options_input_text ( __( 'Live Client ID', 'em-limmud' ), 'dbem_paypal_live_client_id', '' );
+                    em_options_input_text ( __( 'Live Secret', 'em-limmud' ), 'dbem_paypal_live_secret', '' );
                     em_options_input_text ( __( 'Sandbox Client ID', 'em-limmud' ), 'dbem_paypal_sandbox_client_id', '' );
+                    em_options_input_text ( __( 'Sandbox Secret', 'em-limmud' ), 'dbem_paypal_sandbox_secret', '' );
                     em_options_select ( __( 'PayPal Mode', 'em-limmud' ), 'dbem_paypal_status', array ('live' => 'Live Site', 'test' => 'Test Mode (Sandbox)'), '' );                                      
                 ?>
                 <tr><th>
