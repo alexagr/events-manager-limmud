@@ -21,6 +21,13 @@ class EM_Limmud_Emails {
             $msg['admin']['subject'] = get_option('dbem_bookings_contact_email_waiting_list_subject');
             $msg['admin']['body'] = get_option('dbem_bookings_contact_email_waiting_list_body');
         }
+        if ($EM_Booking->booking_status == 7) {
+            $msg['user']['subject'] = get_option('dbem_bookings_email_partially_paid_subject');
+            $msg['user']['body'] = get_option('dbem_bookings_email_partially_paid_body');
+            //admins should get something (if set to)
+            $msg['admin']['subject'] = get_option('dbem_bookings_contact_email_partially_paid_subject');
+            $msg['admin']['body'] = get_option('dbem_bookings_contact_email_partially_paid_body');
+        }
         // event-specific content of admin mails
         while (preg_match('/^@EVENT_(\d+)@(.+?)$/m', $msg['admin']['body'], $matches)) {
             if ($matches[1] == $EM_Booking->get_event()->event_id) {

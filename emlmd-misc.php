@@ -28,7 +28,7 @@ class EM_Limmud_Misc {
     }
     
     public static function em_bookings_table_cols_col_action($booking_actions, $EM_Booking) {
-        if ($EM_Booking->booking_status == 6) {
+        if (($EM_Booking->booking_status == 6) || ($EM_Booking->booking_status == 7)) {
             $booking_actions = array(
                 'approve' => '<a class="em-bookings-approve" href="'.em_add_get_params($url, array('action'=>'bookings_approve', 'booking_id'=>$EM_Booking->booking_id)).'">'.__('Approve','events-manager').'</a>',
                 'reject' => '<a class="em-bookings-reject" href="'.em_add_get_params($url, array('action'=>'bookings_reject', 'booking_id'=>$EM_Booking->booking_id)).'">'.__('Reject','events-manager').'</a>',
@@ -47,6 +47,7 @@ class EM_Limmud_Misc {
     public static function em_booking($EM_Booking, $booking_data) {
         unset($EM_Booking->status_array[4]); // remove Online Payment option
         $EM_Booking->status_array[6] = 'Waiting List';         
+        $EM_Booking->status_array[7] = 'Partially Paid';         
     }
     
     public static function em_booking_set_status($result, $EM_Booking) {
@@ -62,11 +63,15 @@ class EM_Limmud_Misc {
         if ($EM_Booking->booking_status == 6) {
             $EM_Booking->add_note('Waiting List');
         }
+        if ($EM_Booking->booking_status == 7) {
+            $EM_Booking->add_note('Partially Paid');
+        }
         return $result;
     }
 
     static function em_bookings_table($EM_Bookings_Table){
         $EM_Bookings_Table->statuses['waiting-list'] = array('label'=>'Waiting List', 'search'=>6);
+        $EM_Bookings_Table->statuses['partially-paid'] = array('label'=>'Partially Paid', 'search'=>7);
         unset($EM_Bookings_Table->statuses['awaiting-online']);
         $EM_Bookings_Table->statuses['awaiting-payment'] = array('label'=>'Awaiting Payment', 'search'=>5);
         $EM_Bookings_Table->status = ( !empty($_REQUEST['status']) && array_key_exists($_REQUEST['status'], $EM_Bookings_Table->statuses) ) ? $_REQUEST['status']:get_option('dbem_default_bookings_search','needs-attention');
@@ -81,12 +86,6 @@ class EM_Limmud_Misc {
 
         $events = EM_Events::get(array('scope'=>'future'));
         foreach ($events as $EM_Event) {
-            if ($EM_Event->event_name == 'Limmud 2016 Private Registration') {
-                continue;
-            }
-            if ($EM_Event->event_id == 2) {
-                continue;
-            }
             $EM_Bookings = $EM_Event->get_bookings(true);
             foreach ($EM_Bookings->bookings as $EM_Booking) {
                 if ($EM_Booking->booking_status == 5) {
@@ -121,8 +120,13 @@ class EM_Limmud_Misc {
                     // EM_Pro::log('d='.$diff->d.' diffdays='.$diffdays.' payment_reminder='.$payment_reminder, 'general', True);
 
                     if ($diff->d >= $diffdays) {
-                        $EM_Booking->set_status(6);
-                        EM_Pro::log('move to waiting list #'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, 'general', True);
+                        if (EM_Limmud_Paypal::get_total_paid($EM_Booking) > 0) {
+                            $EM_Booking->set_status(7);
+                            EM_Pro::log('move to partially paid #'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, 'general', True);
+                        } else {
+                            $EM_Booking->set_status(6);
+                            EM_Pro::log('move to waiting list #'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, 'general', True);
+                        }
                     }
 
                     if (($diff->d == ($diffdays - 1)) && !$payment_reminder) {
