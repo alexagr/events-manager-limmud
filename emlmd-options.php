@@ -96,6 +96,12 @@ class EM_Limmud_Options {
 				?></th><td><?php
 					wp_dropdown_pages(array('name'=>'dbem_booking_success_page', 'selected'=>get_option('dbem_booking_success_page'), 'show_option_none'=>'['.__('None', 'events-manager').']' ));
                 ?></td></tr>
+                <tr><th>
+                <?php
+				echo sprintf(__( '%s page', 'events-manager'),__('Partial Payment Success','events-manager'))
+				?></th><td><?php
+					wp_dropdown_pages(array('name'=>'dbem_partial_payment_success_page', 'selected'=>get_option('dbem_partial_payment_success_page'), 'show_option_none'=>'['.__('None', 'events-manager').']' ));
+                ?></td></tr>
             </table>
         </div> <!-- . inside -->
         </div> <!-- .postbox -->

@@ -130,10 +130,10 @@ class EM_Limmud_Frontend {
                 registration = "regular";
                 participation_type = "hotel";
             } else {
-                els = document.getElementsByName("em_tickets[167][spaces]");
+                els = document.getElementsByName("em_tickets[192][spaces]");
                 if (els.length > 0) {
-                    registration = "self";
-                    participation_type = "self";
+                    registration = "no-accomodation";
+                    participation_type = "no-accomodation";
                 } else {
                     els = document.getElementsByName("em_tickets[171][spaces]");
                     if (els.length > 0) {
@@ -142,14 +142,21 @@ class EM_Limmud_Frontend {
                 }
             }
 
-            if (!registration || (adults == 0)) {
-                displayElementByName("room_label", true);
+			if (!registration) {
+				return;
+			}
+
+            if (adults == 0) {
+                displayElementByName("too_little_adults_label", true);
+                displayElementByName("room_label", false);
                 displayElementByName("too_many_adults_label", false);
                 displayElement("em-booking-submit", false);
                 displayField("room_type", false);
                 displayField("bus_needed", false);
                 return;
             }
+
+			displayElementByName("too_little_adults_label", false);
 
             if (adults > 3) {
                 displayElementByName("room_label", false);
@@ -167,7 +174,7 @@ class EM_Limmud_Frontend {
                 if (els[0].selectedIndex == 0) {
                     participation_type = "hotel";
                 } else {
-                    participation_type = "self";
+                    participation_type = "no-accomodation";
                 }
             }
             

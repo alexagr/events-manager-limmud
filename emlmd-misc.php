@@ -204,7 +204,7 @@ class EM_Limmud_Misc {
     }
 
     public static function em_booking_get_person($EM_Person, $EM_Booking) {
-        if ((($EM_Person->display_name == 'Guest User') || ($EM_Person->display_name == 'Гость')) && isset($EM_Booking->booking_meta['attendees'])) {
+        if ((($EM_Person->display_name == 'Guest User') || ($EM_Person->display_name == 'Гость') || ($EM_Person->display_name == 'משתמש אורח')) && isset($EM_Booking->booking_meta['attendees'])) {
             // calculate person name from attendee details of the most expensive 'person' ticket
             $price = -1;
             foreach ($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking ) {

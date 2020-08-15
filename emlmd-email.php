@@ -119,7 +119,7 @@ class EM_Limmud_Emails {
 				    if ($EM_Ticket_Booking->get_spaces() == 1) {
 				        $ticket_price = $price;
 					} else {
-						$ticket_price = $EM_Ticket_Booking->get_spaces() . ' x ' . floor($EM_Ticket_Booking->get_ticket()->get_price_without_tax()) . ' = ' . $price;
+						$ticket_price = $EM_Ticket_Booking->get_spaces() . ' * ' . floor($EM_Ticket_Booking->get_ticket()->get_price_without_tax()) . ' = ' . $price;
 					} 
 	                $tickets[$EM_Ticket_Booking->get_price() * 1000 + $i] = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->name, $lang) . " : " . $ticket_price . " &#8362;\n"; 
 				}
@@ -178,10 +178,7 @@ class EM_Limmud_Emails {
     public static function placeholders($replace, $EM_Booking, $full_result){
         if (empty($replace) || $replace == $full_result) {
             if ($full_result == '#_BOOKINGSUMMARYURL') {
-	        	$my_booking_summary_page_id = get_option('dbem_booking_summary_page');
-				if ($my_booking_summary_page_id != 0) {
-					$replace = get_post_permalink($my_booking_summary_page_id) . '&booking_id=' . $EM_Booking->booking_id . '&secret=' . md5($EM_Booking->person->user_email);
-				}
+                $replace = EM_Limmud_Paypal::get_payment_link($EM_Booking);
             }
             
             if ($full_result == '#_BOOKINGDETAILSRU') {

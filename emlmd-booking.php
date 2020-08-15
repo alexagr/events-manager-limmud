@@ -29,6 +29,16 @@ class EM_Limmud_Booking {
 				}
 			}
 		}
+
+		$partial_payment_success_page_id = get_option('dbem_partial_payment_success_page');
+		if (is_main_query() && ($post->ID == $partial_payment_success_page_id) && ($partial_payment_success_page_id != 0)) {
+			if ($data == "Partial Payment Success") { // without this we will change title of all menu items too
+				if (!empty( $_REQUEST['booking_id'])) {
+        			$EM_Booking = em_get_booking($_REQUEST['booking_id']);
+                    return $EM_Booking->get_event()->event_name;
+				}
+			}
+		}
 		return $data;
 	}
 
@@ -49,6 +59,42 @@ class EM_Limmud_Booking {
 			}
 			return apply_filters('em_content', '<div id="em-wrapper">'.$content.'</div>');
 		}
+
+		$booking_success_page_id = get_option('dbem_booking_success_page');
+		if (!post_password_required() && ($post->ID == $booking_success_page_id) && ($booking_success_page_id != 0)) {
+			$content = apply_filters('em_content_pre', '', $page_content);
+			if (empty($content)) {
+				if (preg_match('/#_BOOKINGID/', $page_content)) {
+    				if (!empty( $_REQUEST['booking_id'])) {
+            			$EM_Booking = em_get_booking($_REQUEST['booking_id']);
+                        if ($EM_Booking->booking_status == 1) {
+        					$content = str_replace('#_BOOKINGID', $_REQUEST['booking_id'], $page_content);
+                            $event_year = date("Y", date("U", $EM_Booking->get_event()->start()->getTimestamp()));
+        					$content = str_replace('#_EVENTNAME', "[:ru]Лимуд FSU Израиль [:he]לימוד FSU ישראל[:] " . $event_year, $content);
+                        }
+                    }
+				}
+			}
+			return apply_filters('em_content', '<div id="em-wrapper">'.$content.'</div>');
+		}
+
+		$partial_payment_success_page_id = get_option('dbem_partial_payment_success_page');
+		if (!post_password_required() && ($post->ID == $partial_payment_success_page_id) && ($partial_payment_success_page_id != 0)) {
+			$content = apply_filters('em_content_pre', '', $page_content);
+			if (empty($content)) {
+				if (preg_match('/#_BOOKINGID/', $page_content)) {
+    				if (!empty( $_REQUEST['booking_id'])) {
+            			$EM_Booking = em_get_booking($_REQUEST['booking_id']);
+                        if (($EM_Booking->booking_status == 5) || ($EM_Booking->booking_status == 1)) {
+        					$content = str_replace('#_BOOKINGID', $_REQUEST['booking_id'], $page_content);
+                            $content = str_replace('#_BOOKINGSUMMARYURL', EM_Limmud_Paypal::get_payment_link($EM_Booking), $content);
+                        }
+                    }
+				}
+			}
+			return apply_filters('em_content', '<div id="em-wrapper">'.$content.'</div>');
+		}
+
 		return $page_content;
 	}
 
@@ -183,10 +229,10 @@ class EM_Limmud_Booking {
 		<?php
             if (self::$partial_payment) {
         ?>
-                <p>[:ru]Поскольку в вашей регистрации присутствуют участники с разными фамилиями, у вас есть возможность оплатить заказ либо одним платежом - за всех участников, либо несколькими платежами - каждый участник оплачивает свою часть стоимости заказа.[:he]מכיוון שבהזמנה ישנם משתתפים עם שמות משפחה שונים, יש לך אפשרות לשלם עבור ההזמנה בתשלום אחד - עבור כל המשתתפים, או בכמה תשלומים - כל משתתף משלם את חלקו מעלות ההזמנה.[:]</p>
-                <p>[:ru]Для частичной оплаты заказа измените сумму оплаты, прежде чем нажать на одну из следующих кнопок. Перешлите линк на эту страницу другим участникам - чтобы они оплатили свою часть заказа. Обратите внимание, что полную оплату заказа необходимо произвести в течение 48 часов.[:he]לביצוע תשלום חלקי, יש לשנות את סכום התשלום לפני הלחיצה על כפתור התשלום. יש להעביר את הקישור לדף זה לשער המשתתפים – על מנת שישלמו את חלקם בהזמנה. שימו לב כי התשלום המלא עבור ההזמנה חייב להתבצע תוך 48 שעות.[:]</p>
+                <p>[:ru]Поскольку в вашей регистрации присутствуют участники с разными фамилиями, у вас есть возможность оплатить заказ либо одним платежом - за всех участников, либо несколькими платежами - каждый участник оплачивает свою часть стоимости заказа.[:he]מכיוון שבהזמנה ישנם משתתפים עם שמות משפחה שונים, יש לכם אפשרות לשלם את ההזמנה בתשלום אחד - עבור כל המשתתפים, או בכמה תשלומים - כל משתתף משלם את חלקו מעלות ההזמנה.[:]</p>
+                <p>[:ru]Для частичной оплаты заказа измените сумму оплаты, прежде чем нажать на одну из следующих кнопок. Перешлите <a href="<?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking) ?>">линк на эту страницу</a> другим участникам - чтобы они оплатили свою часть заказа. Обратите внимание, что полную оплату заказа необходимо произвести в течение 48 часов.[:he]לביצוע תשלום חלקי, יש לשנות את סכום התשלום לפני לחיצה על כפתור התשלום. יש להעביר את <a href="<?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking) ?>">הקישור לדף זה</a> לשער המשתתפים – על מנת שיסדירו את התשלום עבור חלקם בהזמנה. שימו לב כי התשלום המלא עבור ההזמנה חייב להתבצע תוך 48 שעות.[:]</p>
 		<?php
-                EM_Limmud_Paypal::show_partial_buttons($EM_Booking);
+                EM_Limmud_Paypal::show_buttons($EM_Booking, true);
             } else {
         ?>
                 <p>[:ru]Для оплаты регистрации нажмите на одну из следующих кнопок[:he]לתשלום עבור הזמנה לחצו על אחד מכפתורים הבאים[:]:</p>
@@ -199,21 +245,30 @@ class EM_Limmud_Booking {
                 <p>[:ru]Авторизация платежа[:he]מקבל אסמכתא לתשלום[:]</p>
                 <div id="paypal-spinner-container" class="spinner"></div>
                 <style>
-                .spinner {
-                  border: 12px solid #f3f3f3;
-                  border-top: 12px solid #ffc133; /* #3498db */
-                  border-radius: 50%;
-                  width: 120px;
-                  height: 120px;
-                  animation: spin 2s linear infinite;
-                }
-
-                @keyframes spin {
-                  0% { transform: rotate(0deg); }
-                  100% { transform: rotate(360deg); }
-                }
+                    .spinner {
+                      border: 12px solid #f3f3f3;
+                      border-top: 12px solid #ffc133; /* #3498db */
+                      border-radius: 50%;
+                      width: 120px;
+                      height: 120px;
+                      animation: spin 2s linear infinite;
+                    }
+    
+                    @keyframes spin {
+                      0% { transform: rotate(0deg); }
+                      100% { transform: rotate(360deg); }
+                    }
+                </style>
             </div>
-        </style>
+            <div id="payment-impossible-container" class="em-booking-message-error em-booking-message" style="display: none">
+                <p>[:ru]Платеж не возможен[:he]לא ניתן לבצע תשלום[:]</p>
+            </div>
+            <div id="payment-failed-container" class="em-booking-message-error em-booking-message" style="display: none">
+                <p>[:ru]Платеж не прошел[:he]תשלום לא עבר[:]</p>
+            </div>
+            <div id="payment-success-container" class="em-booking-message-success em-booking-message" style="display: none">
+                <p>[:ru]Платеж подтвержден[:he]תשלום בוצע[:]</p>
+            </div>
 		<?php
 		}
 	}
@@ -287,6 +342,9 @@ class EM_Limmud_Booking {
         if ($under_18_num > 0) {
             self::$partial_payment = false;
         }
+        if ($EM_Booking->get_event()->event_id != 13) {
+            self::$partial_payment = false;
+        }
     }
 
     // fill booking with real tickets
@@ -311,7 +369,7 @@ class EM_Limmud_Booking {
         }
 
 		if ($EM_Booking->event_id == 13) {
-            // regular registration
+            // regular 2020 registration
             $room_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['room_type'], 'ru');
             $adult_ticket = 187;
             if ($room_type == 'в трехместном номере') {
@@ -346,6 +404,22 @@ class EM_Limmud_Booking {
 			
 			$EM_Booking->save();
 		}
+
+		if ($EM_Booking->event_id == 14) {
+            // no accomodation 2020 registration
+            $room_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['ticket_type'], 'ru');
+            $tickets_num = self::$adult_num + self::$child_num;
+            if ($tickets_num > 0) {
+                if ($room_type == 'все дни 3-5.12') {
+    				self::add_ticket($EM_Booking, 193, $tickets_num);
+                } else {
+    				self::add_ticket($EM_Booking, 194, $tickets_num);
+                }
+            }
+
+			$EM_Booking->save();
+        }
+
 	}
 }
 

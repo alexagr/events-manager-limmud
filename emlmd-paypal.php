@@ -29,6 +29,15 @@ class EM_Limmud_Paypal {
         return (int)$total;
     }
 
+    public static function get_payment_link($EM_Booking) {
+        $link = '';
+    	$my_booking_summary_page_id = get_option('dbem_booking_summary_page');
+		if ($my_booking_summary_page_id != 0) {
+			$link = get_post_permalink($my_booking_summary_page_id) . '&booking_id=' . $EM_Booking->booking_id . '&secret=' . md5($EM_Booking->person->user_email);
+		}
+        return $link;
+    }
+
     public static function create_transaction($booking_id, $transaction_sum)
     {
         $EM_Booking = em_get_booking($booking_id);
@@ -37,7 +46,18 @@ class EM_Limmud_Paypal {
             return;        
         }        
 
+        $full_payment = false;
         if (empty($transaction_sum) || ($EM_Booking->get_price() == $transaction_sum)) {
+            $full_payment = true;
+        }
+        if (self::get_total_paid($EM_Booking) > 0) {
+            $full_payment = false;
+            if (empty($transaction_sum)) {
+                $transaction_sum = $EM_Booking->get_price();
+            }
+        }         
+
+        if ($full_payment) {
             $tickets = array();
             $i = 0;
             $discount = $EM_Booking->get_price_discounts_amount('post');
@@ -168,7 +188,7 @@ class EM_Limmud_Paypal {
     {
         include_once( plugin_dir_path(__FILE__) . "lib/paypal-client.php" );
         $response = PayPalClient::captureOrder($order_id);
-        $result = false;        
+        $result = "failed";        
         # echo json_encode($response->result, JSON_PRETTY_PRINT);
         if (!is_null($response) && (($response->statusCode == 201) || ($response->statusCode == 200))) {
             $status = $response->result->status;            
@@ -195,7 +215,9 @@ class EM_Limmud_Paypal {
                             $price = floor($EM_Booking->get_price());
                             if (self::get_total_paid($EM_Booking) >= $price) {
                                 $EM_Booking->approve();
-                                $result = True;                            
+                                $result = "completed";                            
+                            } else {
+                                $result = "partially completed";                            
                             }
                         }
                     }                    
@@ -243,14 +265,22 @@ class EM_Limmud_Paypal {
         }
     }
 
-	public static function show_buttons($EM_Booking) 
+	public static function show_buttons($EM_Booking, $partial=false) 
     {
+        if ($partial) {
 	?>
+        <p class="input-group input-text">
+          <label for="paypal-transaction-sum"><?php echo "[:ru]Сумма оплаты[:he]סכום לתשלום[:]" ?></label>
+          <input type="text" id="paypal-transaction-sum" value="<?php echo floor($EM_Booking->get_price() - self::get_total_paid($EM_Booking)) ?>">
+        </p>
+    <?php
+        } 
+    ?>
         <script src="https://www.paypal.com/sdk/js?client-id=<?php 
             if (get_option('dbem_paypal_status') == "live") { 
-                echo get_option('dbem_paypal_live_client_id'); 
+                echo get_option('dbem_paypal_live_client_id');; 
             } else { 
-                echo get_option('dbem_paypal_sandbox_client_id'); 
+                echo get_option('dbem_paypal_sandbox_client_id');; 
             } ?>&currency=<?php echo get_option('dbem_bookings_currency', 'ILS') ?>"></script>
         <div id="paypal-button-container" style="display: none; max-width: 360px;"></div>
         <script type="text/javascript">
@@ -260,88 +290,39 @@ class EM_Limmud_Paypal {
                     label: 'pay'
                 },
                 createOrder: function() {
-                    return fetch('paypal.json', {
-                        method: 'post',
-                        headers: {
-                            'content-type': 'application/x-www-form-urlencoded'
-                        },
-                        body: 'action=paypal-create-transaction&booking_id=<?php echo $EM_Booking->booking_id ?>'
-                    }).then(function(res) {
-                        return res.json();
-                    }).then(function(data) {
-                        if (!data.order_id) {
-                            window.location.reload();
-                        }
-                        return data.order_id;
-                    });
-                },
-                onApprove: function(data) {
-                    document.getElementById('payment-buttons-container').style.display = 'none';
-                    document.getElementById('payment-authorize-container').style.display = 'block';
-                    return fetch('paypal.json', {
-                        method: 'post',
-                        headers: {
-                            'content-type': 'application/x-www-form-urlencoded'
-                        },
-                        body: 'action=paypal-capture-transaction&order_id=' + data.orderID
-                    }).then(function(res) {
-                        return res.json();
-                    }).then(function(data) {
-                        if (data.result) {
-                            window.location.href = '<?php echo get_post_permalink(get_option('dbem_booking_success_page')) ?>&booking_id=<?php echo $EM_Booking->booking_id ?>';
-                        } else {
-                            window.location.reload();
-                        }                    
-                    })
-                }
-            }).render('#paypal-button-container');
-        </script>
-    <?php
-    }
-
-	public static function show_partial_buttons($EM_Booking) 
-    {
-	?>
-        <p class="input-group input-text">
-          <label for="paypal-transaction-sum"><?php echo "[:ru]Сумма оплаты[:he]סכום לתשלום[:]" ?></label>
-          <input type="text" id="paypal-transaction-sum" value="<?php echo floor($EM_Booking->get_price() - self::get_total_paid($EM_Booking)) ?>">
-        </p>
-        <script src="https://www.paypal.com/sdk/js?client-id=<?php 
-            if (get_option('dbem_paypal_status') == "live") { 
-                echo get_option('dbem_paypal_live_client_id');; 
-            } else { 
-                echo get_option('dbem_paypal_sandbox_client_id');; 
-            } ?>&currency=<?php echo get_option('dbem_bookings_currency', 'ILS') ?>"></script>
-        <div id="paypal-partial-button-container" style="display: none; max-width: 360px;"></div>
-        <script type="text/javascript">
-            window.onload = function() { document.getElementById('paypal-partial-button-container').style.display = 'block'; };
-            paypal.Buttons({
-                style: {
-                    label: 'pay'
-                },
-                createOrder: function() {
+    <?php if ($partial) { ?>
                     var transaction_sum = document.getElementById('paypal-transaction-sum').value;
                     if (!transaction_sum) {
                         return('{"order_id":""}');
                     }
+    <?php } ?>
                     return fetch('paypal.json', {
                         method: 'post',
                         headers: {
                             'content-type': 'application/x-www-form-urlencoded'
                         },
+    <?php if ($partial) { ?>
                         body: 'action=paypal-create-transaction&booking_id=<?php echo $EM_Booking->booking_id ?>&transaction_sum=' + transaction_sum
+    <?php } else { ?>
+                        body: 'action=paypal-create-transaction&booking_id=<?php echo $EM_Booking->booking_id ?>'
+    <?php } ?>
                     }).then(function(res) {
                         return res.json();
                     }).then(function(data) {
                         if (!data.order_id) {
-                            window.location.reload();
+                            var elem = document.getElementById('payment-impossible-container');
+                            elem.style.display = 'block';
+                            elem.scrollIntoView();
+                            setTimeout(5000, window.location.reload());
                         }
                         return data.order_id;
                     });
                 },
                 onApprove: function(data) {
                     document.getElementById('payment-buttons-container').style.display = 'none';
-                    document.getElementById('payment-authorize-container').style.display = 'block';
+                    var elem = document.getElementById('payment-authorize-container');
+                    elem.style.display = 'block';
+                    elem.scrollIntoView();
                     return fetch('paypal.json', {
                         method: 'post',
                         headers: {
@@ -351,14 +332,28 @@ class EM_Limmud_Paypal {
                     }).then(function(res) {
                         return res.json();
                     }).then(function(data) {
-                        if (data.result) {
+                        document.getElementById('payment-authorize-container').style.display = 'none';
+                        if (data.result == 'completed') {
+                            var elem = document.getElementById('payment-success-container');
+                            elem.style.display = 'block';
+                            elem.scrollIntoView();
                             window.location.href = '<?php echo get_post_permalink(get_option('dbem_booking_success_page')) ?>&booking_id=<?php echo $EM_Booking->booking_id ?>';
                         } else {
-                            window.location.reload();
+                            if (data.result == 'partially completed') {
+                                var elem = document.getElementById('payment-success-container');
+                                elem.style.display = 'block';
+                                elem.scrollIntoView();
+                                window.location.href = '<?php echo get_post_permalink(get_option('dbem_partial_payment_success_page')) ?>&booking_id=<?php echo $EM_Booking->booking_id ?>';
+                            } else {
+                                var elem = document.getElementById('payment-failed-container');
+                                elem.style.display = 'block';
+                                elem.scrollIntoView();
+                                setTimeout(5000, window.location.reload());
+                            }
                         }                    
                     })
                 }
-            }).render('#paypal-partial-button-container');
+            }).render('#paypal-button-container');
         </script>
     <?php
     }
