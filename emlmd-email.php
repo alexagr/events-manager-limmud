@@ -15,11 +15,11 @@ class EM_Limmud_Emails {
             $msg['admin']['body'] = get_option('dbem_bookings_contact_email_awaiting_payment_body');
         }
         if ($EM_Booking->booking_status == 6) {
-            $msg['user']['subject'] = get_option('dbem_bookings_email_waiting_list_subject');
-            $msg['user']['body'] = get_option('dbem_bookings_email_waiting_list_body');
+            $msg['user']['subject'] = get_option('dbem_bookings_email_no_payment_subject');
+            $msg['user']['body'] = get_option('dbem_bookings_email_no_payment_body');
             //admins should get something (if set to)
-            $msg['admin']['subject'] = get_option('dbem_bookings_contact_email_waiting_list_subject');
-            $msg['admin']['body'] = get_option('dbem_bookings_contact_email_waiting_list_body');
+            $msg['admin']['subject'] = get_option('dbem_bookings_contact_email_no_payment_subject');
+            $msg['admin']['body'] = get_option('dbem_bookings_contact_email_no_payment_body');
         }
         if ($EM_Booking->booking_status == 7) {
             $msg['user']['subject'] = get_option('dbem_bookings_email_partially_paid_subject');

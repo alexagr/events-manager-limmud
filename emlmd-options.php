@@ -28,12 +28,12 @@ class EM_Limmud_Options {
                         em_options_textarea ( __( 'Awaiting payment email', 'em-paypal' ), 'dbem_bookings_contact_email_awaiting_payment_body', '' );
                     ?>
                     <tr class="em-subheader"><td colspan='2'>
-                        <h5><?php _e('Waiting list email','dbem') ?></h5> 
-                        <em><?php echo __('This is sent when a person\'s booking expires.','dbem') ?></em>
+                        <h5><?php _e('No payment email','dbem') ?></h5> 
+                        <em><?php echo __('This is sent when a person\'s booking payment time expires.','dbem') ?></em>
                     </td></tr>
                     <?php
-                        em_options_input_text ( __( 'Waiting list email subject', 'em-paypal' ), 'dbem_bookings_contact_email_waiting_list_subject', $email_subject_tip );                 
-                        em_options_textarea ( __( 'Waiting list email', 'em-paypal' ), 'dbem_bookings_contact_email_waiting_list_body', '' );
+                        em_options_input_text ( __( 'No payment email subject', 'em-paypal' ), 'dbem_bookings_contact_email_no_payment_subject', $email_subject_tip );                 
+                        em_options_textarea ( __( 'No payment email', 'em-paypal' ), 'dbem_bookings_contact_email_no_payment_body', '' );
                     ?>
                     <tr class="em-subheader"><td colspan='2'>
                         <h5><?php _e('Partially paid email','dbem') ?></h5> 
@@ -62,12 +62,12 @@ class EM_Limmud_Options {
                         em_options_textarea ( __( 'Payment reminder email', 'em-paypal' ), 'dbem_bookings_email_payment_reminder_body', '' );
                     ?>
                     <tr class="em-subheader"><td colspan='2'>
-                        <h5><?php _e('Waiting list email','dbem') ?></h5> 
-                        <em><?php echo __('This will be sent to the person when their booking expires.','dbem') ?></em>
+                        <h5><?php _e('No payment email','dbem') ?></h5> 
+                        <em><?php echo __('This will be sent to the person when their booking payment time expires.','dbem') ?></em>
                     </td></tr>
                     <?php
-                        em_options_input_text ( __( 'Waiting list email subject', 'em-paypal' ), 'dbem_bookings_email_waiting_list_subject', $email_subject_tip );                 
-                        em_options_textarea ( __( 'Waiting list email', 'em-paypal' ), 'dbem_bookings_email_waiting_list_body', '' );
+                        em_options_input_text ( __( 'No payment email subject', 'em-paypal' ), 'dbem_bookings_email_no_payment_subject', $email_subject_tip );                 
+                        em_options_textarea ( __( 'No payment email', 'em-paypal' ), 'dbem_bookings_email_no_payment_body', '' );
                     ?>
                     <tr class="em-subheader"><td colspan='2'>
                         <h5><?php _e('Partially paid email','dbem') ?></h5> 

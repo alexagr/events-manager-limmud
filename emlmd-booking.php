@@ -136,6 +136,16 @@ class EM_Limmud_Booking {
 					   echo '<br>([:ru]оплачено[:he]שולמו[:] ' . $total_paid . ' [:ru]из[:he]מתוך[:] ' . $EM_Booking->get_price() . ' &#8362;)';
                     }
 					break;
+				case 6:
+					echo '[:en]No Payment[:ru]Не оплачен[:he]לא שולם[:]';
+					break;
+				case 7:
+				   echo '[:en]Not Fully Paid[:ru]Не полностью оплачен[:he]לא שולם במלואו[:]';
+                    $total_paid = (int)$EM_Booking->get_total_paid();
+                    if ($total_paid > 0) {
+					   echo '<br>([:ru]оплачено[:he]שולמו[:] ' . $total_paid . ' [:ru]из[:he]מתוך[:] ' . $EM_Booking->get_price() . ' &#8362;)';
+                    }
+					break;
 				default:
 					echo '[:en]Cancelled[:ru]Отменен[:he]מבוטל[:]';
 			}

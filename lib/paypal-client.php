@@ -42,11 +42,11 @@ class PayPalClient
         }
         catch (\Throwable $e) {
             $response = NULL;
-            EM_Pro::log($e->getMessage(), 'paypal', True);
+            EM_Pro::log($e->getMessage(), 'paypal', true);
         } 
         catch (\Exception $e) {
             $response = NULL;
-            EM_Pro::log($e->getMessage(), 'paypal', True);
+            EM_Pro::log($e->getMessage(), 'paypal', true);
         } 
         return $response;
     }
@@ -61,11 +61,11 @@ class PayPalClient
         }
         catch (\Throwable $e) {
             $response = NULL;
-            EM_Pro::log($e->getMessage(), 'paypal', True);
+            EM_Pro::log($e->getMessage(), 'paypal', true);
         } 
         catch (\Exception $e) {
             $response = NULL;
-            EM_Pro::log($e->getMessage(), 'paypal', True);
+            EM_Pro::log($e->getMessage(), 'paypal', true);
         } 
         return $response;
     }

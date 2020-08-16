@@ -46,7 +46,7 @@ class EM_Limmud_Misc {
 
     public static function em_booking($EM_Booking, $booking_data) {
         unset($EM_Booking->status_array[4]); // remove Online Payment option
-        $EM_Booking->status_array[6] = 'Waiting List';         
+        $EM_Booking->status_array[6] = 'No Payment';         
         $EM_Booking->status_array[7] = 'Partially Paid';         
     }
     
@@ -61,7 +61,7 @@ class EM_Limmud_Misc {
             $EM_Booking->add_note('Rejected');
         }
         if ($EM_Booking->booking_status == 6) {
-            $EM_Booking->add_note('Waiting List');
+            $EM_Booking->add_note('No Payment');
         }
         if ($EM_Booking->booking_status == 7) {
             $EM_Booking->add_note('Partially Paid');
@@ -70,15 +70,16 @@ class EM_Limmud_Misc {
     }
 
     static function em_bookings_table($EM_Bookings_Table){
-        $EM_Bookings_Table->statuses['waiting-list'] = array('label'=>'Waiting List', 'search'=>6);
+        $EM_Bookings_Table->statuses['no-payment'] = array('label'=>'No Payment', 'search'=>6);
         $EM_Bookings_Table->statuses['partially-paid'] = array('label'=>'Partially Paid', 'search'=>7);
         unset($EM_Bookings_Table->statuses['awaiting-online']);
         $EM_Bookings_Table->statuses['awaiting-payment'] = array('label'=>'Awaiting Payment', 'search'=>5);
+        $EM_Bookings_Table->statuses['needs-attention']['search'] = array(0,5,7);
         $EM_Bookings_Table->status = ( !empty($_REQUEST['status']) && array_key_exists($_REQUEST['status'], $EM_Bookings_Table->statuses) ) ? $_REQUEST['status']:get_option('dbem_default_bookings_search','needs-attention');
     }
     
     public static function empp_hourly_hook() {
-        // EM_Pro::log('empp_hourly_hook', 'general', True);
+        // EM_Pro::log('empp_hourly_hook', 'general', true);
         $diffdays = intval(get_option('dbem_days_for_payment', '0'));
         if ($diffdays == 0) {
             return;
@@ -89,22 +90,22 @@ class EM_Limmud_Misc {
             $EM_Bookings = $EM_Event->get_bookings(true);
             foreach ($EM_Bookings->bookings as $EM_Booking) {
                 if ($EM_Booking->booking_status == 5) {
-                    // EM_Pro::log('#'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, 'general', True);
+                    // EM_Pro::log('#'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, 'general', true);
                     $date1 = date_create();
                     $date2 = date_create();
-                    $no_expiration = False;
-                    $payment_reminder = False;
+                    $no_expiration = false;
+                    $payment_reminder = false;
                     foreach ($EM_Booking->get_notes() as $note) {
                         if ($note['note'] == 'Awaiting Payment') {
                             date_timestamp_set($date1, $note['timestamp']);
-                            $payment_reminder = False;
-                            // EM_Pro::log('timestamp '. date(DATE_ATOM, $note['timestamp']), 'general', True);                    
+                            $payment_reminder = false;
+                            // EM_Pro::log('timestamp '. date(DATE_ATOM, $note['timestamp']), 'general', true);                    
                         }
                         if ($note['note'] == 'No Expiration') {
-                            $no_expiration = True;
+                            $no_expiration = true;
                         }
                         if ($note['note'] == 'Payment Reminder') {
-                            $payment_reminder = True;
+                            $payment_reminder = true;
                         }
                     }
                     if ($no_expiration) {
@@ -117,15 +118,15 @@ class EM_Limmud_Misc {
                     } 
                     $diff = date_diff($date1, $date2);
 
-                    // EM_Pro::log('d='.$diff->d.' diffdays='.$diffdays.' payment_reminder='.$payment_reminder, 'general', True);
+                    // EM_Pro::log('d='.$diff->d.' diffdays='.$diffdays.' payment_reminder='.$payment_reminder, 'general', true);
 
                     if ($diff->d >= $diffdays) {
                         if (EM_Limmud_Paypal::get_total_paid($EM_Booking) > 0) {
                             $EM_Booking->set_status(7);
-                            EM_Pro::log('move to partially paid #'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, 'general', True);
+                            EM_Pro::log('move to Partially Paid #'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, 'general', true);
                         } else {
                             $EM_Booking->set_status(6);
-                            EM_Pro::log('move to waiting list #'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, 'general', True);
+                            EM_Pro::log('move to No Payment #'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, 'general', true);
                         }
                     }
 
@@ -141,7 +142,7 @@ class EM_Limmud_Misc {
                             $EM_Booking->email_send( $msg['user']['subject'], $msg['user']['body'], $EM_Booking->get_person()->user_email);
                         }
                         $EM_Booking->add_note("Payment Reminder");
-                        EM_Pro::log('send payment reminder #'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, 'general', True);
+                        EM_Pro::log('send payment reminder #'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, 'general', true);
                     }
                 }
             }
