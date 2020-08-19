@@ -28,6 +28,14 @@ class EM_Limmud_Options {
                         em_options_textarea ( __( 'Awaiting payment email', 'em-paypal' ), 'dbem_bookings_contact_email_awaiting_payment_body', '' );
                     ?>
                     <tr class="em-subheader"><td colspan='2'>
+                        <h5><?php _e('Partial payment email','dbem') ?></h5> 
+                        <em><?php echo __('This is sent when a partial payment is received for person\'s booking.','dbem') ?></em>
+                    </td></tr>
+                    <?php
+                        em_options_input_text ( __( 'Partial payment email subject', 'em-paypal' ), 'dbem_bookings_contact_email_partial_payment_subject', $email_subject_tip );                 
+                        em_options_textarea ( __( 'Partial payment email', 'em-paypal' ), 'dbem_bookings_contact_email_partial_payment_body', '' );
+                    ?>
+                    <tr class="em-subheader"><td colspan='2'>
                         <h5><?php _e('No payment email','dbem') ?></h5> 
                         <em><?php echo __('This is sent when a person\'s booking payment time expires.','dbem') ?></em>
                     </td></tr>
@@ -52,6 +60,14 @@ class EM_Limmud_Options {
                     <?php
                         em_options_input_text ( __( 'Awaiting payment email subject', 'em-paypal' ), 'dbem_bookings_email_awaiting_payment_subject', $email_subject_tip );                 
                         em_options_textarea ( __( 'Awaiting payment email', 'em-paypal' ), 'dbem_bookings_email_awaiting_payment_body', '' );
+                    ?>
+                    <tr class="em-subheader"><td colspan='2'>
+                        <h5><?php _e('Partial payment email','dbem') ?></h5> 
+                        <em><?php echo __('This will be sent to the person when partial payment is received for their booking.','dbem') ?></em>
+                    </td></tr>
+                    <?php
+                        em_options_input_text ( __( 'Partial payment email subject', 'em-paypal' ), 'dbem_bookings_email_partial_payment_subject', $email_subject_tip );                 
+                        em_options_textarea ( __( 'Partial payment email', 'em-paypal' ), 'dbem_bookings_email_partial_payment_body', '' );
                     ?>
                     <tr class="em-subheader"><td colspan='2'>
                         <h5><?php _e('Payment reminder email','dbem') ?></h5> 

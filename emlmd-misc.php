@@ -6,7 +6,7 @@ class EM_Limmud_Misc {
         add_filter('em_bookings_table_cols_col_action', array(__CLASS__, 'em_bookings_table_cols_col_action'), 10, 2);
         add_action('em_booking', array(__CLASS__, 'em_booking'), 10, 2);
         add_filter('em_booking_set_status', array(__CLASS__, 'em_booking_set_status'), 10, 2);
-        add_action('empp_hourly_hook', array(__CLASS__, 'empp_hourly_hook'));
+        add_action('emlmd_hourly_hook', array(__CLASS__, 'emlmd_hourly_hook'));
         add_action('em_bookings_table',array(__CLASS__,'em_bookings_table'),11,1);
         add_filter('em_get_currencies', array(__CLASS__, 'em_get_currencies'), 10, 2);
         add_filter('em_booking_calculate_price', array(__CLASS__, 'em_booking_calculate_price'), 10, 2);
@@ -78,8 +78,8 @@ class EM_Limmud_Misc {
         $EM_Bookings_Table->status = ( !empty($_REQUEST['status']) && array_key_exists($_REQUEST['status'], $EM_Bookings_Table->statuses) ) ? $_REQUEST['status']:get_option('dbem_default_bookings_search','needs-attention');
     }
     
-    public static function empp_hourly_hook() {
-        // EM_Pro::log('empp_hourly_hook', 'general', true);
+    public static function emlmd_hourly_hook() {
+        // EM_Pro::log('emlmd_hourly_hook', 'general', true);
         $diffdays = intval(get_option('dbem_days_for_payment', '0'));
         if ($diffdays == 0) {
             return;
@@ -112,10 +112,12 @@ class EM_Limmud_Misc {
                         continue;
                     }
                     $diffdays = intval(get_option('dbem_days_for_payment', '0'));
+                    /*
                     $weekday = intval(date_format($date1, "w"));
                     if ($weekday > (4 - $diffdays)) {
                         $diffdays += 2;
-                    } 
+                    }
+                    */ 
                     $diff = date_diff($date1, $date2);
 
                     // EM_Pro::log('d='.$diff->d.' diffdays='.$diffdays.' payment_reminder='.$payment_reminder, 'general', true);

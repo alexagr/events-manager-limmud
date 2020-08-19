@@ -239,7 +239,7 @@ class EM_Limmud_Booking {
 		<?php
             if (self::$partial_payment) {
         ?>
-                <p>[:ru]Поскольку в вашей регистрации присутствуют участники с разными фамилиями, у вас есть возможность оплатить заказ либо одним платежом - за всех участников, либо несколькими платежами - каждый участник оплачивает свою часть стоимости заказа.[:he]מכיוון שבהזמנה ישנם משתתפים עם שמות משפחה שונים, יש לכם אפשרות לשלם את ההזמנה בתשלום אחד - עבור כל המשתתפים, או בכמה תשלומים - כל משתתף משלם את חלקו מעלות ההזמנה.[:]</p>
+                <p>[:ru]Для вашего удобства, имеется возможность частичной оплаты заказа. Например, каждый участник может оплатить свою часть стоимости заказа.[:he]לנוחיותכם, ניתנת האפשרות לביצוע תשלום חלקי. למשל כל משתתף יכול לשלם את חלקו בהזמנה.[:]</p>
                 <p>[:ru]Для частичной оплаты заказа измените сумму оплаты, прежде чем нажать на одну из следующих кнопок. Перешлите <a href="<?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking) ?>">линк на эту страницу</a> другим участникам - чтобы они оплатили свою часть заказа. Обратите внимание, что полную оплату заказа необходимо произвести в течение 48 часов.[:he]לביצוע תשלום חלקי, יש לשנות את סכום התשלום לפני לחיצה על כפתור התשלום. יש להעביר את <a href="<?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking) ?>">הקישור לדף זה</a> לשער המשתתפים – על מנת שיסדירו את התשלום עבור חלקם בהזמנה. שימו לב כי התשלום המלא עבור ההזמנה חייב להתבצע תוך 48 שעות.[:]</p>
 		<?php
                 EM_Limmud_Paypal::show_buttons($EM_Booking, true);
@@ -305,7 +305,6 @@ class EM_Limmud_Booking {
         self::$child_num = 0;
         self::$partial_payment = false;
         $last_name = '';
-        $under_18_num = 0;
         $event_date = date("U", $EM_Booking->get_event()->start()->getTimestamp());
         $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
         foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
@@ -329,19 +328,6 @@ class EM_Limmud_Booking {
                                             self::$child_num++;
                                         }
                                     }
-                                    
-                                    if ($age < 18) {
-                                        $under_18_num++;
-                                    }
-                                }
-                            }
-                            if ($label == 'Фамилия (на английском)') {
-                                if ($last_name == '') {
-                                    $last_name = $attendee_value;
-                                } else {
-                                    if ($last_name != $attendee_value) {
-                                        self::$partial_payment = true;
-                                    }
                                 }
                             }
                         }
@@ -349,10 +335,9 @@ class EM_Limmud_Booking {
                 }
             }
         }
-        if ($under_18_num > 0) {
-            self::$partial_payment = false;
-        }
-        if ($EM_Booking->get_event()->event_id != 13) {
+        if (self::$adult_num + self::$child_num > 0) {
+            self::$partial_payment = true;
+        } else {
             self::$partial_payment = false;
         }
     }

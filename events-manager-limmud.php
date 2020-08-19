@@ -62,15 +62,15 @@ class EM_Limmud {
 add_action('plugins_loaded', 'EM_Limmud::init');
 
 
-# register_activation_hook(__FILE__, 'emlmd_activation');
-# register_deactivation_hook(__FILE__,'emlmd_deactivation');
+register_activation_hook(__FILE__, 'emlmd_activation');
+register_deactivation_hook(__FILE__,'emlmd_deactivation');
 
-# function emlmd_activation() {
-#     wp_schedule_event(time(), 'hourly', 'emlmd_hourly_hook');
-# }
+function emlmd_activation() {
+    wp_schedule_event(time(), 'hourly', 'emlmd_hourly_hook');
+}
 
-# function emlmd_deactivation() {
-#     wp_clear_scheduled_hook('emlmd_hourly_hook');
-# }
+function emlmd_deactivation() {
+    wp_clear_scheduled_hook('emlmd_hourly_hook');
+}
 
 ?>

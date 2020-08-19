@@ -213,11 +213,47 @@ class EM_Limmud_Paypal {
                         if (!empty($EM_Booking->booking_id)) {
                             EM_Limmud_Paypal::record_transaction($EM_Booking, $amount, $currency, $timestamp, $id, $status);
                             $price = floor($EM_Booking->get_price());
-                            if (self::get_total_paid($EM_Booking) >= $price) {
-                                $EM_Booking->approve();
+                            $total_paid = self::get_total_paid($EM_Booking);
+                            if ($total_paid >= $price) {
                                 $result = "completed";                            
+                                $EM_Booking->approve();
                             } else {
                                 $result = "partially completed";                            
+
+                                $msg = array( 'user'=> array('subject'=>'', 'body'=>''), 'admin'=> array('subject'=>'', 'body'=>''));
+                                $msg['user']['subject'] = get_option('dbem_bookings_email_partial_payment_subject');
+                                $msg['user']['body'] = get_option('dbem_bookings_email_partial_payment_body');
+                                //admins should get something (if set to)
+                                $msg['admin']['subject'] = get_option('dbem_bookings_contact_email_partial_payment_subject');
+                                $msg['admin']['body'] = get_option('dbem_bookings_contact_email_partial_payment_body');
+
+                                $msg['user']['body'] = str_replace('#_AMOUNT', $EM_Booking->format_price($amount), $msg['user']['body']);
+                                $msg['admin']['body'] = str_replace('#_AMOUNT', $EM_Booking->format_price($amount), $msg['admin']['body']);
+
+                                $msg['user']['body'] = str_replace('#_BOOKINGTOTALPAID', $EM_Booking->format_price($total_paid), $msg['user']['body']);
+                                $msg['admin']['body'] = str_replace('#_BOOKINGTOTALPAID', $EM_Booking->format_price($total_paid), $msg['admin']['body']);
+        
+                                $output_type = get_option('dbem_smtp_html') ? 'html':'email';
+                                if (!empty($msg['user']['subject'])) {
+                                    $msg['user']['subject'] = $EM_Booking->output($msg['user']['subject'], 'raw');
+                                    $msg['user']['body'] = $EM_Booking->output($msg['user']['body'], $output_type);
+                                    $EM_Booking->email_send( $msg['user']['subject'], $msg['user']['body'], $EM_Booking->get_person()->user_email);
+                                }
+                                if (!empty($msg['admin']['subject'])) {
+                    				$admin_emails = str_replace(' ','',get_option('dbem_bookings_notify_admin'));
+                    				$admin_emails = apply_filters('em_booking_admin_emails', explode(',', $admin_emails), $EM_Booking); //supply emails as array
+                                    $EM_Event = $EM_Booking->get_event();
+                    				if( get_option('dbem_bookings_contact_email') == 1 && !empty($EM_Event->get_contact()->user_email) ){
+                    				    //add event owner contact email to list of admin emails
+                    				    $admin_emails[] = $EM_Event->get_contact()->user_email;
+                    				}
+                    				foreach($admin_emails as $key => $email){ if( !is_email($email) ) unset($admin_emails[$key]); } //remove bad emails
+                    				if( !empty($admin_emails) ){
+                                        $msg['admin']['subject'] = $EM_Booking->output($msg['admin']['subject'], 'raw');
+                                        $msg['admin']['body'] = $EM_Booking->output($msg['admin']['body'], $output_type);
+                                        $EM_Booking->email_send( $msg['admin']['subject'], $msg['admin']['body'], $admin_emails);
+                                    }
+                                }
                             }
                         }
                     }                    
