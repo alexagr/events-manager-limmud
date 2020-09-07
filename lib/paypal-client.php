@@ -7,7 +7,7 @@ require_once ( plugin_dir_path(__FILE__) . 'vendor/autoload.php' );
 
 use PayPalCheckoutSdk\Core\PayPalHttpClient;
 use PayPalCheckoutSdk\Core\SandboxEnvironment;
-use PayPalCheckoutSdk\Core\LiveEnvironment;
+use PayPalCheckoutSdk\Core\ProductionEnvironment;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
 use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
 
@@ -22,7 +22,7 @@ class PayPalClient
         if (get_option('dbem_paypal_status') == "live") {
             $clientId = get_option('dbem_paypal_live_client_id');
             $clientSecret = get_option('dbem_paypal_live_secret');
-            $env = new LiveEnvironment($clientId, $clientSecret);
+            $env = new ProductionEnvironment($clientId, $clientSecret);
         } else {
             $clientId = get_option('dbem_paypal_sandbox_client_id');
             $clientSecret = get_option('dbem_paypal_sandbox_secret');

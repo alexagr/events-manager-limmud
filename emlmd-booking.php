@@ -104,7 +104,7 @@ class EM_Limmud_Booking {
 		<?php
 		if (!empty($_REQUEST['booking_id'])) {
 			$EM_Booking = em_get_booking($_REQUEST['booking_id']);
-			
+
 			if (empty($_REQUEST['secret'])) {
 				return;
 			}
@@ -127,7 +127,7 @@ class EM_Limmud_Booking {
 					echo '[:en]Pending[:ru]Проверяется[:he]בבדיקה[:]';
 					break;
 				case 1: 
-					echo '[:en]Approved[:ru]Оплачен[:he]שולם[:]';
+					echo '[:en]Approved[:ru]Подтверждена[:he]מאושרת[:]';
 					break;
 				case 5:
 				   echo '[:en]Awaiting Payment[:ru]Ожидает оплаты[:he]מחכה לתשלום[:]';
@@ -137,17 +137,17 @@ class EM_Limmud_Booking {
                     }
 					break;
 				case 6:
-					echo '[:en]No Payment[:ru]Не оплачен[:he]לא שולם[:]';
+					echo '[:en]No Payment[:ru]Не оплачена[:he]לא שולמה[:]';
 					break;
 				case 7:
-				   echo '[:en]Not Fully Paid[:ru]Не полностью оплачен[:he]לא שולם במלואו[:]';
+				   echo '[:en]Not Fully Paid[:ru]Не полностью оплачена[:he]לא שולמה במלואה[:]';
                     $total_paid = (int)$EM_Booking->get_total_paid();
                     if ($total_paid > 0) {
 					   echo '<br>([:ru]оплачено[:he]שולמו[:] ' . $total_paid . ' [:ru]из[:he]מתוך[:] ' . $EM_Booking->get_price() . ' &#8362;)';
                     }
 					break;
 				default:
-					echo '[:en]Cancelled[:ru]Отменен[:he]מבוטל[:]';
+					echo '[:en]Cancelled[:ru]Отменена[:he]מבוטלת[:]';
 			}
 			?></td></tr>
 			<?php
@@ -240,7 +240,7 @@ class EM_Limmud_Booking {
             if (self::$partial_payment) {
         ?>
                 <p>[:ru]Для вашего удобства, имеется возможность частичной оплаты заказа. Например, каждый участник может оплатить свою часть стоимости заказа.[:he]לנוחיותכם, ניתנת האפשרות לביצוע תשלום חלקי. למשל כל משתתף יכול לשלם את חלקו בהזמנה.[:]</p>
-                <p>[:ru]Для частичной оплаты заказа измените сумму оплаты, прежде чем нажать на одну из следующих кнопок. Перешлите <a href="<?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking) ?>">линк на эту страницу</a> другим участникам - чтобы они оплатили свою часть заказа. Обратите внимание, что полную оплату заказа необходимо произвести в течение 48 часов.[:he]לביצוע תשלום חלקי, יש לשנות את סכום התשלום לפני לחיצה על כפתור התשלום. יש להעביר את <a href="<?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking) ?>">הקישור לדף זה</a> לשער המשתתפים – על מנת שיסדירו את התשלום עבור חלקם בהזמנה. שימו לב כי התשלום המלא עבור ההזמנה חייב להתבצע תוך 48 שעות.[:]</p>
+                <p>[:ru]Для частичной оплаты заказа измените сумму оплаты, прежде чем нажать на одну из следующих кнопок. По окончании оплаты перешлите <a href="<?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking) ?>">линк на эту страницу</a> другим участникам - чтобы они оплатили свою часть заказа. Обратите внимание, что полную оплату заказа необходимо произвести в течение 48 часов.[:he]לביצוע תשלום חלקי, יש לשנות את סכום התשלום לפני לחיצה על כפתור התשלום. לאחר התשלום יש להעביר את <a href="<?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking) ?>">הקישור לדף זה</a> לשער המשתתפים – על מנת שיסדירו את התשלום עבור חלקם בהזמנה. שימו לב כי התשלום המלא עבור ההזמנה חייב להתבצע תוך 48 שעות.[:]</p>
 		<?php
                 EM_Limmud_Paypal::show_buttons($EM_Booking, true);
             } else {
@@ -299,11 +299,15 @@ class EM_Limmud_Booking {
     public static $adult_num;
     public static $child_num;
     public static $partial_payment;
+    public static $presenter_num;
+    public static $volunteer_num;
     // calculate number of participants
     public static function calculate_participants($EM_Booking) {
         self::$adult_num = 0;
         self::$child_num = 0;
         self::$partial_payment = false;
+        self::$presenter_num = 0;
+        self::$volunteer_num = 0;
         $last_name = '';
         $event_date = date("U", $EM_Booking->get_event()->start()->getTimestamp());
         $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
@@ -330,6 +334,15 @@ class EM_Limmud_Booking {
                                     }
                                 }
                             }
+                            if ($label == 'Участвует в качестве') {
+								$role = apply_filters('translate_text', $attendee_value, 'ru');
+								if ($role == 'волонтер') {
+									self::$volunteer_num++;
+								}
+								if ($role == 'презентер') {
+									self::$presenter_num++;
+								}
+							}
                         }
                     }
                 }
@@ -396,25 +409,170 @@ class EM_Limmud_Booking {
             if (($bus_needed != 'не нужна') && ($bus_needed != 'N/A')) {
 				self::add_ticket($EM_Booking, 191, self::$adult_num + self::$child_num);
             }
+
+			$book_num = 0;
+            $book_amount = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['book_amount'], 'ru');
+            if ($book_amount == 'да - 1 книгу') {
+				$book_num = 1;
+			}
+            if ($book_amount == 'да - 2 книги') {
+				$book_num = 2;
+			}
+            if ($book_amount == 'да - 3 книги') {
+				$book_num = 3;
+			}
+            if ($book_num > 0) {
+				self::add_ticket($EM_Booking, 195, $book_num);
+            }
 			
-			$EM_Booking->save();
+			$EM_Booking->save(false);
 		}
 
 		if ($EM_Booking->event_id == 14) {
             // no accomodation 2020 registration
-            $room_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['ticket_type'], 'ru');
+            $ticket_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['ticket_type'], 'ru');
             $tickets_num = self::$adult_num + self::$child_num;
             if ($tickets_num > 0) {
-                if ($room_type == 'все дни 3-5.12') {
+                if ($ticket_type == 'все дни 3-5.12') {
     				self::add_ticket($EM_Booking, 193, $tickets_num);
                 } else {
     				self::add_ticket($EM_Booking, 194, $tickets_num);
                 }
             }
 
-			$EM_Booking->save();
+			$book_num = 0;
+            $book_amount = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['book_amount'], 'ru');
+            if ($book_amount == 'да - 1 книгу') {
+				$book_num = 1;
+			}
+            if ($book_amount == 'да - 2 книги') {
+				$book_num = 2;
+			}
+            if ($book_amount == 'да - 3 книги') {
+				$book_num = 3;
+			}
+            if ($book_num > 0) {
+				self::add_ticket($EM_Booking, 196, $book_num);
+            }
+
+			$EM_Booking->save(false);
         }
 
+		if ($EM_Booking->event_id == 15) {
+            // 2020 registration for volunteers and presenters
+            $participation_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['participation_type'], 'ru');
+			if ($participation_type == 'с проживанием') {
+				$room_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['room_type'], 'ru');
+				$adult_ticket = 198;
+				$discount_ticket = 204;
+				if ($room_type == 'в трехместном номере') {
+					$adult_ticket = 200;
+					$discount_ticket = 205;
+					if ((self::$adult_num != 3) || (self::$child_num != 0)) {
+						return;
+					}
+				}
+				if ($room_type == 'в одноместном номере') {
+					$adult_ticket = 201;
+					$discount_ticket = 0;
+					if ((self::$adult_num != 1) || (self::$child_num != 0)) {
+						return;
+					}
+				}
+				if ($room_type == 'в семейном номере (с детьми)') {
+					if (self::$child_num == 0) {
+						return;
+					}
+				}
+
+				if (self::$adult_num > 0) {
+					self::add_ticket($EM_Booking, $adult_ticket, self::$adult_num);
+				}
+				if (self::$child_num > 0) {
+					self::add_ticket($EM_Booking, 199, self::$child_num);
+				}
+				
+				$discount_num = self::$volunteer_num + self::$presenter_num;
+				if (($discount_num > 0) && ($discount_ticket > 0)) {
+					self::add_ticket($EM_Booking, $discount_ticket, $discount_num);
+				}
+			} else {
+				$ticket_days = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['ticket_days'], 'ru');
+				$tickets_num = self::$adult_num + self::$child_num;
+				if ($tickets_num > 0) {
+					if ($ticket_type == 'три дня') {
+						self::add_ticket($EM_Booking, 209, $tickets_num);
+					} else {
+						self::add_ticket($EM_Booking, 210, $tickets_num);
+					}
+				}
+
+				$discount_num = self::$volunteer_num + self::$presenter_num;
+				echo $discount_num;
+				if ($discount_num > 0) {
+					self::add_ticket($EM_Booking, 211, $discount_num);
+				}
+			}
+
+            $bus_needed = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['bus_needed'], 'ru');
+            if (($bus_needed != 'не нужна') && ($bus_needed != 'N/A')) {
+				self::add_ticket($EM_Booking, 202, self::$adult_num + self::$child_num);
+
+				$discount_num = self::$volunteer_num + self::$presenter_num;
+				if ($discount_num > 0) {
+					self::add_ticket($EM_Booking, 206, $discount_num);
+				}
+            }
+
+			$book_num = 0;
+            $book_amount = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['book_amount'], 'ru');
+            if ($book_amount == 'да - 1 книгу') {
+				$book_num = 1;
+			}
+            if ($book_amount == 'да - 2 книги') {
+				$book_num = 2;
+			}
+            if ($book_amount == 'да - 3 книги') {
+				$book_num = 3;
+			}
+            if ($book_num > 0) {
+				self::add_ticket($EM_Booking, 203, $book_num);
+				
+				$discount_book_num = 0;
+				$free_book_num = 0;
+				if (self::$presenter_num > 0) {
+					$free_book_num = min($book_num, self::$presenter_num);
+					if ($free_book_num > 0) {
+						self::add_ticket($EM_Booking, 208, $free_book_num);
+					}
+				}
+				if (self::$volunteer_num > 0) {
+					$discount_book_num = min($book_num - $free_book_num, self::$volunteer_num);
+					if ($discount_book_num > 0) {
+						self::add_ticket($EM_Booking, 207, $discount_book_num);
+					}
+				}
+            }
+
+			$EM_Booking->save(false);
+
+			$price = $EM_Booking->get_price();
+			$price = floor($price);
+
+			if ($price == 0) {
+				$tickets_found = false;
+				foreach($EM_Booking->get_tickets_bookings() as $EM_Ticket_Booking) {
+					if ($EM_Ticket_Booking->get_price() >= 1) {
+						$tickets_found = true;
+					}
+				}
+				if ($tickets_found) {
+					$EM_Booking->booking_status = 1;
+					$EM_Booking->save();
+				}
+			}
+			
+		}
 	}
 }
 

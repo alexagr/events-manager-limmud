@@ -19,9 +19,13 @@ class EM_Limmud_Frontend {
         var ROOM_SINGLE;
         var ROOM_INVALID;
         var BUS_NO;
-        var BUS_TEL_AVIV;
+        var BUS_TEL_AVIV1;
+        var BUS_TEL_AVIV2;
         var BUS_NETANIYA;
         var BUS_INVALID;
+        var TICKET_3_DAYS;
+        var TICKET_1_DAY;
+        var TICKET_INVALID;
 
         function initGlobals() {
             if (!FIRST_RUN) {
@@ -40,9 +44,17 @@ class EM_Limmud_Frontend {
             var busNeeded = document.getElementsByName("bus_needed");
             if (busNeeded.length > 0) {
                 BUS_NO = busNeeded[0].options[0].text;
-                BUS_TEL_AVIV = busNeeded[0].options[1].text;
-                BUS_NETANIYA = busNeeded[0].options[2].text;
-                BUS_INVALID = busNeeded[0].options[3].text;
+                BUS_TEL_AVIV1 = busNeeded[0].options[1].text;
+                BUS_TEL_AVIV2 = busNeeded[0].options[2].text;
+                BUS_NETANIYA = busNeeded[0].options[3].text;
+                BUS_INVALID = busNeeded[0].options[4].text;
+            }
+
+            var ticketDays = document.getElementsByName("ticket_days");
+            if (ticketDays.length > 0) {
+                TICKET_3_DAYS = ticketDays[0].options[0].text;
+                TICKET_1_DAY = ticketDays[0].options[1].text;
+                TICKET_INVALID = ticketDays[0].options[2].text;
             }
         }
         
@@ -135,7 +147,7 @@ class EM_Limmud_Frontend {
                     registration = "no-accomodation";
                     participation_type = "no-accomodation";
                 } else {
-                    els = document.getElementsByName("em_tickets[171][spaces]");
+                    els = document.getElementsByName("em_tickets[197][spaces]");
                     if (els.length > 0) {
                         registration = "volunteers";
                     }
@@ -190,11 +202,15 @@ class EM_Limmud_Frontend {
             if (participation_type == "hotel") {
                 displayField("room_type", true);
                 displayField("bus_needed", true);
-                updateComboBox("bus_needed", [BUS_NO, BUS_TEL_AVIV, BUS_NETANIYA]);
+                updateComboBox("bus_needed", [BUS_NO, BUS_TEL_AVIV1, BUS_TEL_AVIV2, BUS_NETANIYA]);
+                displayField("ticket_days", false);
+                updateComboBox("ticket_days", [TICKET_INVALID]);
             } else {
                 displayField("room_type", false);
                 displayField("bus_needed", false);
                 updateComboBox("bus_needed", [BUS_INVALID]);
+                displayField("ticket_days", true);
+                updateComboBox("ticket_days", [TICKET_3_DAYS, TICKET_1_DAY]);
             }
                      
             var display_room_label = false;
