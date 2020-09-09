@@ -68,7 +68,7 @@ class EM_Limmud_Paypal {
                     	$tickets[$EM_Ticket_Booking->get_price() * 1000 + $i] = $EM_Ticket_Booking;
     				} 
                 } else {
-                    $discount += -$EM_Ticket_Booking->get_price() * $EM_Ticket_Booking->get_spaces();
+                    $discount += -$EM_Ticket_Booking->get_price();
     			}
             }
             krsort($tickets);
@@ -351,6 +351,7 @@ class EM_Limmud_Paypal {
                             elem.scrollIntoView();
                             setTimeout(5000, window.location.reload());
                         }
+                        document.getElementById('paypal-transaction-sum').readOnly = true;
                         return data.order_id;
                     });
                 },

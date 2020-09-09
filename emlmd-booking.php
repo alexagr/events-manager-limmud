@@ -164,7 +164,7 @@ class EM_Limmud_Booking {
 	                	$tickets[$EM_Ticket_Booking->get_price() * 1000 + $i] = $EM_Ticket_Booking;
 					} 
 	            } else {
-	                $discount += -$EM_Ticket_Booking->get_price() * $EM_Ticket_Booking->get_spaces();
+	                $discount += -$EM_Ticket_Booking->get_price();
 				}
 	        }
 	        krsort($participants);
@@ -425,6 +425,9 @@ class EM_Limmud_Booking {
 				self::add_ticket($EM_Booking, 195, $book_num);
             }
 			
+            if ($EM_Booking->booking_status == 5) {
+                $EM_Booking->add_note('Awaiting Payment');
+            }
 			$EM_Booking->save(false);
 		}
 
@@ -455,6 +458,9 @@ class EM_Limmud_Booking {
 				self::add_ticket($EM_Booking, 196, $book_num);
             }
 
+            if ($EM_Booking->booking_status == 5) {
+                $EM_Booking->add_note('Awaiting Payment');
+            }
 			$EM_Booking->save(false);
         }
 
@@ -554,6 +560,9 @@ class EM_Limmud_Booking {
 				}
             }
 
+            if ($EM_Booking->booking_status == 5) {
+                $EM_Booking->add_note('Awaiting Payment');
+            }
 			$EM_Booking->save(false);
 
 			$price = $EM_Booking->get_price();
