@@ -59,7 +59,7 @@ class EM_Limmud_Emails {
         krsort($tickets);
         foreach($tickets as $price => $ticket) {
             $replace = $replace . apply_filters('translate_text', $ticket->get_ticket()->name, $lang) . " : " . $ticket->get_spaces() . "\n";
-            if (!empty($EM_Booking->booking_meta['attendees'][$ticket->ticket_id]) && is_array($EM_Booking->booking_meta['attendees'][$EM_Ticket_Booking->ticket_id])) {
+            if (!empty($EM_Booking->booking_meta['attendees'][$ticket->ticket_id]) && is_array($EM_Booking->booking_meta['attendees'][$ticket->ticket_id])) {
                 $i = 1; //counter
                 $EM_Form = EM_Attendees_Form::get_form($EM_Booking->event_id);
                 foreach ($EM_Booking->booking_meta['attendees'][$ticket->ticket_id] as $field_values) {
@@ -67,6 +67,11 @@ class EM_Limmud_Emails {
                     foreach ($EM_Form->form_fields as $fieldid => $field) {
                         if (!array_key_exists($fieldid, $EM_Form->user_fields) && $field['type'] != 'html') {
                             if (isset($field_values[$fieldid])) {
+                                // do not include security sensitive data in e-mails
+                                if ((strpos(apply_filters('translate_text', $field['label'], 'ru'), "Теудат зеут") !== false) ||
+                                    (strpos(apply_filters('translate_text', $field['label'], 'ru'), "Гражданин Израиля") !== false)) {
+                                   continue;
+                                }
                                 $replace = $replace . "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" . apply_filters('translate_text', $field['label'], $lang) . " : " . apply_filters('translate_text', $field_values[$fieldid], $lang) . "\n";
                             }
                         }
@@ -83,6 +88,8 @@ class EM_Limmud_Emails {
             $replace = $replace . "דוא&quot;ל : " . $EM_Booking->get_person()->user_email . "\n";
             $replace = $replace . "טלפון : " . $EM_Booking->get_person()->phone . "\n";
         }
+        // do not include security sensitive data in e-mails
+        /*
         if (!empty($EM_Booking->booking_meta['registration']['dbem_address'])) {
             if ($lang == 'ru') {
                 $replace = $replace . "Адрес : " . $EM_Booking->booking_meta['registration']['dbem_address'] . "\n";
@@ -97,11 +104,12 @@ class EM_Limmud_Emails {
                 $replace = $replace . "עיר : " . $EM_Booking->booking_meta['registration']['dbem_city'] . "\n";
             }
         }
+        */
         $replace = $replace . "\n";
         if (!empty($EM_Booking->booking_meta['booking'])) {
             $EM_Form = EM_Booking_Form::get_form($EM_Booking->event_id);
             foreach ($EM_Form->form_fields as $fieldid => $field) {
-                if (($field['type'] != 'html') && isset($EM_Booking->booking_meta['booking'][$fieldid]) && ($EM_Booking->booking_meta['booking'][$fieldid] != 'n/a')) {
+                if (($field['type'] != 'html') && isset($EM_Booking->booking_meta['booking'][$fieldid]) && ($EM_Booking->booking_meta['booking'][$fieldid] != 'n/a') && ($EM_Booking->booking_meta['booking'][$fieldid] != 'N/A')) {
                     $replace = $replace . apply_filters('translate_text', $field['label'], $lang) . " : " . apply_filters('translate_text', $EM_Booking->booking_meta['booking'][$fieldid], $lang) . "\n";
                 }                        
             }

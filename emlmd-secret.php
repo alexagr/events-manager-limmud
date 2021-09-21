@@ -64,11 +64,12 @@ class EM_Limmud_Secret {
 						}
 					}
 
-					if (($participation_type != 'волонтер') && ($participation_type != 'презентер')) {
+					if (($participation_type != 'волонтер') && ($participation_type != 'презентер') && ($participation_type != 'организатор')) {
 						continue;
 					}
 
 					if ($secret_code == '1123581321') {
+						array_push($secret_codes, $secret_code);
 						continue;
 					}
 
@@ -97,6 +98,12 @@ class EM_Limmud_Secret {
 					}
 
 					if (($participation_type == 'презентер') && ($secret_code[0] != '2')) {
+						$EM_Booking->add_error('Secret code ' . $secret_code . ' is wrong');
+						$result = false;
+						continue;
+					}
+
+					if (($participation_type == 'организатор') && ($secret_code != '1123581321')) {
 						$EM_Booking->add_error('Secret code ' . $secret_code . ' is wrong');
 						$result = false;
 						continue;

@@ -57,6 +57,13 @@ class EM_Limmud_Paypal {
             }
         }         
 
+        $payment_reversed = 0;
+        foreach ($EM_Booking->get_notes() as $note) {
+            if ($note['note'] == 'Payment Reversed') {
+                $payment_reversed++;
+            }
+        }
+
         if ($full_payment) {
             $tickets = array();
             $i = 0;
@@ -75,6 +82,11 @@ class EM_Limmud_Paypal {
     
             $price = floor($EM_Booking->get_price());
             $invoice_id = 'LIMMUD-REG#' . $EM_Booking->booking_id;
+			
+            if ($payment_reversed > 0) {
+                $invoice_id = $invoice_id . '#' . strval($payment_reversed);
+            }
+			
         } else {
             $tickets = array();
             $price = min($transaction_sum, floor($EM_Booking->get_price()) - self::get_total_paid($EM_Booking));
@@ -88,6 +100,10 @@ class EM_Limmud_Paypal {
             }
             $table_transaction = $prefix.'em_transactions';
     		$count = $wpdb->get_var('SELECT COUNT(*) FROM '.EM_TRANSACTIONS_TABLE." WHERE booking_id={$EM_Booking->booking_id}");
+
+            if ($payment_reversed > 0) {
+                $count = strval(intval($count) + $payment_reversed);
+            }
 
             $invoice_id = 'LIMMUD-REG#' . $EM_Booking->booking_id . '#' . $count;
         }

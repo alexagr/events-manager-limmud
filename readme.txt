@@ -75,3 +75,43 @@ Multilanguage considerations:
 	
 When we calculate the booking price we round up result - to eliminate 
 "participants" tickets.
+
+
+What to do when new year comes
+------------------------------
+
+1. Update update_booking() function in emlmd-booking.php
+
+   This function is called when user fills in the registration and is redirected
+   to the "payment" link. If order is in "pending" state and has no "real" tickets
+   (that cost $1 or more) - it automatically adds needed tickets to it and moves
+   it to "Awaiting Payment" state.
+
+   You need to change business logic under the three blocks like this:
+        if ($EM_Booking->event_id == 16) {
+            // regular 2021 registration
+            ...
+
+   Update event ID to match the new event ID. Also update ticket IDs and adjust
+   business logic as needed.
+
+2. Update em_booking_js() function in emlmd-frontend.php
+
+   This is Javascript code that runs when user fills the registration.
+   It hides/shows relevant registration form elements, updates combo-box
+   values and does various validations.
+
+   Start with updating the event date - in the following line (line 122 in 2021):
+        var d1 = new Date("2021-12-09");
+
+   Then update the business logic as needed.
+
+3. Update emlmd-csv.php
+
+   These functions are called when admin exports data for the specific event.
+
+   Start with updating event name in em_bookings_table_export_options() function.
+   Then continue with updating intercept_csv_export() function:
+     * update event IDs in lines like this:
+         if (($EM_Event->event_id != 16) && ($EM_Event->event_id != 17) && ($EM_Event->event_id != 18)) {
+     * update business logic as needed.
