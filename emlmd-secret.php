@@ -48,6 +48,17 @@ class EM_Limmud_Secret {
 		$secret_codes = array();
         $secret_code_needed = false;
         $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
+
+		$admin_secret = false;
+		$file = @fopen(WP_PLUGIN_DIR.'/events-manager-secrets/admin.txt', 'r');
+		if ($file) {
+            $admin_secret = fgets($file, 1024);
+			if ($admin_secret !== false) {
+				$admin_secret = str_replace("\n", '', $admin_secret);
+				$admin_secret = str_replace("\r", '', $admin_secret);
+			}
+		}
+
         foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
 			if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
 				foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
@@ -68,7 +79,7 @@ class EM_Limmud_Secret {
 						continue;
 					}
 
-					if ($secret_code == '1123581321') {
+					if (($admin_secret !== false) && ($secret_code == $admin_secret)) {
 						array_push($secret_codes, $secret_code);
 						continue;
 					}
@@ -103,7 +114,7 @@ class EM_Limmud_Secret {
 						continue;
 					}
 
-					if (($participation_type == 'организатор') && ($secret_code != '1123581321')) {
+					if (($participation_type == 'организатор') && (($admin_secret == false) || ($secret_code != $admin_secret))) {
 						$EM_Booking->add_error('Secret code ' . $secret_code . ' is wrong');
 						$result = false;
 						continue;
