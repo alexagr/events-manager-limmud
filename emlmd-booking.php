@@ -155,13 +155,6 @@ class EM_Limmud_Booking {
             $tickets = array();
             $discounts = array();
             $i = 0;
-            /*
-            $discount = floor($EM_Booking->get_price_discounts_amount('post'));
-            $discount_text = '';
-            if ($discount > 0) {
-                $discount_text .= strval(floor($discount));
-            }
-            */
             foreach($EM_Booking->get_tickets_bookings() as $EM_Ticket_Booking) {
                 $i += 1;
                 if ($EM_Ticket_Booking->get_price() >= 0) {
@@ -172,13 +165,6 @@ class EM_Limmud_Booking {
                     }
                 } else {
                     $discounts[-$EM_Ticket_Booking->get_price() * 1000 + $i] = $EM_Ticket_Booking;
-                    /*
-                    $discount += -$EM_Ticket_Booking->get_price();
-                    if ($discount_text !== '') {
-                        $discount_text .= ' + ';
-                    }
-                    $discount_text .= strval(floor(-$EM_Ticket_Booking->get_price()));
-                    */
                 }
             }
             $admin_discount = floor($EM_Booking->get_price_discounts_amount('post'));
@@ -188,22 +174,6 @@ class EM_Limmud_Booking {
             krsort($participants);
             krsort($tickets);
             krsort($discounts);
-
-            /*
-            if (!empty($participants)) {
-            ?>
-                <tr><th colspan="2"><h4>[:en]Number of participants[:ru]Количество участников[:he]כמות משתתפים[:]</h4></th></tr>
-            <?php
-                foreach ($participants as $idx => $ticket) {
-                    ?>
-                    <tr>
-                        <th><?php echo $ticket->get_ticket()->name ?></th>
-                        <td><?php echo $ticket->get_spaces() ?></td>
-                    </tr>
-                    <?php
-                }
-            }
-            */
 
             self::calculate_participants($EM_Booking);
             if ((self::$adult_num > 0) || (self::$child_num > 0)) {
@@ -233,9 +203,7 @@ class EM_Limmud_Booking {
             ?>
                 <tr><th colspan="2"><h4>[:en]Participation Fee[:ru]Стоимость участия[:he]מחיר השתתפות[:]</h4></th></tr>
             <?php
-                $tickets_num = 0;
                 foreach ($tickets as $idx => $ticket) {
-                    $tickets_num += 1;
                     ?>
                     <tr>
                         <th><?php if (!empty($ticket->get_ticket()->ticket_description)) { echo $ticket->get_ticket()->ticket_description; } else { echo $ticket->get_ticket()->name; } ?></th>
@@ -279,17 +247,9 @@ class EM_Limmud_Booking {
                     }
                 }
 
-                /*
-                if ($discount > 0) {
-                ?>
-                    <tr><th>[:en]Discount[:ru]Скидка[:he]הנחה[:]</th><td> <?php echo '-' . $discount . ' &#8362;<br>(' . $discount_text . ')' ?></td></tr>
-                <?php
-                }
-                */
-
                 $price = $EM_Booking->get_price();
                 $price = floor($price);
-                if (($tickets_num > 1) || ($discount > 0)) {
+                if ((count($tickets) > 1) || !empty($discounts)) {
                 ?>
                     <tr><th>[:en]Total[:ru]Итого[:he]סה&quot;כ[:]</th><td> <?php echo $price . ' &#8362;' ?></td></tr>
                 <?php

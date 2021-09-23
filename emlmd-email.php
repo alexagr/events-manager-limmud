@@ -139,7 +139,7 @@ class EM_Limmud_Emails {
 	                $tickets[$EM_Ticket_Booking->get_price() * 1000 + $i] = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->name, $lang) . " : " . $ticket_price . " &#8362;\n"; 
 				}
             } else {
-                $discount += -$EM_Ticket_Booking->get_price() * $EM_Ticket_Booking->get_spaces();
+                $discount += -$EM_Ticket_Booking->get_price();
 			}
         }
         krsort($participants);
