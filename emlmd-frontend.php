@@ -237,10 +237,16 @@ class EM_Limmud_Frontend {
             }
             
             displayElementByName("room_label", display_room_label);
-            displayElement("em-booking-submit", !display_room_label);
+
+            var display_submit = !display_room_label;
+            if (!document.getElementsByName("green_pass")[0].checked) {
+                display_submit = false;
+            }
+            displayElement("em-booking-submit", display_submit);
         }
         
         $("select").change(updateForm);
+        $("#green_pass").change(updateForm);
         $(".em-tickets tbody").on("change", ".input-date-select", updateForm);
         updateForm();
 

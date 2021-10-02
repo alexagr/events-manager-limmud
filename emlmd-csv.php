@@ -50,7 +50,7 @@ class EM_Limmud_CSV {
             $delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
             $delimiter = apply_filters('em_csv_delimiter', $delimiter);
 
-            $headers = array('id', 'name', 'email', 'status', 'event_id', 'ticket_name', 'ticket_price', 'phone', 'address', 'city', 'ticket_days', 'ticket_type', 'room_type', 'bus_needed', 'special_needs', 'comment', 'book_amount', 'first_name', 'last_name', 'sex', 'birthday', 'israeli', 'passport', 'role', 'secret');
+            $headers = array('id', 'name', 'email', 'status', 'event_id', 'ticket_name', 'ticket_price', 'phone', 'address', 'city', 'ticket_days', 'ticket_type', 'room_type', 'bus_needed', 'special_needs', 'comment', 'first_name', 'last_name', 'sex', 'birthday', 'israeli', 'passport', 'role', 'secret');
             fputcsv($handle, $headers, $delimiter);
 
             $events = EM_Events::get(array('scope'=>'all'));
@@ -81,8 +81,7 @@ class EM_Limmud_CSV {
 
 						$row[] = self::booking_field('special_needs', $EM_Form, $EM_Booking, false);
 						$row[] = self::booking_field('dbem_comment', $EM_Form, $EM_Booking, false);
-						$row[] = self::booking_field('book_amount', $EM_Form, $EM_Booking);
-                        
+
                         if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
                             foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
                                 $full_row = $row;
@@ -115,7 +114,7 @@ class EM_Limmud_CSV {
             $delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
             $delimiter = apply_filters('em_csv_delimiter', $delimiter);
 
-            $headers = array('event', 'ticket_name', 'order#', 'name', 'surname', 'sex', 'role', 'age_group', 'age', 'ticket_type', 'special_needs', 'comment', 'status', 'book_amount', 'meal');
+            $headers = array('event', 'ticket_name', 'order#', 'name', 'surname', 'sex', 'role', 'age_group', 'age', 'ticket_type', 'special_needs', 'comment', 'status', 'meal');
             fputcsv($handle, $headers, $delimiter);
 
             $orders = array();
@@ -144,7 +143,6 @@ class EM_Limmud_CSV {
                     $EM_Form = EM_Booking_Form::get_form($event_id, $EM_Booking);
 					$order['special_needs'] = self::booking_field('special_needs', $EM_Form, $EM_Booking, false);
 					$order['comment'] = self::booking_field('dbem_comment', $EM_Form, $EM_Booking, false);
-					$order['book_amount'] = self::booking_field('book_amount', $EM_Form, $EM_Booking);
 
                     $order['children_num'] = 0;
                     $order['toddlers_num'] = 0;
@@ -297,7 +295,6 @@ class EM_Limmud_CSV {
                        $row[] = $order['special_needs'];
                        $row[] = $order['comment'];
                        $row[] = $order['status'];
-                       $row[] = $order['book_amount'];
                        if (strpos($ticket['name'], 'No Accomodation') === false) {
                            $row[] = $order['meal'];
                        } else {

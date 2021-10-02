@@ -109,7 +109,7 @@ class EM_Limmud_Emails {
         if (!empty($EM_Booking->booking_meta['booking'])) {
             $EM_Form = EM_Booking_Form::get_form($EM_Booking->event_id);
             foreach ($EM_Form->form_fields as $fieldid => $field) {
-                if (($field['type'] != 'html') && isset($EM_Booking->booking_meta['booking'][$fieldid]) && ($EM_Booking->booking_meta['booking'][$fieldid] != 'n/a') && ($EM_Booking->booking_meta['booking'][$fieldid] != 'N/A')) {
+                if (($field['type'] != 'html') && ($field['type'] != 'checkbox') && isset($EM_Booking->booking_meta['booking'][$fieldid]) && ($EM_Booking->booking_meta['booking'][$fieldid] != 'n/a') && ($EM_Booking->booking_meta['booking'][$fieldid] != 'N/A')) {
                     $replace = $replace . apply_filters('translate_text', $field['label'], $lang) . " : " . apply_filters('translate_text', $EM_Booking->booking_meta['booking'][$fieldid], $lang) . "\n";
                 }                        
             }

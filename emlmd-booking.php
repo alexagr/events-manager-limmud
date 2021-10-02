@@ -467,6 +467,7 @@ class EM_Limmud_Booking {
                 self::add_ticket($EM_Booking, 220, self::$adult_num + self::$child_num);
             }
 
+            /*
             $book_num = 0;
             $book_amount = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['book_amount'], 'ru');
             if ($book_amount == 'да - 1 книгу') {
@@ -481,6 +482,7 @@ class EM_Limmud_Booking {
             if ($book_num > 0) {
                 self::add_ticket($EM_Booking, 221, $book_num);
             }
+            */
 
             if (self::$ticket_added && !self::$ticket_error) {
                 $EM_Booking->booking_status = 5;
@@ -501,6 +503,7 @@ class EM_Limmud_Booking {
                 }
             }
 
+            /*
             $book_num = 0;
             $book_amount = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['book_amount'], 'ru');
             if ($book_amount == 'да - 1 книгу') {
@@ -515,6 +518,7 @@ class EM_Limmud_Booking {
             if ($book_num > 0) {
                 self::add_ticket($EM_Booking, 225, $book_num);
             }
+            */
 
             if (self::$ticket_added && !self::$ticket_error) {
                 $EM_Booking->booking_status = 5;
@@ -597,6 +601,7 @@ class EM_Limmud_Booking {
                 }
             }
 
+            /*
             $book_num = 0;
             $book_amount = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['book_amount'], 'ru');
             if ($book_amount == 'да - 1 книгу') {
@@ -626,6 +631,7 @@ class EM_Limmud_Booking {
                     }
                 }
             }
+            */
 
             if (self::$ticket_added && !self::$ticket_error) {
                 $EM_Booking->booking_status = 5;
