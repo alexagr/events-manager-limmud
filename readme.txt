@@ -115,3 +115,11 @@ What to do when new year comes
      * update event IDs in lines like this:
          if (($EM_Event->event_id != 16) && ($EM_Event->event_id != 17) && ($EM_Event->event_id != 18)) {
      * update business logic as needed.
+
+4. generate new secret codes and place them into:
+     public_html/site/wp-content/plugins/events-manager-secrets/secrets.txt
+   codes that start with 1 are for volunteers
+   codes that start with 2 are for presentors
+
+   generate a new secret code for organizing committee and place in into
+     public_html/site/wp-content/plugins/events-manager-secrets/admin.txt

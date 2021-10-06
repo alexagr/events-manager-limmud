@@ -65,9 +65,9 @@ class EM_Limmud_Booking {
             $content = apply_filters('em_content_pre', '', $page_content);
             if (empty($content)) {
                 if (preg_match('/#_BOOKINGID/', $page_content)) {
-                    if (!empty( $_REQUEST['booking_id'])) {
+                    if (!empty( $_REQUEST['booking_id']) && !empty( $_REQUEST['secret'])) {
                         $EM_Booking = em_get_booking($_REQUEST['booking_id']);
-                        if ($EM_Booking->booking_status == 1) {
+                        if (($EM_Booking->booking_status == 1) && (EM_Limmud_Paypal::get_secret($EM_Booking, 'payment_success') == $_REQUEST['secret'])) {
                             $content = str_replace('#_BOOKINGID', $_REQUEST['booking_id'], $page_content);
                             $event_year = date("Y", date("U", $EM_Booking->get_event()->start()->getTimestamp()));
                             $content = str_replace('#_EVENTNAME', "[:ru]Лимуд FSU Израиль [:he]לימוד FSU ישראל[:] " . $event_year, $content);
@@ -83,9 +83,9 @@ class EM_Limmud_Booking {
             $content = apply_filters('em_content_pre', '', $page_content);
             if (empty($content)) {
                 if (preg_match('/#_BOOKINGID/', $page_content)) {
-                    if (!empty( $_REQUEST['booking_id'])) {
+                    if (!empty( $_REQUEST['booking_id']) && !empty( $_REQUEST['secret'])) {
                         $EM_Booking = em_get_booking($_REQUEST['booking_id']);
-                        if (($EM_Booking->booking_status == 5) || ($EM_Booking->booking_status == 1)) {
+                        if ((($EM_Booking->booking_status == 5) || ($EM_Booking->booking_status == 1)) && (EM_Limmud_Paypal::get_secret($EM_Booking, 'partial_payment_success') == $_REQUEST['secret'])) {
                             $content = str_replace('#_BOOKINGID', $_REQUEST['booking_id'], $page_content);
                             $content = str_replace('#_BOOKINGSUMMARYURL', EM_Limmud_Paypal::get_payment_link($EM_Booking), $content);
                         }
@@ -109,7 +109,17 @@ class EM_Limmud_Booking {
                 return;
             }
 
-            if (($_REQUEST['secret'] != md5($EM_Booking->person->user_email)) && ($_REQUEST['secret'] != '11235813213455')) {
+            $admin_secret = false;
+            $file = @fopen(WP_PLUGIN_DIR.'/events-manager-secrets/admin.txt', 'r');
+            if ($file) {
+                $admin_secret = fgets($file, 1024);
+            	if ($admin_secret !== false) {
+            		$admin_secret = str_replace("\n", '', $admin_secret);
+            		$admin_secret = str_replace("\r", '', $admin_secret);
+            	}
+            }
+
+            if (($_REQUEST['secret'] != EM_Limmud_Paypal::get_secret($EM_Booking)) && ($_REQUEST['secret'] != $admin_secret)) {
                 return;
             }
 
@@ -168,9 +178,6 @@ class EM_Limmud_Booking {
                 }
             }
             $admin_discount = floor($EM_Booking->get_price_discounts_amount('post'));
-            if ($admin_discount > 0) {
-                $discounts[-$admin_discount * 1000 + $i] = "[:ru]Дополнительная скидка[:he]הנחה מיוחדת[:]";
-            }
             krsort($participants);
             krsort($tickets);
             krsort($discounts);
@@ -245,6 +252,12 @@ class EM_Limmud_Booking {
                         </tr>
                         <?php
                     }
+                }
+
+                if ($admin_discount > 0) {
+                ?>
+                    <tr><th>[:en]Admin discount[:ru]Дополнительная скидка[:he]הנחה מיוחדת[:]</th><td> <?php echo $admin_discount . ' &#8362;' ?></td></tr>
+                <?php
                 }
 
                 $price = $EM_Booking->get_price();

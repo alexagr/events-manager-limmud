@@ -29,11 +29,19 @@ class EM_Limmud_Paypal {
         return (int)$total;
     }
 
+    public static function get_secret($EM_Booking, $seed = false) {
+        $secret_text = $EM_Booking->person->user_email;
+        if (!empty($seed)) {
+            $secret_text .= $seed;
+        }
+        return md5($secret_text);
+    }
+
     public static function get_payment_link($EM_Booking) {
         $link = '';
     	$my_booking_summary_page_id = get_option('dbem_booking_summary_page');
 		if ($my_booking_summary_page_id != 0) {
-			$link = get_post_permalink($my_booking_summary_page_id) . '&booking_id=' . $EM_Booking->booking_id . '&secret=' . md5($EM_Booking->person->user_email);
+			$link = get_post_permalink($my_booking_summary_page_id) . '&booking_id=' . $EM_Booking->booking_id . '&secret=' . self::get_secret($EM_Booking);
 		}
         return $link;
     }
@@ -390,13 +398,13 @@ class EM_Limmud_Paypal {
                             var elem = document.getElementById('payment-success-container');
                             elem.style.display = 'block';
                             elem.scrollIntoView();
-                            window.location.href = '<?php echo get_post_permalink(get_option('dbem_booking_success_page')) ?>&booking_id=<?php echo $EM_Booking->booking_id ?>';
+                            window.location.href = '<?php echo get_post_permalink(get_option('dbem_booking_success_page')) ?>&booking_id=<?php echo $EM_Booking->booking_id ?>&secret=<?php echo self::get_secret($EM_Booking, 'payment_success') ?>';
                         } else {
                             if (data.result == 'partially completed') {
                                 var elem = document.getElementById('payment-success-container');
                                 elem.style.display = 'block';
                                 elem.scrollIntoView();
-                                window.location.href = '<?php echo get_post_permalink(get_option('dbem_partial_payment_success_page')) ?>&booking_id=<?php echo $EM_Booking->booking_id ?>';
+                                window.location.href = '<?php echo get_post_permalink(get_option('dbem_partial_payment_success_page')) ?>&booking_id=<?php echo $EM_Booking->booking_id ?>&secret=<?php echo self::get_secret($EM_Booking, 'partial_payment_success') ?>';
                             } else {
                                 var elem = document.getElementById('payment-failed-container');
                                 elem.style.display = 'block';
