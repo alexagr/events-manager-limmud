@@ -2,20 +2,24 @@
 
 class EM_Limmud_Misc {
     public static function init() {
-        add_filter('manage_event_posts_columns', array(__CLASS__, 'show_edit_columns'), 11);
+        add_filter('manage_event_posts_columns', array(__CLASS__, 'show_edit_columns'), 11, 1);
         add_filter('em_bookings_table_cols_col_action', array(__CLASS__, 'em_bookings_table_cols_col_action'), 10, 2);
         add_action('em_booking', array(__CLASS__, 'em_booking'), 10, 2);
         add_filter('em_booking_set_status', array(__CLASS__, 'em_booking_set_status'), 10, 2);
         add_action('emlmd_hourly_hook', array(__CLASS__, 'emlmd_hourly_hook'));
-        add_action('em_bookings_table',array(__CLASS__,'em_bookings_table'),11,1);
-        add_filter('em_get_currencies', array(__CLASS__, 'em_get_currencies'), 10, 2);
+        add_action('em_bookings_table',array(__CLASS__,'em_bookings_table'), 11, 1);
+        add_filter('em_get_currencies', array(__CLASS__, 'em_get_currencies'), 10, 1);
         add_filter('em_booking_calculate_price', array(__CLASS__, 'em_booking_calculate_price'), 10, 2);
         add_filter('em_ticket_is_displayable', array(__CLASS__, 'em_ticket_is_displayable'), 10, 2);
         add_filter('em_booking_form_tickets_cols', array(__CLASS__, 'em_booking_form_tickets_cols'), 10, 2);
         add_filter('em_booking_get_spaces', array(__CLASS__, 'em_booking_get_spaces'), 10, 2);
         add_filter('em_booking_get_person', array(__CLASS__, 'em_booking_get_person'), 10, 2);
-        add_filter('em_get_booking', array(__CLASS__, 'em_get_booking'), 10, 2);
+        add_filter('em_get_booking', array(__CLASS__, 'em_get_booking'), 10, 1);
         add_filter('em_action_booking_add', array(__CLASS__, 'em_action_booking_add'), 10, 2);
+        add_action('em_events_admin_bookings_footer',array(__CLASS__, 'em_events_admin_bookings_footer'), 10, 0);
+        add_action('em_event_save_meta_pre',array(__CLASS__, 'em_event_save_meta_pre'), 10, 1);
+        add_action('em_booking_form_before_tickets',array(__CLASS__, 'em_booking_form_before_tickets'), 10, 1);
+        add_filter('em_bookings_get_pending_spaces', array(__CLASS__, 'em_bookings_get_pending_spaces'), 2, 2);
     }
 
     public static function show_edit_columns($columns) { 
@@ -28,7 +32,7 @@ class EM_Limmud_Misc {
     }
     
     public static function em_bookings_table_cols_col_action($booking_actions, $EM_Booking) {
-        if (($EM_Booking->booking_status == 6) || ($EM_Booking->booking_status == 7)) {
+        if (($EM_Booking->booking_status == 6) || ($EM_Booking->booking_status == 7) || ($EM_Booking->booking_status == 8)) {
             $booking_actions = array(
                 'approve' => '<a class="em-bookings-approve" href="'.em_add_get_params($url, array('action'=>'bookings_approve', 'booking_id'=>$EM_Booking->booking_id)).'">'.__('Approve','events-manager').'</a>',
                 'reject' => '<a class="em-bookings-reject" href="'.em_add_get_params($url, array('action'=>'bookings_reject', 'booking_id'=>$EM_Booking->booking_id)).'">'.__('Reject','events-manager').'</a>',
@@ -48,6 +52,7 @@ class EM_Limmud_Misc {
         unset($EM_Booking->status_array[4]); // remove Online Payment option
         $EM_Booking->status_array[6] = 'No Payment';         
         $EM_Booking->status_array[7] = 'Partially Paid';         
+        $EM_Booking->status_array[8] = 'Waiting List';
     }
     
     public static function em_booking_set_status($result, $EM_Booking) {
@@ -66,12 +71,16 @@ class EM_Limmud_Misc {
         if ($EM_Booking->booking_status == 7) {
             $EM_Booking->add_note('Partially Paid');
         }
+        if ($EM_Booking->booking_status == 8) {
+            $EM_Booking->add_note('Waiting List');
+        }
         return $result;
     }
 
     static function em_bookings_table($EM_Bookings_Table){
         $EM_Bookings_Table->statuses['no-payment'] = array('label'=>'No Payment', 'search'=>6);
         $EM_Bookings_Table->statuses['partially-paid'] = array('label'=>'Partially Paid', 'search'=>7);
+        $EM_Bookings_Table->statuses['waiting-list'] = array('label'=>'Waiting List', 'search'=>8);
         unset($EM_Bookings_Table->statuses['awaiting-online']);
         $EM_Bookings_Table->statuses['awaiting-payment'] = array('label'=>'Awaiting Payment', 'search'=>5);
         $EM_Bookings_Table->statuses['needs-attention']['search'] = array(0,5,7);
@@ -247,6 +256,59 @@ class EM_Limmud_Misc {
         }
         return $return;
     }
+
+    public static function em_events_admin_bookings_footer(){
+        global $EM_Event;
+        $waiting_list_spaces = get_post_meta($EM_Event->post_id, '_waiting_list_spaces', true);
+		?>
+        <p>
+            <label>Waiting List Spaces</label>
+            <input type="text" name="waiting_list_spaces" value="<?php echo $waiting_list_spaces; ?>" /><br />
+            <em>Tickets will be moved to &quot;Waiting List&quot; state if total number of booking spaces reaches this limit. Leave blank for no limit.</em>
+        </p>
+		<?php
+	}
+
+    public static function em_event_save_meta_pre($EM_Event){
+        if( !empty($EM_Event->duplicated) ) return; //if just duplicated, we ignore this and let EM carry over duplicate event data
+        if( !empty($_REQUEST['waiting_list_spaces']) && is_numeric($_REQUEST['waiting_list_spaces']) ) {
+            update_post_meta($EM_Event->post_id, '_waiting_list_spaces', $_REQUEST['waiting_list_spaces']);
+        }
+        else {
+            update_post_meta($EM_Event->post_id, '_waiting_list_spaces', '');
+        }
+	}
+
+    public static function em_booking_form_before_tickets($EM_Event){
+        $waiting_list_spaces = get_post_meta($EM_Event->post_id, '_waiting_list_spaces', true);
+        if (!empty($waiting_list_spaces) && is_numeric($waiting_list_spaces)) {
+            $booked_spaces = $EM_Event->get_bookings()->get_booked_spaces();
+            if (get_option('dbem_bookings_approval_reserved')) {
+                $booked_spaces += $EM_Event->get_bookings()->get_pending_spaces();
+            }
+            if ($booked_spaces > $waiting_list_spaces) {
+        		?>
+    <div class="info">
+        [:ru]В связи с большим количеством поступивших заявок, места с проживанием закончились. Вы можете записаться в лист ожидания и мы свяжемся с вами, если освободятся места.[:he]עקב ביקוש רב המקומות עם לינה אזלו. אתם יכולים להירשם לרשימת המתנה וניצור אתכם קשר במידה והמקומות יתפנו.[:]
+    </div>
+        		<?php
+            }
+       }
+    }
+
+    public static function em_bookings_get_pending_spaces($count, $EM_Bookings){
+        $EM_Event = $EM_Bookings->get_event();
+        $waiting_list_spaces = get_post_meta($EM_Event->post_id, '_waiting_list_spaces', true);
+        if (!empty($waiting_list_spaces) && is_numeric($waiting_list_spaces)) {
+    		foreach ($EM_Bookings->bookings as $EM_Booking){
+                // Awaiting Payment (booking_status == 5) bookings are appended by Events Manager Pro gateway_offline class
+    			if ($EM_Booking->booking_status == 8) {
+    				$count += $EM_Booking->get_spaces();
+    			}
+    		}
+        }
+		return $count;
+	}
 }
 
 EM_Limmud_Misc::init();

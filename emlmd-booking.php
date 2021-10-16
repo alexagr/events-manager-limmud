@@ -156,6 +156,9 @@ class EM_Limmud_Booking {
                        echo '<br>([:ru]оплачено[:he]שולמו[:] ' . $total_paid . ' [:ru]из[:he]מתוך[:] ' . $EM_Booking->get_price() . ' &#8362;)';
                     }
                     break;
+                case 8:
+                    echo '[:en]Waiting List[:ru]Лист ожидания[:he]רשימת המתנה[:]';
+                    break;
                 default:
                     echo '[:en]Cancelled[:ru]Отменена[:he]מבוטלת[:]';
             }
@@ -287,6 +290,12 @@ class EM_Limmud_Booking {
         <?php
         }
 
+        if ($EM_Booking->booking_status == 8) {
+        ?>
+            <div class="info">[:ru]В связи с большим количеством поступивших заявок, места с проживанием закончились. Ваш заказ переведён в лист ожидания. Мы свяжемся с вами, если у нас освободятся места.[:he]עקב ביקוש רב המקומות עם לינה אזלו והרשמתכם הועברה לרשימת המתנה. ניצור אתכם קשר במידה והמקומות יתפנו.[:]</div>
+        <?php
+        }
+
         if ($EM_Booking->booking_status == 5) {
         ?>
             <h3>[:ru]ОПЛАТА РЕГИСТРАЦИИ[:he]תשלום עבור הזמנה[:]</h3>
@@ -361,6 +370,7 @@ class EM_Limmud_Booking {
     public static $presenter_num;
     public static $volunteer_num;
     public static $organizer_num;
+    public static $vip_num;
     // calculate number of participants
     public static function calculate_participants($EM_Booking) {
         self::$adult_num = 0;
@@ -370,6 +380,7 @@ class EM_Limmud_Booking {
         self::$presenter_num = 0;
         self::$volunteer_num = 0;
         self::$organizer_num = 0;
+        self::$vip_num = 0;
         $last_name = '';
         $event_date = date("U", $EM_Booking->get_event()->start()->getTimestamp());
         $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
@@ -377,6 +388,9 @@ class EM_Limmud_Booking {
             if ($EM_Ticket_Booking->get_price() < 1) {
                 if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
                     foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
+                        $age = 0;
+                        $role = '';
+                        $vip = false;
                         foreach( $attendee_data as $attendee_label => $attendee_value) {
                             $label = apply_filters('translate_text', $attendee_label, 'ru');
                             if ($label == 'Дата рождения') {
@@ -386,29 +400,43 @@ class EM_Limmud_Booking {
                                     $age = (date("md", date("U", mktime(0, 0, 0, $birth_date[1], $birth_date[0], $birth_date[2]))) > date("md", $event_date)
                                         ? ((date("Y", $event_date) - $birth_date[2]) - 1)
                                         : (date("Y", $event_date) - $birth_date[2]));
-
-                                    if ($age >= 12) {
-                                        self::$adult_num++;
-                                    } else {
-                                        if ($age >= 3) {
-                                            self::$child_num++;
-                                        } else {
-                                            self::$toddler_num++;
-                                        }
-                                    }
                                 }
                             }
                             if ($label == 'Участвует в качестве') {
                                 $role = apply_filters('translate_text', $attendee_value, 'ru');
-                                if ($role == 'волонтер') {
-                                    self::$volunteer_num++;
+                            }
+                            if ($label == 'Секретный код') {
+                                if ($attendee_value[0] == '3') {
+                                    $vip = true;
                                 }
-                                if ($role == 'презентер') {
-                                    self::$presenter_num++;
-                                }
-                                if ($role == 'организатор') {
-                                    self::$organizer_num++;
-                                }
+                            }
+                        }
+
+                        if ($age == 0) {
+                            continue;
+                        }
+
+                        if ($age >= 12) {
+                            self::$adult_num++;
+                        } else {
+                            if ($age >= 3) {
+                                self::$child_num++;
+                            } else {
+                                self::$toddler_num++;
+                            }
+                        }
+
+                        if ($vip) {
+                            self::$vip_num++;
+                        } else {
+                            if ($role == 'волонтер') {
+                                self::$volunteer_num++;
+                            }
+                            if ($role == 'презентер') {
+                                self::$presenter_num++;
+                            }
+                            if ($role == 'организатор') {
+                                self::$organizer_num++;
                             }
                         }
                     }
@@ -496,12 +524,6 @@ class EM_Limmud_Booking {
                 self::add_ticket($EM_Booking, 221, $book_num);
             }
             */
-
-            if (self::$ticket_added && !self::$ticket_error) {
-                $EM_Booking->booking_status = 5;
-                $EM_Booking->add_note('Awaiting Payment');
-            }
-            $EM_Booking->save(false);
         }
 
         if ($EM_Booking->event_id == 17) {
@@ -532,12 +554,6 @@ class EM_Limmud_Booking {
                 self::add_ticket($EM_Booking, 225, $book_num);
             }
             */
-
-            if (self::$ticket_added && !self::$ticket_error) {
-                $EM_Booking->booking_status = 5;
-                $EM_Booking->add_note('Awaiting Payment');
-            }
-            $EM_Booking->save(false);
         }
 
         if ($EM_Booking->event_id == 18) {
@@ -548,10 +564,12 @@ class EM_Limmud_Booking {
                 $adult_ticket = 227;
                 $discount_ticket = 233;
                 $discount_organizer_ticket = 241;
+                $discount_vip_ticket = 245;
                 if ($room_type == 'в трехместном номере') {
                     $adult_ticket = 229;
                     $discount_ticket = 234;
                     $discount_organizer_ticket = 242;
+                    $discount_vip_ticket = 246;
                     if ((self::$adult_num != 3) || (self::$child_num != 0)) {
                         return;
                     }
@@ -560,6 +578,7 @@ class EM_Limmud_Booking {
                     $adult_ticket = 230;
                     $discount_ticket = 0;
                     $discount_organizer_ticket = 0;
+                    $discount_vip_ticket = 247;
                     if ((self::$adult_num != 1) || (self::$child_num != 0)) {
                         return;
                     }
@@ -576,39 +595,40 @@ class EM_Limmud_Booking {
                 if (self::$child_num > 0) {
                     self::add_ticket($EM_Booking, 228, self::$child_num);
                 }
-
-                $discount_num = self::$volunteer_num + self::$presenter_num;
-                if (($discount_num > 0) && ($discount_ticket > 0)) {
-                    self::add_ticket($EM_Booking, $discount_ticket, $discount_num);
-                }
-                if ((self::$organizer_num > 0) && ($discount_organizer_ticket > 0)) {
-                    self::add_ticket($EM_Booking, $discount_organizer_ticket, self::$organizer_num);
-                }
             } else {
                 $ticket_days = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['ticket_days'], 'ru');
+                $discount_ticket = 248;
+                $discount_organizer_ticket = 243;
+                $discount_vip_ticket = 244;
                 $tickets_num = self::$adult_num + self::$child_num;
                 if ($tickets_num > 0) {
-                    if ($ticket_type == 'три дня') {
+                    if ($ticket_days == 'три дня') {
                         self::add_ticket($EM_Booking, 238, $tickets_num);
                     } else {
                         self::add_ticket($EM_Booking, 239, $tickets_num);
+                        $discount_ticket = 240;
+                        $discount_organizer_ticket = 240;
+                        $discount_vip_ticket = 240;
                     }
                 }
+            }
 
-                $discount_num = self::$volunteer_num + self::$presenter_num;
-                if ($discount_num > 0) {
-                    self::add_ticket($EM_Booking, 240, $discount_num);
-                }
-                if (self::$organizer_num > 0) {
-                    self::add_ticket($EM_Booking, 243, self::$organizer_num);
-                }
+            $discount_num = self::$volunteer_num + self::$presenter_num;
+            if (($discount_num > 0) && ($discount_ticket > 0)) {
+                self::add_ticket($EM_Booking, $discount_ticket, $discount_num);
+            }
+            if ((self::$organizer_num > 0) && ($discount_organizer_ticket > 0)) {
+                self::add_ticket($EM_Booking, $discount_organizer_ticket, self::$organizer_num);
+            }
+            if ((self::$vip_num > 0) && ($discount_vip_ticket > 0)) {
+                self::add_ticket($EM_Booking, $discount_vip_ticket, self::$vip_num);
             }
 
             $bus_needed = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['bus_needed'], 'ru');
             if (($bus_needed != 'не нужна') && ($bus_needed != 'N/A')) {
                 self::add_ticket($EM_Booking, 231, self::$adult_num + self::$child_num);
 
-                $discount_num = self::$volunteer_num + self::$presenter_num + self::$organizer_num;
+                $discount_num = self::$volunteer_num + self::$presenter_num + self::$organizer_num + self::$vip_num;
                 if ($discount_num > 0) {
                     self::add_ticket($EM_Booking, 235, $discount_num);
                 }
@@ -631,7 +651,7 @@ class EM_Limmud_Booking {
 
                 $discount_book_num = 0;
                 $free_book_num = 0;
-                if (self::$presenter_num + self::$organizer_num > 0) {
+                if (self::$presenter_num + self::$organizer_num + self::$vip_num > 0) {
                     $free_book_num = min($book_num, self::$presenter_num + self::$organizer_num);
                     if ($free_book_num > 0) {
                         self::add_ticket($EM_Booking, 237, $free_book_num);
@@ -645,16 +665,16 @@ class EM_Limmud_Booking {
                 }
             }
             */
+        }
 
-            if (self::$ticket_added && !self::$ticket_error) {
-                $EM_Booking->booking_status = 5;
-                $EM_Booking->add_note('Awaiting Payment');
-            }
+        $booking_status = 0;
+        if (self::$ticket_added && !self::$ticket_error) {
+            $booking_status = 5;
+            $EM_Booking->add_note('Awaiting Payment');
             $EM_Booking->save(false);
 
             $price = $EM_Booking->get_price();
             $price = floor($price);
-
             if ($price == 0) {
                 $tickets_found = false;
                 foreach($EM_Booking->get_tickets_bookings() as $EM_Ticket_Booking) {
@@ -664,10 +684,26 @@ class EM_Limmud_Booking {
                 }
                 if ($tickets_found) {
                     $EM_Booking->booking_status = 1;
+                    $EM_Booking->add_note('Approved');
                     $EM_Booking->save();
                 }
+            } else {
+                $EM_Event = $EM_Booking->get_event();
+                $waiting_list_spaces = get_post_meta($EM_Event->post_id, '_waiting_list_spaces', true);
+                if (!empty($waiting_list_spaces) && is_numeric($waiting_list_spaces)) {
+                    $booked_spaces = $EM_Event->get_bookings()->get_booked_spaces();
+                    if (get_option('dbem_bookings_approval_reserved')) {
+                        $booked_spaces += $EM_Event->get_bookings()->get_pending_spaces();
+                    }
+                    if ($booked_spaces > $waiting_list_spaces) {
+                        $EM_Booking->booking_status = 8;
+                        $EM_Booking->add_note('Waiting List');
+                        $EM_Booking->save();
+                    }
+                }
             }
-
+        } elseif (self::$ticket_error) {
+            $EM_Booking->save(false);
         }
     }
 }

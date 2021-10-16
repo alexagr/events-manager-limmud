@@ -51,6 +51,14 @@ class EM_Limmud_Options {
                         em_options_input_text ( __( 'Partially paid email subject', 'em-paypal' ), 'dbem_bookings_contact_email_partially_paid_subject', $email_subject_tip );                 
                         em_options_textarea ( __( 'Partially paid email', 'em-paypal' ), 'dbem_bookings_contact_email_partially_paid_body', '' );
                     ?>
+                    <tr class="em-subheader"><td colspan='2'>
+                        <h5><?php _e('Waiting list email','dbem') ?></h5>
+                        <em><?php echo __('This is sent when a person\'s booking is moved to Waiting List.','dbem') ?></em>
+                    </td></tr>
+                    <?php
+                        em_options_input_text ( __( 'Waiting list email subject', 'em-paypal' ), 'dbem_bookings_contact_email_waiting_list_subject', $email_subject_tip );
+                        em_options_textarea ( __( 'Waiting list email', 'em-paypal' ), 'dbem_bookings_contact_email_waiting_list_body', '' );
+                    ?>
                 <tr class="em-header"><td colspan='2'><h4><?php _e('Booked User Emails', 'dbem'); ?></h4></td></tr>
                     <tbody class="em-subsection">
                     <tr class="em-subheader"><td colspan='2'>
@@ -92,6 +100,14 @@ class EM_Limmud_Options {
                     <?php
                         em_options_input_text ( __( 'Partially paid email subject', 'em-paypal' ), 'dbem_bookings_email_partially_paid_subject', $email_subject_tip );                 
                         em_options_textarea ( __( 'Partially paid email', 'em-paypal' ), 'dbem_bookings_email_partially_paid_body', '' );
+                    ?>
+                    <tr class="em-subheader"><td colspan='2'>
+                        <h5><?php _e('Waiting list email','dbem') ?></h5>
+                        <em><?php echo __('This will be sent to the person when their booking is moved to Waiting List.','dbem') ?></em>
+                    </td></tr>
+                    <?php
+                        em_options_input_text ( __( 'Waiting list email subject', 'em-paypal' ), 'dbem_bookings_email_waiting_list_subject', $email_subject_tip );
+                        em_options_textarea ( __( 'Waiting list email', 'em-paypal' ), 'dbem_bookings_email_waiting_list_body', '' );
                     ?>
                 <?php echo $save_button; ?>
             </table>

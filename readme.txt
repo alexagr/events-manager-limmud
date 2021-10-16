@@ -59,9 +59,12 @@ NOTES:
 We use booking notes to record time when booking state changes (we just add note
 with state name and Events Manager adds timestamp). Based on that, for example, 
 periodic task that runs every hour finds bookings that were not payed for 3
-days and moves them to "Waiting List" state (essentially "rejected").
-We can also add "No Expiration" note - to prevent specific booking from
-moving to "Waiting List" state.
+days and moves them to "No Payment" state (essentially "rejected"). If some payment
+was received the booking is moved into "Partially Paid" state instead.
+
+Admin can add "No Expiration" note - to prevent specific booking from
+moving to "No Payment" / "Partially Paid" state - for example, if specific
+customer asked to pay later.
 
 Discounts can be implemented in one of the following ways:
   * admin discount
@@ -75,6 +78,11 @@ Multilanguage considerations:
 	
 When we calculate the booking price we round up result - to eliminate 
 "participants" tickets.
+
+If "Waiting List Spaces" is configured for the specific event and total amount
+of bookings (both approved and in pending state) exceeds the specified threshold
+booking is moved to "Waiting List" state. This is done by "booking summary" page
+logic - see update_booking() function for details.
 
 
 What to do when new year comes
