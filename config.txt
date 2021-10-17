@@ -2,17 +2,36 @@ Events Manager Configuration
 ----------------------------
 
 General
+    Event Settings
+        Enable Bookings = yes
+
+
 	Limmud Paypal Options
-		PayPal Email = adm@limmudfsu.org.il
+        Live Client ID = AcY...
+        Live Secret = EJj...
+        Sandbox Client ID = AXa...
+        Sandbox Secret = EM4...
 		PayPal Mode	= Live Site
 		Booking Summary page = Booking Summary (empty page with Booking Summary title and CONTENT in content)
 		Automatic Payment = Enable
+        Booking Success page = Booking Success
+         Partial Payment Success page =  Partial Payment Success
 		
 	Limmud Miscellaneous Options
 		Show Event Details = Hide
 		Admin Action = Edit/View Only
 		Days For Payment = 3 Days
-		Show Admin Wizard = Hide
+
+Formatting
+     Single event page format
+
+#_EVENTNOTES
+
+{has_bookings}
+<div id="em-booking-title"><h3>[:ru]РЕГИСТРАЦИЯ[:he]הרשמה[:]</h3></div>
+#_BOOKINGFORM
+{/has_bookings}
+
 
 Bookings
     General Options
@@ -25,6 +44,7 @@ Bookings
 	
 	Pricing Options
 		Currency = ILS
+        Add tax to ticket price = No
 		
 	Customize Feedback Messages 
 		Bookings disabled = [:ru]Регистрация не возможна.[:he]הרשמה סגורה.[:]
@@ -32,7 +52,7 @@ Bookings
 		Fully booked = [:ru]Регистрация временно прекращена из-за количества заявок.[:he]הרשמה סגורה זמנית עקב כמות הבקשות.[:]
 		
 	Booking form feedback messages
-	    Successful pending booking = [:ru]Спасибо, ваша заявка принята. Подтверждение отправлено на электронную почту. Если вы не видите подтверждения, пожалуйста, проверьте папку СПАМ. Если вы не находите подтверждения и там, пожалуйста, свяжитесь с нами по адресу reg@limmudfsu.org.il[:he]תודה , בקשתכם התקבלה. האישור נשלח בדואר אלקטרוני. אם אינכם רואים את האישור, אנא בידקו את תיקיית "דואר הזבל". אם אינכם מוצאים את האישור גם שם, אנא פנו אלינו לכתובת reg@limmudfsu.org.il[:][:ru]Спасибо, ваша заявка принята. Подтверждение отправлено на электронную почту. Если вы не видите подтверждения, пожалуйста, проверьте папку СПАМ. Если вы не находите подтверждения и там, пожалуйста, свяжитесь с нами по адресу reg@limmudfsu.org.il[:he]תודה , בקשתכם התקבלה. האישור נשלח בדואר אלקטרוני. אם אינכם רואים את האישור, אנא בידקו את תיקיית "דואר הזבל". אם אינכם מוצאים את האישור גם שם, אנא פנו אלינו לכתובת reg@limmudfsu.org.il[:][:ru]???????, ???? ?????? ???????. ????????????? ?????????? ?? ??????????? ?????. ???? ?? ?? ?????? ?????????????, ??????????, ????????? ????? ????. ???? ?? ?? ???????? ????????????? ? ???, ??????????, ????????? ? ???? ?? ?????? reg@limmudfsu.org.il[:he]תודה , בקשתכם התקבלה. האישור נשלח בדואר אלקטרוני. אם אינכם רואים את האישור, אנא בידקו את תיקיית "דואר הזבל". אם אינכם מוצאים את האישור גם שם, אנא פנו אלינו לכתובת reg@limmudfsu.org.il[:]
+	    Successful pending booking = [:ru]Спасибо, ваша заявка принята. Сейчас вы будете переведены на страницу оплаты.[:he]תודה, הרשמתכם נקלתה. כרגע אתם מועברים לדף התשלומים.[:]
         Not enough spaces = [:ru]Заявка не может быть принята из-за отсутствия свободных мест.[:he]הרשמתך נדחתה עקב חוסר מקומות פנויים.[:]
         No spaces booked = [:ru]Необходимо добавить хотя бы одного участника.[:he]חובה להוסיף לפחות משתתף אחד.[:]
         Maximum spaces per booking = [:ru]Заявка может включать не более %d участников.[:he]לא ניתן להוסיף יותר מ-%d משתתפים באותה הרשמה.[:]
@@ -43,6 +63,11 @@ Bookings
     
     Ticket Options
     	Single ticket mode = No
+        Show ticket table in single ticket mode = No
+        Show unavailable tickets = No
+        Show multiple tickets if logged out = Yes
+        Enable custom ticket ordering = Yes
+        Order Tickets By = Ticket Price (Descending)
     	
     No-User Booking Mode
     	Enable No-User Booking Mode = Yes
@@ -59,6 +84,8 @@ Emails
 		Notification sender name = Limmud Registration
 		Notification sender address = reg@limmudfsu.org.il
 		Mail sending method = WP Mail
+        Send HTML Emails = yes
+        Add br tags to HTML emails = yes
 	
 	Booking Email Templates
 		Email events admin? = reg@limmudfsu.org.il
@@ -71,12 +98,15 @@ Emails
 
 Регистрация ##_BOOKINGID от #_BOOKINGNAME оплачена и подтверждена.
 
+#_EVENTNAME
+
 ДАННЫЕ РЕГИСТРАЦИИ
 
 Имя : #_BOOKINGNAME
 Email : #_BOOKINGEMAIL
+Link: #_BOOKINGSUMMARYURL
 
-#_BOOKINGSUMMARYPAYPALRU
+#_BOOKINGSUMMARYPAYMENTRU
 
 ---
 
@@ -94,6 +124,7 @@ Email : #_BOOKINGEMAIL
 
 Имя : #_BOOKINGNAME
 Email : #_BOOKINGEMAIL
+Link: #_BOOKINGSUMMARYURL
 
 #_BOOKINGDETAILSRU
 
@@ -114,64 +145,67 @@ Email : #_BOOKINGEMAIL
 
 Имя : #_BOOKINGNAME
 Email : #_BOOKINGEMAIL
-
-#_BOOKINGSUMMARYPAYPALRU
+Link: #_BOOKINGSUMMARYURL
 
 ---
 
 Статус регистрации: #_BOOKEDSPACES мест заказано,  #_AVAILABLESPACES мест свободно.
 
-
 		Booked User Emails
 			Confirmed booking email
-				Booking confirmed email subject = Registration Confirmation for Limmud Ashdod 2019, Booking ##_BOOKINGID
+				Booking confirmed email subject = Registration Confirmation for Limmud FSU Israel 2021, Booking ##_BOOKINGID
 				Booking confirmed email
 			
-Уважаемый/ая #_BOOKINGNAME, 
+Уважаемый/ая #_BOOKINGNAME,
 
-Вы успешно оплатили заявку ##_BOOKINGID на участие в фестивале Лимуд Ашдод 2019. На этом ваша регистрация завершена!
+Вы успешно зарегистрировались на фестиваль Лимуд FSU Израиль 2021.
+Номер вашей регистрации: <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a>
 
 Следите за обновлениями  и новостями фестиваля:
-- на сайте <а href="http://limmudfsu.org.il">http://limmudfsu.org.il</a>
-- на нашей странице в Facebook <а href="http://facebook.com/Limmud">http://facebook.com/Limmud</a>
+- на нашей странице в Facebook <a href="http://facebook.com/Limmud">http://facebook.com/Limmud</a>
+- на сайте <a href="http://limmudfsu.org.il/#latest-news">http://limmudfsu.org.il</a>
 
-Напоминаем, что вы всегда можете связаться с нами по адресу: <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2019">reg@limmudfsu.org.il</a>.
+Если у вас возникнут вопросы связанные с регистрацией, свяжитесь с нами по адресу <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2021">reg@limmudfsu.org.il</a>.
 
 До встречи в декабре!
-Организационный комитет фестиваля Лимуд
+Организационный комитет Лимуд FSU Израиль
 
 <hr />
 
 <div dir="rtl">
 שלום #_BOOKINGNAME,
 
-הרשמתכם מס' ##_BOOKINGID לפסטיבל לימוד אשדוד 2019 שולמה בהצלחה. בכך מסתיים תהליך הרישום לפסטיבל!
+נרשמתם בהצלחה לפסטיבל לימוד FSU ישראל 2021.
+מס' ההרשמה שלכם: <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a>
 
 עקבו אחרי חדשות הפסטיבל ועדכונים:
-- באתר האינטרנת שלנו  <а href="http://limmudfsu.org.il">http://limmudfsu.org.il</a>
-- ובדף הפייסבוק שלנו <а href="http://facebook.com/Limmud">http://facebook.com/Limmud</a>
+- בדף הפייסבוק שלנו <а href="http://facebook.com/Limmud">http://facebook.com/Limmud</a>
+- באתר האינטרנט שלנו  <а href="http://limmudfsu.org.il/#latest-news">http://limmudfsu.org.il</a>
 
-להזכירכם ניתן ליצור עמנו קשר בדוא"ל <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2019">reg@limmudfsu.org.il</a>
+אם יש לכם שאלות בקשר להרשמה צרו קשר איתנו בדוא"ל <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2021">reg@limmudfsu.org.il</a>
 
 נתראה בדצמבר!
-הוועדה המארגנת של פסטיבל לימוד
+הוועדה המארגנת של לימוד FSU ישראל
 </div>
 
 			Pending booking email
-				Booking pending email subject = Registration Pending for Limmud Ashdod 2019, Booking ##_BOOKINGID
+				Booking pending email subject = Registration Pending for Limmud FSU Israel 2021, Booking ##_BOOKINGID
 				Booking pending email	
 		
 Уважаемый/ая #_BOOKINGNAME,
 
-Ваша заявка ##_BOOKINGID на фестиваль Лимуд Ашдод 2019 принята. 
+Вы заполнили анкету регистрации <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a> на фестиваль Лимуд FSU Израиль 2021.  Для окончания регистрации вам необходимо перейти по <a href="#_BOOKINGSUMMARYURL">следующему линку</a> и оплатить ваш заказ.
 
-В ближайшее время заявка будет проверена волонтерами фестиваля. По окончании проверки (обычно в течение 24 часов), вы получите письмо с подробной стоимостью вашего заказа и ссылкой на оплату.
+Оплату необходимо произвести с помощью системы PayPal в течение 48 часов. Если у вас нет счета PayPal, вы можете произвести оплату при помощи кредитной карты. Для этого необходимо нажать на кнопку "Debit or Credit Card" внизу <a href="#_BOOKINGSUMMARYURL">страницы оплаты</a>.
 
-Если вам необходимо изменить данные заявки, свяжитесь с нами по адресу <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2019">reg@limmudfsu.org.il</a> и укажите номер заявки.
+Обратите внимание, что участие в фестивале будет возможно только после успешной оплаты.
+
+Если вам необходимо изменить данные регистрации, свяжитесь с нами по адресу <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2021">reg@limmudfsu.org.il</a>.
 
 С уважением,
-Организационный комитет фестиваля Лимуд 
+Организационный комитет Лимуд FSU Израиль
 
+P.S. Пошаговое объяснение процесса оплаты доступно <a href="http://limmudfsu.org.il/site/wp-content/uploads/2020/07/limmud-paypal-instructions-2020.pdf">по этому линку</a>.
 <hr />
 
 ВАША РЕГИСТРАЦИЯ
@@ -184,14 +218,193 @@ Email : #_BOOKINGEMAIL
 <div dir="rtl">
 שלום #_BOOKINGNAME,
 
-טופס ההרשמה מס' ##_BOOKINGID לפטסיבל לימוד אשדוד 2019 נקלט בהצלחה.
+מילאתם טופס ההרשמה מס' ##_BOOKINGID לפסטיבל לימוד FSU ישראל 2021.
+להשלמת תהליך ההרשמה עליכם להסדיר את התשלום <a href="#_BOOKINGSUMMARYURL">בלינק הבא</a>.
 
-הטופס כרגע מועבר לבדיקה אשר מתבצעת על ידי מתנדבי הפסטיבל. בסיום הבדיקה (בדרך כלל תוך 24 שעות) תקבלו מייל מפורט עם עלות ההזמנה ולינק לתשלום.
+ניתן לבצע את התשלום באמצעות מערכת PayPal תוך 48 שעות. אם אין לכם חשבון PayPal ניתן לבצע את התשלום דרך כרטיס אשראי. על מנת לעשות זאת יש ללחוץ על הכפתור "Debit or Credit Card" בתחתית <a href="#_BOOKINGSUMMARYURL">דף התשלום</a>.
 
-אם אתם צריכים לעדכן את פרטי ההרשמה צרו איתנו קשר בדוא"ל <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2019">reg@limmudfsu.org.il</a> וציינו את מספר ההרשמה.
+לתשומת ליבכם, ההשתתפות בפסטיבל תתאפשר רק לאחר הסדרת התשלום.
+
+אם אתם צריכים לעדכן את פרטי ההרשמה צרו איתנו קשר בדוא"ל <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2021">reg@limmudfsu.org.il</a>.
 
 בכבוד רב,
-הוועדה המארגנת של פסטיבל לימוד
+הוועדה המארגנת של לימוד FSU ישראל
+
+<hr />
+
+פרטי ההרשמה:
+
+#_BOOKINGDETAILSHE
+
+</div>
+
+			Booking cancelled
+				Booking cancelled email subject = <empty>
+			
+			Rejected booking email
+				Booking rejected email subject = Registration Rejected for Limmud FSU Israel 2021, Booking ##_BOOKINGID
+				Booking rejected email
+			
+Уважаемый/ая #_BOOKINGNAME,
+
+Ваша заявка <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a> на участие в фестивале Лимуд FSU Израиль 2021 отменена.
+
+С уважением,
+Организационный комитет Лимуд FSU Израиль
+
+<hr />
+
+<div dir="rtl">
+שלום #_BOOKINGNAME,
+
+הרשמתכם מס' ##_BOOKINGID לפסטיבל לימוד FSU ישראל 2021 בוטלה.
+
+בכבוד רב,
+הוועדה המארגנת של לימוד FSU ישראל
+</div>
+
+
+	Limmud Email Templates
+		Event Admin/Owner Emails
+			Awaiting payment email
+				Awaiting payment email subject = Payment Details for #_BOOKINGNAME, Booking ##_BOOKINGID
+				Awaiting payment email
+
+Заявка на регистрацию ##_BOOKINGID от #_BOOKINGNAME прошла проверку.
+
+#_EVENTNAME
+
+ДАННЫЕ РЕГИСТРАЦИИ
+
+Имя : #_BOOKINGNAME
+Email : #_BOOKINGEMAIL
+Линк: #_BOOKINGSUMMARYURL
+
+#_BOOKINGSUMMARYPAYMENTRU
+
+Сумма: #_BOOKINGPRICE
+
+---
+
+Статус регистрации: #_BOOKEDSPACES мест заказано,  #_AVAILABLESPACES мест свободно.
+
+            Partial payment email subject
+                Partial payment email subject = Partial Payment for #_BOOKINGNAME, Booking ##_BOOKINGID
+                Partial payment email
+
+Произведена частичная оплата заявки ##_BOOKINGID от #_BOOKINGNAME.
+
+Сумма оплаты: #_AMOUNT
+Статус заказа: оплачено #_BOOKINGTOTALPAID из #_BOOKINGPRICE
+
+#_EVENTNAME
+
+ДАННЫЕ РЕГИСТРАЦИИ
+
+Имя : #_BOOKINGNAME
+Email : #_BOOKINGEMAIL
+Линк: #_BOOKINGSUMMARYURL
+
+---
+
+Статус регистрации: #_BOOKEDSPACES мест заказано,  #_AVAILABLESPACES мест свободно.
+
+            No payment email subject
+                No payment email subject = No Payment Notification for #_BOOKINGNAME, Booking ##_BOOKINGID
+                No payment email
+
+Заявка на регистрацию ##_BOOKINGID от #_BOOKINGNAME просрочена и переведена в статус No Payment.
+
+#_EVENTNAME
+
+ДАННЫЕ РЕГИСТРАЦИИ
+
+Имя : #_BOOKINGNAME
+Email : #_BOOKINGEMAIL
+Линк: #_BOOKINGSUMMARYURL
+
+---
+
+Статус регистрации: #_BOOKEDSPACES мест заказано,  #_AVAILABLESPACES мест свободно.
+
+            Partially paid email subject
+                Partially paid email subject = Partially Paid Booking for #_BOOKINGNAME Expired, Booking ##_BOOKINGID
+                Partially paid email
+
+Частично оплаченная заявка на регистрацию ##_BOOKINGID от #_BOOKINGNAME просрочена и переведена в статус Partially Paid.
+
+#_EVENTNAME
+
+ДАННЫЕ РЕГИСТРАЦИИ
+
+Имя : #_BOOKINGNAME
+Email : #_BOOKINGEMAIL
+Линк: #_BOOKINGSUMMARYURL
+
+---
+
+Статус регистрации: #_BOOKEDSPACES мест заказано,  #_AVAILABLESPACES мест свободно.
+
+            Waiting list email subject
+                Waiting list email subject = Waiting List Notification for #_BOOKINGNAME, Booking ##_BOOKINGID
+                Waiting list email
+
+Заявка на регистрацию ##_BOOKINGID от #_BOOKINGNAME переведена в статус Waiting List.
+
+#_EVENTNAME
+
+ДАННЫЕ РЕГИСТРАЦИИ
+
+Имя : #_BOOKINGNAME
+Email : #_BOOKINGEMAIL
+Линк: #_BOOKINGSUMMARYURL
+
+---
+
+Статус регистрации: #_BOOKEDSPACES мест заказано,  #_AVAILABLESPACES мест свободно.
+
+		Booked User Emails
+			Awaiting payment email
+				Awaiting payment email subject = Registration Awaiting Payment for Limmud FSU Israel 2021, Booking ##_BOOKINGID
+				Awaiting payment emails
+				
+Уважаемый/ая #_BOOKINGNAME,
+
+Вы заполнили анкету регистрации <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a> на фестиваль Лимуд FSU Израиль 2021.  Для окончания регистрации вам необходимо перейти по <a href="#_BOOKINGSUMMARYURL">следующему линку</a> и оплатить ваш заказ.
+
+Оплату необходимо произвести с помощью системы PayPal в течение 48 часов. Если у вас нет счета PayPal, вы можете произвести оплату при помощи кредитной карты. Для этого необходимо нажать на кнопку "Debit or Credit Card" внизу <a href="#_BOOKINGSUMMARYURL">страницы оплаты</a>.
+
+Обратите внимание, что участие в фестивале будет возможно только после успешной оплаты.
+
+Если вам необходимо изменить данные регистрации, свяжитесь с нами по адресу <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2021">reg@limmudfsu.org.il</a>.
+
+С уважением,
+Организационный комитет Лимуд FSU Израиль
+
+P.S. Пошаговое объяснение процесса оплаты доступно <a href="http://limmudfsu.org.il/site/wp-content/uploads/2020/07/limmud-paypal-instructions-2020.pdf">по этому линку</a>.
+<hr />
+
+ВАША РЕГИСТРАЦИЯ
+
+#_BOOKINGDETAILSRU
+
+<hr />
+
+
+<div dir="rtl">
+שלום #_BOOKINGNAME,
+
+מילאתם טופס ההרשמה מס' ##_BOOKINGID לפסטיבל לימוד FSU ישראל 2021.
+להשלמת תהליך ההרשמה עליכם להסדיר את התשלום <a href="#_BOOKINGSUMMARYURL">בלינק הבא</a>.
+
+ניתן לבצע את התשלום באמצעות מערכת PayPal תוך 48 שעות. אם אין לכם חשבון PayPal ניתן לבצע את התשלום דרך כרטיס אשראי. על מנת לעשות זאת יש ללחוץ על הכפתור "Debit or Credit Card" בתחתית <a href="#_BOOKINGSUMMARYURL">דף התשלום</a>.
+
+לתשומת ליבכם, ההשתתפות בפסטיבל תתאפשר רק לאחר הסדרת התשלום.
+
+אם אתם צריכים לעדכן את פרטי ההרשמה צרו איתנו קשר בדוא"ל <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2021">reg@limmudfsu.org.il</a>.
+
+בכבוד רב,
+הוועדה המארגנת של לימוד FSU ישראל
 
 <hr />
 
@@ -202,138 +415,135 @@ Email : #_BOOKINGEMAIL
 </div>
 
 
-			Booking cancelled
-				Booking cancelled email subject = <empty>
-			
-			Rejected booking email
-				Booking rejected email subject = Registration Rejected for Limmud Ashdod 2019, Booking ##_BOOKINGID
-				Booking rejected email
+		Partial payment email
+			Partial payment email subject = Partial Payment for Limmud FSU Israel 2021, Booking ##_BOOKINGID
+			Partial payment email
+
+Уважаемый/ая #_BOOKINGNAME,
+
+Произведена частичная оплата регистрации <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a> в размере #_AMOUNT.
+Статус вашего заказа: оплачено #_BOOKINGTOTALPAID из #_BOOKINGPRICE
+
+Для завершения регистрации, пожалуйста, перешлите <a href="#_BOOKINGSUMMARYURL">линк на оплату заказа</a> вашим соседям и попросите их оплатить оставшуюся часть заказа.
+
+Eсли у вас есть какие-то вопросы или проблемы с оплатой, свяжитесь с нами по адресу <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2021">reg@limmudfsu.org.il</a>.
+
+С уважением,
+Организационный комитет Лимуд FSU Израиль
+
+<hr />
+
+<div dir="rtl">
+שלום #_BOOKINGNAME,
+
+התקבל תשלום חלקי עבור הרשמתכם מס' <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a> על סך #_AMOUNT.
+סטטוס ההזמנה: שולמו #_BOOKINGTOTALPAID מתוך #_BOOKINGPRICE
+
+על מנת להשלים את ההרשמה אנא העבירו את <a href="#_BOOKINGSUMMARYURL">הלינק לתשלום</a> למשתתפים אחרים הלנים איתכם בחדר ובקשו מהם להסדיר את התשלום עבור חלקם בהזמנה.
+
+אם יש לכם שאלות או בקשות מיוחדות צרו איתנו קשר בדוא"ל <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2021">reg@limmudfsu.org.il</a>.
+
+בכבוד רב.
+הוועדה המארגנת של לימוד FSU ישראל
+
+		Payment reminder email
+			Payment reminder email subject = Payment Reminder for Limmud FSU Israel 2021, Booking ##_BOOKINGID
+			Payment reminder email
 			
 Уважаемый/ая #_BOOKINGNAME,
 
-Ваша заявка ##_BOOKINGID на фестиваль Лимуд Ашдод 2019 отменена. 
- 
+Напоминаем, что вы до сих пор не оплатили вашу регистрацию <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a> на фестиваль Лимуд FSU Израиль 2021.
+Пожалуйста, сделайте это в течение ближайших 24 часов по <a href="#_BOOKINGSUMMARYURL">следующему линку</a>.
+
+Eсли у вас есть какие-то вопросы или проблемы с оплатой, свяжитесь с нами по адресу <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2021">reg@limmudfsu.org.il</a>.
+
 С уважением,
-Организационный комитет фестиваля Лимуд 
+Организационный комитет Лимуд FSU Израиль
 
 <hr />
 
 <div dir="rtl">
 שלום #_BOOKINGNAME,
 
-הרשמתכם מס' ##_BOOKINGID לפסטיבל לימוד אשדוד 2019 בוטלה.
+להזכירכם, עדיין לא הסדרתם את התשלום עבור הרשמתכם מס' <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a> לפסטיבל לימוד FSU ישראל 2021.
+אנא עשו זאת ב-24 שעות הקרובות <a href="#_BOOKINGSUMMARYURL">בלינק הבא</a>.
+
+אם יש לכם שאלות או בקשות מיוחדות צרו איתנו קשר בדוא"ל <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2021">reg@limmudfsu.org.il</a>.
 
 בכבוד רב,
-הוועדה המארגנת של פסטיבל לימוד
+הוועדה המארגנת של לימוד FSU ישראל
 </div>
-				
 
-	Limmud Email Templates
-		Event Admin/Owner Emails
-			Awaiting payment email
-				Awaiting payment email subject = Payment Details for #_BOOKINGNAME, Booking ##_BOOKINGID
-				Awaiting payment email
+		No payment email
+			No payment email subject = No Payment Notification for Limmud FSU Israel 2021, Booking ##_BOOKINGID
+			No payment email
 
-Заявка на регистрацию ##_BOOKINGID от #_BOOKINGNAME проверена и обработана.
+Уважаемый/ая #_BOOKINGNAME,
 
-Отправлен линк на оплату: #_PAYPAL
+Вы не оплатили вашу регистрацию <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a> на фестиваль Лимуд FSU Израиль 2021 в течение 72 часов. В связи с этим ваша регистрация отменена.
 
-ДАННЫЕ РЕГИСТРАЦИИ
-
-Имя : #_BOOKINGNAME
-Email : #_BOOKINGEMAIL
-
-Сумма: #_BOOKINGPRICEPAYPAL
-
-#_BOOKINGSUMMARYPAYPALRU
-
----
-
-Статус регистрации: #_BOOKEDSPACES мест заказано,  #_AVAILABLESPACES мест свободно.
-
-		Booked User Emails
-			Awaiting payment email
-				Awaiting payment email subject = Payment Details for Limmud Ashdod 2019, Booking ##_BOOKINGID
-				Awaiting payment emails
-				
-Ваша заявка ##_BOOKINGID на фестиваль Лимуд Ашдод 2019 прошла проверку. 
-Для окончания регистрации вам необходимо оплатить ваше участие в фестивале в размере <b>#_BOOKINGPRICEPAYPAL</b> ₪.
-
-Пожалуйста, ПРОВЕРЬТЕ ваш заказ перед оплатой. Eсли у вас есть какие-то вопросы, свяжитесь с нами по адресу <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2019">reg@limmudfsu.org.il</a> и укажите номер заявки.
-
-ВАША РЕГИСТРАЦИЯ:
-
-#_BOOKINGSUMMARYPAYPALRU
-
-Ссылка на оплату: <a href="#_PAYPAL">ОПЛАТИТЬ</a>
-Пошаговое объяснение оплаты: <a href="http://limmudfsu.org.il/site/wp-content/uploads/2019/09/limmud-paypal-instructions.pdf">ПОМОЩЬ</a> 
-Оплату необходимо произвести с помощью системы PayPal в течение 3 рабочих дней.
-
-Обратите внимание, что участие в фестивале будет возможно только после успешной оплаты.
+Если вы все еще заинтересованы принять участие в фестивале, пожалуйста, свяжитесь с нами по адресу: <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2021">reg@limmudfsu.org.il</a>.
 
 С уважением,
-Организационный комитет фестиваля Лимуд 
+Организационный комитет Лимуд FSU Израиль
 
 <hr />
 
 <div dir="rtl">
 שלום #_BOOKINGNAME,
 
-הרשמתכם מס' ##_BOOKINGID לפסטיבל לימוד אשדוד 2019 עברה בדיקה.
-על מנת לסיים את תהליך הרישום עליכם לשלם את דמי השתתפות בסך <b>#_BOOKINGPRICEPAYPAL</b> ₪
+לא הסדרתם את התשלום עבור הרשמתכם מס' <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a> לפסטיבל לימוד FSU ישראל 2021 תוך 72 שעות. בהתאם לכך הרשמתכם מבוטלת.
 
-אנא בדקו את ההזמנה לפני התשלום. במקרה של שאלות צרו איתנו קשר בדוא"ל <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2019">reg@limmudfsu.org.il</a> וציינו את מספר ההרשמה.
-
-פרטי ההרשמה:
-
-#_BOOKINGSUMMARYPAYPALHE
-
-קישור לתשלום: <a href="#_PAYPAL">לתשלום</a>
-ניתן לבצע את התשלום באמצעות מערכת PayPal תוך 3 ימי עבודה.
-
-לתשומת ליבכם, ההשתתפות בפסטיבל תתאפשר רק לאחר תשלום דמי ההשתתפות.
+אם אתם עדיין מעוניינים להשתתף בפסטיבל צרו איתנו קשר בדוא"ל <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2021">reg@limmudfsu.org.il</a>.
 
 בכבוד רב,
-הוועדה המארגנת של פסטיבל לימוד
+הוועדה המארגנת של לימוד FSU ישראל
 </div>
 
+		Partially paid email
+			Partially paid email subject = Payment Expiration Notification for Limmud FSU Israel 2021, Booking ##_BOOKINGID
+			Partially paid email
 
-		Payment reminder email
-			Payment reminder email subject = Payment Reminder for Limmud Ashdod 2019, Booking ##_BOOKINGID
-			Payment reminder email
-			
-Уважаемый/ая #_BOOKINGNAME, 
+Уважаемый/ая #_BOOKINGNAME,
 
-Напоминаем, что вы до сих пор не оплатили участие в фестивале Лимуд Ашдод 2019. 
-Пожалуйста, сделайте это в течение ближайших 24 часов.
-Eсли у вас есть какие-то вопросы или проблемы с оплатой, свяжитесь с нами по адресу <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2019">reg@limmudfsu.org.il</a> и укажите номер заявки.
+Ваша регистрация <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a> на фестиваль Лимуд FSU Израиль 2021 не была полностью оплачена в течение 72 часов.
 
-ВАША РЕГИСТРАЦИЯ:
-
-#_BOOKINGSUMMARYPAYPALRU
-
-Ссылка на оплату: <a href="#_PAYPAL">Оплатить</a>
+Пожалуйста, свяжитесь с нами по адресу: <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2021">reg@limmudfsu.org.il</a> для завершения оплаты.
 
 С уважением,
-Организационный комитет фестиваля Лимуд 
+Организационный комитет Лимуд FSU Израиль
 
 <hr />
 
 <div dir="rtl">
 שלום #_BOOKINGNAME,
 
-להזכירכם, עדיין לא שילמתם על השתתפותכם בפסטיבל לימוד אשדוד 2019. 
-אנא עשו זאת ב-24 שעות הקרובות.
-במקרה של שאלות או בעיות עם תשלום צרו איתנו קשר בדוא"ל <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2019">reg@limmudfsu.org.il</a> וציינו את מספר ההרשמה.
+לא הסדרתם את התשלום המלא עבור הרשמתכם מס' <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a> לפסטיבל לימוד FSU ישראל 2021 תוך 72 שעות.
 
-פרטי ההרשמה:
-
-#_BOOKINGSUMMARYPAYPALHE
-
-קישור לתשלום: <a href="#_PAYPAL">לתשלום</a>
+אנא צרו איתנו קשר בדוא"ל <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud 2021">reg@limmudfsu.org.il</a> על מנת לסיים את התשלום.
 
 בכבוד רב,
-הוועדה המארגנת של פסטיבל לימוד
+הוועדה המארגנת של לימוד FSU ישראל
 </div>
 
+		Waiting list email
+			Waiting list email subject = <empty>
+			Waiting list email
 
+Уважаемый/ая #_BOOKINGNAME,
+
+Ваша заявка <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a> переведена в лист ожидания.
+
+С уважением,
+Организационный комитет Лимуд FSU Израиль
+
+<hr />
+
+<div dir="rtl">
+שלום #_BOOKINGNAME,
+
+הרשמתכם מס' ##_BOOKINGID הועברה לרשימת המתנה.
+
+בכבוד רב,
+הוועדה המארגנת של לימוד FSU ישראל
+</div>
