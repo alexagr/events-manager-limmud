@@ -667,9 +667,8 @@ class EM_Limmud_Booking {
             */
         }
 
-        $booking_status = 0;
         if (self::$ticket_added && !self::$ticket_error) {
-            $booking_status = 5;
+            $EM_Booking->booking_status = 5;
             $EM_Booking->add_note('Awaiting Payment');
             $EM_Booking->save(false);
 
