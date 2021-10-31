@@ -102,6 +102,19 @@ class EM_Limmud_Frontend {
             displayElement("input-field-" + name, status);
         }
 
+        function displaySubmit(status) {
+            displayElement("em-booking-submit", status);
+
+            var els = document.getElementsByClassName("em-booking-submit");
+            if (els.length > 0) {
+                if (status) {
+                    els[0].setAttribute("type", "submit");
+                } else {
+                    els[0].setAttribute("type", "");
+                }
+            }
+        }
+
         function displayElementByName(name, status) {
             var display = "none";
             if (status) {
@@ -162,7 +175,7 @@ class EM_Limmud_Frontend {
                 displayElementByName("too_little_adults_label", true);
                 displayElementByName("room_label", false);
                 displayElementByName("too_many_adults_label", false);
-                displayElement("em-booking-submit", false);
+                displaySubmit(false);
                 displayField("room_type", false);
                 displayField("bus_needed", false);
                 return;
@@ -173,7 +186,7 @@ class EM_Limmud_Frontend {
             if (adults > 3) {
                 displayElementByName("room_label", false);
                 displayElementByName("too_many_adults_label", true);
-                displayElement("em-booking-submit", false);
+                displaySubmit(false);
                 displayField("room_type", false);
                 displayField("bus_needed", false);
                 return;
@@ -242,7 +255,7 @@ class EM_Limmud_Frontend {
             if (!document.getElementsByName("green_pass")[0].checked) {
                 display_submit = false;
             }
-            displayElement("em-booking-submit", display_submit);
+            displaySubmit(display_submit);
         }
         
         $("select").change(updateForm);
