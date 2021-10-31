@@ -79,7 +79,11 @@ class EM_Limmud_Secret {
 						$participation_type = 'vip';
 					}
 
-					if (($participation_type != 'волонтер') && ($participation_type != 'презентер') && ($participation_type != 'организатор') && ($participation_type != 'vip')) {
+					if (($participation_type == 'участник') && (strlen($secret_code) > 0) && ($secret_code[0] == '4')) {
+						$participation_type = 'presenter_family';
+					}
+
+					if (($participation_type != 'волонтер') && ($participation_type != 'презентер') && ($participation_type != 'организатор') && ($participation_type != 'vip') && ($participation_type != 'presenter_family')) {
 						continue;
 					}
 
