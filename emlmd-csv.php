@@ -14,11 +14,13 @@ class EM_Limmud_CSV {
         ?>
         <hr />
         <h4>Limmud 2021 reports</h4>
-        <p>There reports collect data from all relevant events and use pre-defined formats. Generic split and columns to export settings are irrelevant.</p> 
+        <p>There reports collect data from all relevant events and use pre-defined formats. Generic split and columns to export settings are irrelevant.</p>
         <p>Full bookings report <input type="checkbox" name="limmud_export" value="1" />
         <a href="#" title="Complete information about all bookings (including cancelled)">?</a></p>
         <p>Accomodation report <input type="checkbox" name="limmud_accomodation" value="1" />
         <a href="#" title="Accomodation report (only approved and pending bookings)">?</a></p>
+        <p>Hotel report <input type="checkbox" name="limmud_hotel" value="1" />
+        <a href="#" title="Hotel report (only approved bookings with accomodation)">?</a></p>
         <p>Transport report <input type="checkbox" name="limmud_transport" value="1" />
         <a href="#" title="Transport report (only approved and pending bookings)">?</a></p>
         <hr />
@@ -243,7 +245,7 @@ class EM_Limmud_CSV {
                             }
                         }
                     }
-                    
+
                     // verify that the order has tickets for all people
                     if (($adult_id < count($order['adults'])) || ($child_id < count($order['children']))) {
                         $ticket_data = array();
@@ -303,6 +305,219 @@ class EM_Limmud_CSV {
                        fputcsv($handle, $row, $delimiter);
                    }
                }
+            }
+
+            fclose($handle);
+            exit();
+        }
+
+        if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && !empty($_REQUEST['limmud_hotel']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')) {
+
+            header("Content-Type: application/octet-stream; charset=utf-8");
+            header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-bookings-hotel.csv");
+            do_action('em_csv_header_output');
+            echo "\xEF\xBB\xBF"; // UTF-8 for MS Excel (a little hacky... but does the job)
+
+            $handle = fopen("php://output", "w");
+            $delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
+            $delimiter = apply_filters('em_csv_delimiter', $delimiter);
+
+            $headers = array('order#', 'num_of_adults', 'num_of_children', 'num_of_toddlers', 'special_needs', 'comment', 'name1', 'surname1', 'age1', 'role1', 'name2', 'surname2', 'age2', 'role2', 'name3', 'surname3', 'age3', 'role3', 'name4', 'surname4', 'age4', 'role4', 'name5', 'surname5', 'age5', 'role5');
+            fputcsv($handle, $headers, $delimiter);
+
+            $orders = array();
+
+            $events = EM_Events::get(array('scope'=>'all'));
+            foreach ($events as $EM_Event) {
+                if (($EM_Event->event_id != 16) && ($EM_Event->event_id != 17) && ($EM_Event->event_id != 18)) {
+                    continue;
+                }
+                foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {
+                    $order = array();
+                    $order['event'] = $EM_Event->event_id;
+                    $order['id'] = $EM_Booking->booking_id;
+                    $order['person'] = $EM_Booking->get_person()->get_name();
+                    $order['email'] = $EM_Booking->get_person()->user_email;
+                    $order['status'] = $EM_Booking->get_status(true);
+                    if (($order['status'] != 'Approved') && ($order['status'] != 'Awaiting Payment')) {
+                        continue;
+                    }
+                    $order['adults'] = array();
+                    $order['children'] = array();
+                    $order['toddlers'] = array();
+                    $order['tickets'] = array();
+
+                    $event_id = $EM_Booking->get_event()->event_id;
+                    $EM_Form = EM_Booking_Form::get_form($event_id, $EM_Booking);
+					$order['special_needs'] = self::booking_field('special_needs', $EM_Form, $EM_Booking, false);
+					$order['comment'] = self::booking_field('dbem_comment', $EM_Form, $EM_Booking, false);
+
+                    $order['no_accomodation'] = false;
+                    $order['meal'] = 2;
+
+                    if (strpos($order['comment'], 'MEAL#1') !== false) {
+                        $order['meal'] = 1;
+                    }
+
+                    // populate arrays from attendees data
+					$event_date = date("U", $EM_Booking->get_event()->start()->getTimestamp());
+                    $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
+                    foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
+                        $ticket_name = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->ticket_name, 'ru');
+						if ($ticket_name == 'Количество участников') {
+							if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
+								foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
+									$person = array();
+									$person['role'] = 'участник';
+									foreach( $attendee_data as $field_label => $field_value) {
+										$label = apply_filters('translate_text', $field_label, 'ru');
+										if ($label == 'Имя (на английском)') {
+											$person['name'] = $field_value;
+										}
+										if ($label == 'Фамилия (на английском)') {
+											$person['surname'] = $field_value;
+										}
+										if ($label == 'Пол') {
+											$person['sex'] = apply_filters('translate_text', $field_value, 'ru');
+										}
+										if ($label == 'Дата рождения') {
+											$person['birthday'] = $field_value;
+											$birth_date = explode('/', $field_value);
+											if (count($birth_date) == 3) {
+												// get age from birthdate in DD/MM/YYYY format
+												$age = (date("md", date("U", mktime(0, 0, 0, $birth_date[1], $birth_date[0], $birth_date[2]))) > date("md", $event_date)
+													? ((date("Y", $event_date) - $birth_date[2]) - 1)
+													: (date("Y", $event_date) - $birth_date[2]));
+
+												$person['age'] = $age;
+												if ($age >= 12) {
+													$person['age_group'] = 'adult';
+												} else {
+													if ($age >= 3) {
+														$person['age_group'] = 'child';
+													} else {
+														$person['age_group'] = 'toddler';
+													}
+													$order['meal'] = 1;
+												}
+											} else {
+												$person['age'] = '';
+												$person['age_group'] = '';
+											}
+										}
+										if ($label == 'Участвует в качестве') {
+											$person['role'] = apply_filters('translate_text', $field_value, 'ru');
+										}
+									}
+
+									if ($person['age_group'] == 'adult') {
+										$order['adults'][] = $person;
+									} elseif ($person['age_group'] == 'child') {
+										$order['children'][] = $person;
+									} elseif ($person['age_group'] == 'toddler') {
+										$order['toddlers'][] = $person;
+									}
+								}
+							}
+						}
+
+                        if (($ticket_name == 'Adult') || ($ticket_name == 'Adult in Triple') || ($ticket_name == 'Single') ||
+						    ($ticket_name == 'Child') || ($ticket_name == 'No Accomodation - 1 Day') || ($ticket_name == 'No Accomodation - 3 Days')) {
+                            $ticket_data = array();
+                            $ticket_data['name'] = $ticket_name;
+							$ticket_data['ticket_type'] = self::booking_field('ticket_type', $EM_Form, $EM_Booking);
+
+                            $ticket_data['people'] = array();
+                            for ($i = 0; $i < $EM_Ticket_Booking->get_spaces(); $i++) {
+                                $order['tickets'][] = $ticket_data;
+                            }
+                        }
+
+                        if (($ticket_name == 'No Accomodation - 1 Day') || ($ticket_name == 'No Accomodation - 3 Days')) {
+                            $order['no_accomodation'] = true;
+                        }
+                    }
+
+                    if ($order['no_accomodation']) {
+                        continue;
+                    }
+
+                    // populate tickets
+                    $adult_id = 0;
+                    $child_id = 0;
+                    foreach($order['tickets'] as $key => $ticket) {
+                        if (($ticket['name'] == 'Adult') || ($ticket['name'] == 'Adult in Triple') || ($ticket['name'] == 'Single')) {
+                            $order['tickets'][$key]['people'][] = $order['adults'][$adult_id++];
+                        } elseif ($ticket['name'] == 'Child') {
+                            $order['tickets'][$key]['people'][] = $order['children'][$child_id++];
+                        } else {
+                            if ($adult_id < count($order['adults'])) {
+                                $order['tickets'][$key]['people'][] = $order['adults'][$adult_id++];
+                            } else {
+                                $order['tickets'][$key]['people'][] = $order['children'][$child_id++];
+                            }
+                        }
+                    }
+
+                    // verify that the order has tickets for all people
+                    if (($adult_id < count($order['adults'])) || ($child_id < count($order['children']))) {
+                        $ticket_data = array();
+                        $ticket_data['name'] = "Not enough tickets";
+                        $ticket_data['ticket_type'] = "";
+                        $ticket_data['people'] = array();
+                        $person = array();
+                        $person['name'] = '';
+                        $person['surname'] = '';
+                        $person['sex'] = '';
+                        $person['role'] = '';
+                        $person['age_group'] = '';
+                        $person['age'] = '';
+                        $ticket_data['people'][] = $person;
+                        $order['tickets'][] = $ticket_data;
+                    }
+
+                    if (count($order['toddlers']) >= 1) {
+                        $ticket_data = array();
+                        $ticket_data['name'] = 'Toddler';
+                        $ticket_data['ticket_type'] = "";
+                        $ticket_data['people'] = array();
+                        foreach($order['toddlers'] as $toddler) {
+                            $ticket_data['people'][] = $toddler;
+                        }
+                        $order['tickets'][] = $ticket_data;
+                    }
+
+                    $orders[$order['id']] = $order;
+                }
+            }
+
+            ksort($orders);
+
+            foreach($orders as $order) {
+               $row = array();
+               $row[] = $order['id'];
+               $row[] = strval(count($order['adults']));
+               $row[] = strval(count($order['children']));
+               $row[] = strval(count($order['toddlers']));
+               $row[] = $order['special_needs'];
+               $row[] = $order['comment'];
+               $ticket_count = 5;
+               foreach($order['tickets'] as $ticket) {
+                   foreach($ticket['people'] as $person) {
+                       $row[] = $person['name'];
+                       $row[] = $person['surname'];
+                       $row[] = $person['age'];
+                       $row[] = $person['role'];
+                       $ticket_count--;
+                   }
+               }
+               while ($ticket_count > 0) {
+                   $row[] = '';
+                   $row[] = '';
+                   $row[] = '';
+                   $ticket_count--;
+               }
+               fputcsv($handle, $row, $delimiter);
             }
 
             fclose($handle);
