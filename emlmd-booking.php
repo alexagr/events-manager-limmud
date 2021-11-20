@@ -371,6 +371,7 @@ class EM_Limmud_Booking {
     public static $volunteer_num;
     public static $organizer_num;
     public static $vip_num;
+    public static $promo_num;
     // calculate number of participants
     public static function calculate_participants($EM_Booking) {
         self::$adult_num = 0;
@@ -381,6 +382,7 @@ class EM_Limmud_Booking {
         self::$volunteer_num = 0;
         self::$organizer_num = 0;
         self::$vip_num = 0;
+        self::$promo_num = 0;
         $last_name = '';
         $event_date = date("U", $EM_Booking->get_event()->start()->getTimestamp());
         $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
@@ -391,6 +393,7 @@ class EM_Limmud_Booking {
                         $age = 0;
                         $role = '';
                         $vip = false;
+                        $promo = false;
                         foreach( $attendee_data as $attendee_label => $attendee_value) {
                             $label = apply_filters('translate_text', $attendee_label, 'ru');
                             if ($label == 'Дата рождения') {
@@ -408,6 +411,9 @@ class EM_Limmud_Booking {
                             if ($label == 'Секретный код') {
                                 if ($attendee_value[0] == '3') {
                                     $vip = true;
+                                }
+                                if ($attendee_value[0] == '5') {
+                                    $promo = true;
                                 }
                             }
                         }
@@ -428,6 +434,8 @@ class EM_Limmud_Booking {
 
                         if ($vip) {
                             self::$vip_num++;
+                        } elseif ($promo) {
+                            self::$promo_num++;
                         } else {
                             if ($role == 'волонтер') {
                                 self::$volunteer_num++;
@@ -565,6 +573,7 @@ class EM_Limmud_Booking {
                 $discount_ticket = 233;
                 $discount_organizer_ticket = 241;
                 $discount_vip_ticket = 245;
+                $discount_promo_ticket = 249;
                 if ($room_type == 'в трехместном номере') {
                     $adult_ticket = 229;
                     $discount_ticket = 234;
@@ -622,6 +631,9 @@ class EM_Limmud_Booking {
             }
             if ((self::$vip_num > 0) && ($discount_vip_ticket > 0)) {
                 self::add_ticket($EM_Booking, $discount_vip_ticket, self::$vip_num);
+            }
+            if ((self::$promo_num > 0) && ($discount_promo_ticket > 0)) {
+                self::add_ticket($EM_Booking, $discount_promo_ticket, self::$promo_num);
             }
 
             $bus_needed = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['bus_needed'], 'ru');

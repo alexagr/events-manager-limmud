@@ -8,7 +8,7 @@ class EM_Limmud_Secret {
     public static function check_code_valid($secret_code) {
 		// check that code is valid
 		$valid = false;
-		$file = @fopen(WP_PLUGIN_DIR.'/events-manager-secrets/secrets.txt', 'r'); 
+		$file = @fopen(WP_PLUGIN_DIR.'/events-manager-secrets/secrets.txt', 'r');
 		if ($file) {
 			while (($str = fgets($file, 1024)) !== false) {
 				$str = str_replace("\n", '', $str);
@@ -43,7 +43,7 @@ class EM_Limmud_Secret {
 		}
 		return true;
 	}
-    
+
     public static function em_booking_validate($result, $EM_Booking) {
 		$secret_codes = array();
         $secret_code_needed = false;
@@ -56,6 +56,16 @@ class EM_Limmud_Secret {
 			if ($admin_secret !== false) {
 				$admin_secret = str_replace("\n", '', $admin_secret);
 				$admin_secret = str_replace("\r", '', $admin_secret);
+			}
+		}
+
+		$promo_secret = false;
+		$file = @fopen(WP_PLUGIN_DIR.'/events-manager-secrets/promo.txt', 'r');
+		if ($file) {
+            $promo_secret = fgets($file, 1024);
+			if ($promo_secret !== false) {
+				$promo_secret = str_replace("\n", '', $promo_secret);
+				$promo_secret = str_replace("\r", '', $promo_secret);
 			}
 		}
 
@@ -83,12 +93,17 @@ class EM_Limmud_Secret {
 						$participation_type = 'presenter_family';
 					}
 
-					if (($participation_type != 'волонтер') && ($participation_type != 'презентер') && ($participation_type != 'организатор') && ($participation_type != 'vip') && ($participation_type != 'presenter_family')) {
+					if (($admin_secret !== false) && ($secret_code == $admin_secret)) {
+						array_push($secret_codes, $secret_code);
 						continue;
 					}
 
-					if (($admin_secret !== false) && ($secret_code == $admin_secret)) {
+					if (($promo_secret !== false) && ($secret_code == $promo_secret)) {
 						array_push($secret_codes, $secret_code);
+						continue;
+					}
+
+					if (($participation_type != 'волонтер') && ($participation_type != 'презентер') && ($participation_type != 'организатор') && ($participation_type != 'vip') && ($participation_type != 'presenter_family')) {
 						continue;
 					}
 
@@ -127,7 +142,7 @@ class EM_Limmud_Secret {
 						$result = false;
 						continue;
 					}
-					
+
 					if (in_array($secret_code, $secret_codes)) {
 						$EM_Booking->add_error('Secret code ' . $secret_code . ' is not unique');
 						$result = false;
