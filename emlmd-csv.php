@@ -52,7 +52,7 @@ class EM_Limmud_CSV {
             $delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
             $delimiter = apply_filters('em_csv_delimiter', $delimiter);
 
-            $headers = array('id', 'name', 'email', 'status', 'event_id', 'ticket_name', 'ticket_price', 'phone', 'address', 'city', 'ticket_days', 'ticket_type', 'room_type', 'bus_needed', 'special_needs', 'comment', 'first_name', 'last_name', 'sex', 'birthday', 'israeli', 'passport', 'role', 'secret');
+            $headers = array('id', 'name', 'email', 'status', 'event_id', 'ticket_name', 'ticket_price', 'phone', 'address', 'city', 'ticket_days', 'ticket_type', 'room_type', 'bus_needed', 'special_needs', 'comment', 'first_name', 'last_name', 'sex', 'birthday', 'age', 'israeli', 'passport', 'role', 'secret');
             fputcsv($handle, $headers, $delimiter);
 
             $events = EM_Events::get(array('scope'=>'all'));
@@ -61,6 +61,7 @@ class EM_Limmud_CSV {
                     continue;
                 }
                 foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {
+					$event_date = date("U", $EM_Booking->get_event()->start()->getTimestamp());
                     $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
                     foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
                         $EM_Form = EM_Booking_Form::get_form($event_id, $EM_Booking);
@@ -87,12 +88,26 @@ class EM_Limmud_CSV {
                         if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
                             foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
                                 $full_row = $row;
-                                foreach( $attendee_data as $field_value) {
+                                foreach( $attendee_data as $field_label => $field_value) {
                                     $value = apply_filters('translate_text', $field_value, 'ru');
                                     if ($field_value != 'n/a') {
                                         $full_row[] = apply_filters('translate_text', $field_value, 'ru');
                                     } else {
                                         $full_row[] = '';
+                                    }
+
+                                    $label = apply_filters('translate_text', $field_label, 'ru');
+                                    if ($label == 'Дата рождения') {
+                                        $birth_date = explode('/', $field_value);
+                                        if (count($birth_date) == 3) {
+                                            // get age from birthdate in DD/MM/YYYY format
+                                            $age = (date("md", date("U", mktime(0, 0, 0, $birth_date[1], $birth_date[0], $birth_date[2]))) > date("md", $event_date)
+                                                ? ((date("Y", $event_date) - $birth_date[2]) - 1)
+                                                : (date("Y", $event_date) - $birth_date[2]));
+                                            $full_row[] = $age;
+                                        } else {
+                                            $full_row[] = '';
+                                        }
                                     }
                                 }
                                 fputcsv($handle, $full_row, $delimiter);
