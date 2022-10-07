@@ -132,22 +132,22 @@ class EM_Limmud_Emails {
         $i = 0;
         foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
             $i += 1;
-            if ($EM_Ticket_Booking->get_price() >= 0) {
-            	if ($EM_Ticket_Booking->get_price() < 1) {
-	                $participants[$EM_Ticket_Booking->get_price() * 1000 + $i] = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->name, $lang) . " : " . $EM_Ticket_Booking->get_spaces() . "\n"; 
-				} else {
-					$price = $EM_Ticket_Booking->get_price();
-		            $price = floor($price);
-				    if ($EM_Ticket_Booking->get_spaces() == 1) {
-				        $ticket_price = $price;
-					} else {
-						$ticket_price = $EM_Ticket_Booking->get_spaces() . ' * ' . floor($EM_Ticket_Booking->get_ticket()->get_price_without_tax()) . ' = ' . $price;
-					} 
-	                $tickets[$EM_Ticket_Booking->get_price() * 1000 + $i] = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->name, $lang) . " : " . $ticket_price . " &#8362;\n"; 
-				}
-            } else {
+
+            if (($EM_Ticket_Booking->get_price() >= 0) && ($EM_Ticket_Booking->get_price() < 1)) {
+                $participants[$EM_Ticket_Booking->get_price() * 1000 + $i] = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->name, $lang) . " : " . $EM_Ticket_Booking->get_spaces() . "\n"; 
+            }
+            else if ($EM_Ticket_Booking->get_price() >= 1) {
+                $price = $EM_Ticket_Booking->get_price();
+                $price = floor($price);
+                if ($EM_Ticket_Booking->get_spaces() == 1) {
+                    $ticket_price = $price;
+                } else {
+                    $ticket_price = $EM_Ticket_Booking->get_spaces() . ' * ' . floor($EM_Ticket_Booking->get_ticket()->get_price_without_tax()) . ' = ' . $price;
+                } 
+                $tickets[$EM_Ticket_Booking->get_price() * 1000 + $i] = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->name, $lang) . " : " . $ticket_price . " &#8362;\n"; 
+            } else if ($EM_Ticket_Booking->get_price() < 0) {
                 $discount += -$EM_Ticket_Booking->get_price();
-			}
+            }
         }
         krsort($participants);
         krsort($tickets);
@@ -161,7 +161,7 @@ class EM_Limmud_Emails {
             $replace = $replace . $descr;
         }
 
-        if ($EM_Booking->get_price() > 1) {
+        if ($EM_Booking->get_price() >= 1) {
             $replace = $replace . "\n\n";
             if ($lang == 'ru') {
                 $replace = $replace . "<u>СТОИМОСТЬ УЧАСТИЯ</u>\n\n";
@@ -225,6 +225,10 @@ class EM_Limmud_Emails {
 
             if ($full_result == '#_BOOKINGSUMMARYPAYMENTHE') {
                 $replace = EM_Limmud_Emails::payment_details($EM_Booking, $full_result, 'he');
+            }
+
+            if ($full_result == '#_EVENTYEAR') {
+                $replace = $EM_Booking->get_event()->start()->format('Y');
             }
         }
         return $replace;

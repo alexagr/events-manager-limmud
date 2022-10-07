@@ -47,6 +47,7 @@ class EM_Limmud_Secret {
     public static function em_booking_validate($result, $EM_Booking) {
 		$secret_codes = array();
         $secret_code_needed = false;
+		$secret_code_invalid = false;
         $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
 
 		$admin_secret = false;
@@ -85,12 +86,8 @@ class EM_Limmud_Secret {
 						}
 					}
 
-					if ((strlen($secret_code) > 0) && ($secret_code[0] == '3')) {
-						$participation_type = 'vip';
-					}
-
-					if (($participation_type == 'участник') && (strlen($secret_code) > 0) && ($secret_code[0] == '4')) {
-						$participation_type = 'presenter_family';
+					if (($participation_type != 'волонтер') && ($participation_type != 'презентер') && ($participation_type != 'организатор') && ($participation_type != 'гость')) {
+						continue;
 					}
 
 					if (($admin_secret !== false) && ($secret_code == $admin_secret)) {
@@ -98,54 +95,56 @@ class EM_Limmud_Secret {
 						continue;
 					}
 
-					if (($promo_secret !== false) && ($secret_code == $promo_secret)) {
+					if (($participation_type == 'гость') && ($promo_secret !== false) && ($secret_code == $promo_secret)) {
 						array_push($secret_codes, $secret_code);
 						continue;
 					}
 
-					if (($participation_type != 'волонтер') && ($participation_type != 'презентер') && ($participation_type != 'организатор') && ($participation_type != 'vip') && ($participation_type != 'presenter_family')) {
-						continue;
-					}
-
 					if (($secret_code == '') || ($secret_code == 'n/a')) {
-						$EM_Booking->add_error('Secret code is empty');
-						$result = false;
+						$EM_Booking->add_error(__('[:en]Enter secret code[:ru]Заполните поле: Секретный код[:he]נא למלא שדה: קוד הסודי[:]'));
+						$secret_code_invalid = true;
 						continue;
 					}
 
 					if (!self::check_code_valid($secret_code)) {
-						$EM_Booking->add_error('Secret code ' . $secret_code . ' is invalid');
-						$result = false;
+						$EM_Booking->add_error(__('[:en]Secret code[:ru]Секретный код[:he]קוד סודי[:] ' . $secret_code . ' [:en]is invalid[:ru]неправильный[:he]לא תקין[:]'));
+						$secret_code_invalid = true;
 						continue;
 					}
 
 					if (!self::check_code_unique($secret_code, $EM_Booking)) {
-						$EM_Booking->add_error('Secret code ' . $secret_code . ' was already used');
-						$result = false;
+						$EM_Booking->add_error(__('[:en]Secret code[:ru]Секретный код[:he]קוד סודי[:] ' . $secret_code . ' [:en]was already used[:ru]уже был использован[:he]כבר היה בשימוש[:]'));
+						$secret_code_invalid = true;
 						continue;
 					}
 
 					if (($participation_type == 'волонтер') && ($secret_code[0] != '1')) {
-						$EM_Booking->add_error('Secret code ' . $secret_code . ' is wrong');
-						$result = false;
+						$EM_Booking->add_error(__('[:en]Secret code[:ru]Секретный код[:he]קוד סודי[:] ' . $secret_code . ' [:en]is wrong for volunteer[:ru]не подходит для волонтера[:he]לא תקין עבור מתנדב[:]'));
+						$secret_code_invalid = true;
 						continue;
 					}
 
 					if (($participation_type == 'презентер') && ($secret_code[0] != '2')) {
-						$EM_Booking->add_error('Secret code ' . $secret_code . ' is wrong');
-						$result = false;
+						$EM_Booking->add_error(__('[:en]Secret code[:ru]Секретный код[:he]קוד סודי[:] ' . $secret_code . ' [:en]is wrong for presenter[:ru]не подходит для презентера[:he]לא תקין עבור מרצה[:]'));
+						$secret_code_invalid = true;
 						continue;
 					}
 
 					if (($participation_type == 'организатор') && (($admin_secret == false) || ($secret_code != $admin_secret))) {
-						$EM_Booking->add_error('Secret code ' . $secret_code . ' is wrong');
-						$result = false;
+						$EM_Booking->add_error(__('[:en]Secret code[:ru]Секретный код[:he]קוד סודי[:] ' . $secret_code . ' [:en]is wrong for organizing committee[:ru]не подходит для организационного комитета[:he]לא תקין עבור הועדה המארגנת[:]'));
+						$secret_code_invalid = true;
+						continue;
+					}
+
+					if (($participation_type == 'гость') && ($secret_code[0] != '3')  && ($secret_code[0] != '4')) {
+						$EM_Booking->add_error(__('[:en]Secret code[:ru]Секретный код[:he]קוד סודי[:] ' . $secret_code . ' [:en]is wrong for guest[:ru]не подходит для гостя[:he]לא תקין עבור אורח[:]'));
+						$secret_code_invalid = true;
 						continue;
 					}
 
 					if (in_array($secret_code, $secret_codes)) {
-						$EM_Booking->add_error('Secret code ' . $secret_code . ' is not unique');
-						$result = false;
+						$EM_Booking->add_error(__('[:en]Secret code[:ru]Секретный код[:he]קוד סודי[:] ' . $secret_code . ' [:en]is not unique[:ru]использован более одного раза[:he]הוכנס יותר מפעם אחד[:]'));
+						$secret_code_invalid = true;
 						continue;
 					}
 					
@@ -153,10 +152,14 @@ class EM_Limmud_Secret {
 				}
 			}
 		}
-        if ($secret_code_needed && empty($secret_codes)) {
-			$EM_Booking->add_error('At least one participant must be volunteer or presenter');
+		if ($secret_code_invalid) {
 			$result = false;
-        }
+		} else {
+	        if ($secret_code_needed && empty($secret_codes)) {
+				$EM_Booking->add_error(__('[:en]At least one participant must be volunteer or presenter[:ru]Как минимум один участник должен быть волонтером или презентером[:he]לפחות משתתף אחד צריך להיות מתנדב או מרצה[:]'));
+				$result = false;
+        	}
+		}
         return $result;    
     }
 }

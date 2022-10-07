@@ -20,6 +20,7 @@ class EM_Limmud_Misc {
         add_action('em_event_save_meta_pre',array(__CLASS__, 'em_event_save_meta_pre'), 10, 1);
         add_action('em_booking_form_before_tickets',array(__CLASS__, 'em_booking_form_before_tickets'), 10, 1);
         add_filter('em_bookings_get_pending_spaces', array(__CLASS__, 'em_bookings_get_pending_spaces'), 2, 2);
+        add_filter('em_booking_validate', array(__CLASS__, 'em_booking_validate'), 13, 2);
     }
 
     public static function show_edit_columns($columns) { 
@@ -259,53 +260,141 @@ class EM_Limmud_Misc {
 
     public static function em_events_admin_bookings_footer(){
         global $EM_Event;
-        $waiting_list_spaces = get_post_meta($EM_Event->post_id, '_waiting_list_spaces', true);
+        $waiting_list = get_post_meta($EM_Event->post_id, '_waiting_list', true);
 		?>
         <p>
-            <label>Waiting List Spaces</label>
-            <input type="text" name="waiting_list_spaces" value="<?php echo $waiting_list_spaces; ?>" /><br />
-            <em>Tickets will be moved to &quot;Waiting List&quot; state if total number of booking spaces reaches this limit. Leave blank for no limit.</em>
+            <label>Waiting List</label>
+            <input type="text" name="waiting_list" size="30" value="<?php echo $waiting_list; ?>" /><br />
+            <em>Defines amount of available rooms/spaces after which tickets will be moved to &quot;Waiting List&quot;. Syntax #1: comma-separated list of hotel_name=rooms_num, where hotel_name is partial &quot;hotel_name&quot; booking attribute - e.g. &quot;King Solomon=30,Club=50,Astoria=0&quot;. Syntax #2: limit number of bookings - &quot;bookings=50&quot;. Syntax #3: limit number of spaces - &quot;spaces=150&quot;. Leave blank for no limit.</em>
         </p>
 		<?php
 	}
 
     public static function em_event_save_meta_pre($EM_Event){
         if( !empty($EM_Event->duplicated) ) return; //if just duplicated, we ignore this and let EM carry over duplicate event data
-        if( !empty($_REQUEST['waiting_list_spaces']) && is_numeric($_REQUEST['waiting_list_spaces']) ) {
-            update_post_meta($EM_Event->post_id, '_waiting_list_spaces', $_REQUEST['waiting_list_spaces']);
+        if( !empty($_REQUEST['waiting_list']) && (strlen($_REQUEST['waiting_list']) > 5)) {
+            update_post_meta($EM_Event->post_id, '_waiting_list', $_REQUEST['waiting_list']);
         }
         else {
-            update_post_meta($EM_Event->post_id, '_waiting_list_spaces', '');
+            update_post_meta($EM_Event->post_id, '_waiting_list', '');
         }
 	}
 
-    public static function em_booking_form_before_tickets($EM_Event){
-        $waiting_list_spaces = get_post_meta($EM_Event->post_id, '_waiting_list_spaces', true);
-        if (!empty($waiting_list_spaces) && is_numeric($waiting_list_spaces)) {
-            $booked_spaces = $EM_Event->get_bookings()->get_booked_spaces();
-            if (get_option('dbem_bookings_approval_reserved')) {
-                $booked_spaces += $EM_Event->get_bookings()->get_pending_spaces();
+    public static function check_waiting_list($EM_Event, $booking_hotel_name=NULL) {
+        // check that event has enough spaces available - as per "waiting_list" meta-data variable
+        // if $booking_hotel_name is not NULL - check rooms in specific hotel
+        // return values:
+        //   0 - spaces are not available in all hotels
+        //   1 - spaces are not available in $booking_hotel_name, but available in some other hotel
+        //   2 - spaces are available
+
+        $waiting_list = get_post_meta($EM_Event->post_id, '_waiting_list', true);
+        if (!empty($waiting_list) && (strlen($waiting_list) > 5)) {
+            // "waiting_list" meta-data variable supports the following syntaxes:
+            //   - comma-separated list of hotel_name=rooms_available - e.g. "King Solomon=30,Club Hotel=50,Astoria=0"
+            //     where:
+            //       - hotel_name is unique, but possibly partial, hotel name - taken from "hotel_name" event variable
+            //       - rooms_available is number of rooms available in specific hotel
+            //   - limit on number of bookings - e.g. "bookings=50"
+            //   - limit on number of spaces - e.g. "spaces=50"
+            $hotel_rooms_limits = array();
+            $EM_Bookings = $EM_Event->get_bookings();
+
+            $waiting_list_array = explode(",", $waiting_list);
+            foreach ($waiting_list_array as $waiting_list_str) {
+                $waiting_list_data = explode("=", $waiting_list_str);
+                if ((count($waiting_list_data) != 2) || !is_numeric($waiting_list_data[1]))
+                    continue;
+
+                $hotel_name = $waiting_list_data[0];
+                $value = intval($waiting_list_data[1]);
+
+                if ($hotel_name == "spaces") {
+                    $booked_spaces = $EM_Bookings->get_booked_spaces();
+                    if (get_option('dbem_bookings_approval_reserved')) {
+                        $booked_spaces += $EM_Bookings->get_pending_spaces();
+                    }
+                    if ($booked_spaces >= $value) {
+                        return 0;
+                    }
+                    return 2;
+                }
+
+                $hotel_rooms_limits[$hotel_name] = $value;
             }
-            if ($booked_spaces > $waiting_list_spaces) {
-        		?>
+
+            foreach ($EM_Bookings->bookings as $EM_Booking) {
+                switch ($EM_Booking->booking_status) {
+                    case 0:
+                    case 1:
+                    case 5:
+                    case 7:
+                        if (array_key_exists('hotel_name', $EM_Booking->booking_meta['booking'])) {
+                            $hotel_name = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['hotel_name'], 'ru');
+                        } else {
+                            $hotel_name = "bookings";
+                        }
+                        foreach ($hotel_rooms_limits as $key => $value) {
+                            if (str_contains($hotel_name, $key)) {
+                                $hotel_rooms_limits[$key] = $value - 1;
+                            }
+                        }
+                        break;
+                }
+    		}
+
+            $rooms_available = false;
+            foreach ($hotel_rooms_limits as $key => $value) {
+                if ($value > 0)
+                    $rooms_available = true;
+            }
+            if (!$rooms_available) {
+                return 0;
+            }
+
+            if (empty($booking_hotel_name)) {
+                return 2;
+            }
+                
+            foreach ($hotel_rooms_limits as $key => $value) {
+                if (str_contains($hotel_name, $key) && ($value > 0)) {
+                    return 2;
+                }
+            }
+            return 1;
+        }
+
+        return 2;
+    }
+
+    public static function em_booking_form_before_tickets($EM_Event) {
+        if (self::check_waiting_list($EM_Event) == 0) {
+        ?>
     <div class="info">
         [:ru]В связи с большим количеством поступивших заявок, места с проживанием закончились. Вы можете записаться в лист ожидания и мы свяжемся с вами, если освободятся места.[:he]עקב ביקוש רב המקומות עם לינה אזלו. אתם יכולים להירשם לרשימת המתנה וניצור אתכם קשר במידה והמקומות יתפנו.[:]
     </div>
-        		<?php
-            }
-       }
+        <?php
+        }
     }
 
-    public static function em_bookings_get_pending_spaces($count, $EM_Bookings){
+    public static function em_booking_validate($result, $EM_Booking) {
+        if (array_key_exists('hotel_name', $EM_Booking->booking_meta['booking'])) {
+            $hotel_name = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['hotel_name'], 'ru');
+            if (self::check_waiting_list($EM_Booking->get_event(), $hotel_name) == 1) {
+				$EM_Booking->add_error(__('[:en]There are no more rooms available in selected hotel - select another hotel[:ru]Места в выбранной гостинице закончились - выберите другую гостиницу[:he]במלון הנבחר נגמרו מקומות - נא לבחור מלון אחר[:]'));
+				$result = false;
+            }
+        }
+        return $result;    
+    }
+
+    public static function em_bookings_get_pending_spaces($count, $EM_Bookings) {
         $EM_Event = $EM_Bookings->get_event();
-        $waiting_list_spaces = get_post_meta($EM_Event->post_id, '_waiting_list_spaces', true);
-        if (!empty($waiting_list_spaces) && is_numeric($waiting_list_spaces)) {
-    		foreach ($EM_Bookings->bookings as $EM_Booking){
-                // Awaiting Payment (booking_status == 5) bookings are appended by Events Manager Pro gateway_offline class
-    			if ($EM_Booking->booking_status == 8) {
-    				$count += $EM_Booking->get_spaces();
-    			}
-    		}
+        foreach ($EM_Bookings->bookings as $EM_Booking) {
+            // Awaiting Payment (booking_status == 5) bookings are appended by Events Manager Pro gateway_offline class
+            if (($EM_Booking->booking_status == 7) || ($EM_Booking->booking_status == 8)) {
+                $count += $EM_Booking->get_spaces();
+            }
         }
 		return $count;
 	}

@@ -21,8 +21,10 @@ Concept of operation
 --------------------
 
 We use two types of tickets:
-  * "participants" tickets - they cost less than $1; price is used to sort them 
-    (so that Adults always show first)
+  * "participants" tickets - they cost $0
+    (in the code we allow them to be less than $1 - e.g. $0.01 - and round them up to $0;
+    this was used in the past to create Adult / Children tickets and sort them based on price;
+    but lately we stopped doing this and use single "participants" ticket type)
   * "real" tickets - they cost $1 or more and are not shown in booking form
 
 When user enters new booking it stays in "Pending" state (because Events Manager

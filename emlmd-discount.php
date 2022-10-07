@@ -10,7 +10,7 @@ class EM_Limmud_Discount {
         global $EM_Booking;
     ?>
         <tr class="em-booking-single-edit">
-            <th><?php esc_html_e('Admin Discount','events-paypal'); ?></th>
+            <th><?php esc_html_e('Admin Discount','events-limmud'); ?></th>
             <td>
                 <?php
                 $amount = 0;

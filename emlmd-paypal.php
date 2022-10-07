@@ -55,13 +55,13 @@ class EM_Limmud_Paypal {
         }        
 
         $full_payment = false;
-        if (empty($transaction_sum) || ($EM_Booking->get_price() == $transaction_sum)) {
+        if (empty($transaction_sum) || (floor($EM_Booking->get_price()) == $transaction_sum)) {
             $full_payment = true;
         }
         if (self::get_total_paid($EM_Booking) > 0) {
             $full_payment = false;
             if (empty($transaction_sum)) {
-                $transaction_sum = $EM_Booking->get_price();
+                $transaction_sum = floor($EM_Booking->get_price());
             }
         }         
 
@@ -78,11 +78,9 @@ class EM_Limmud_Paypal {
             $discount = $EM_Booking->get_price_discounts_amount('post');
             foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
                 $i += 1;
-                if ($EM_Ticket_Booking->get_price() >= 0) {
-                	if ($EM_Ticket_Booking->get_price() >= 1) {
-                    	$tickets[$EM_Ticket_Booking->get_price() * 1000 + $i] = $EM_Ticket_Booking;
-    				} 
-                } else {
+                if ($EM_Ticket_Booking->get_price() >= 1) {
+                    $tickets[$EM_Ticket_Booking->get_price() * 1000 + $i] = $EM_Ticket_Booking;
+                } else if ($EM_Ticket_Booking->get_price() < 0) {
                     $discount += -$EM_Ticket_Booking->get_price();
     			}
             }
