@@ -16,6 +16,23 @@ Software components
     some minor tweaks inside Events Manager / Pro plugins (due to their existence
 	we DO NOT upgrade either of them)
 
+We add the following code via My Custom Functions plugin to prevent Events Manager
+from updating:
+
+    /* disable updates to Events Manager - we did some manual hacks to its source code */
+    function my_prevent_update_check($r, $url) {
+    	if (0 === strpos($url, 'https://api.wordpress.org/plugins/update-check/1.1/')) {
+            $plugins = json_decode($r['body']['plugins'], true);
+            $my_plugin = 'events-manager/events-manager.php';
+            if (array_key_exists($my_plugin, $plugins['plugins'])) {
+                unset($plugins['plugins'][$my_plugin]);
+            }
+            $r['body']['plugins'] = json_encode($plugins);
+    	}
+    	return $r;
+    }
+    add_filter('http_request_args', 'my_prevent_update_check', 10, 2);
+
 
 Concept of operation
 --------------------
@@ -81,8 +98,8 @@ Multilanguage considerations:
 When we calculate the booking price we round up result - to eliminate 
 "participants" tickets.
 
-If "Waiting List Spaces" is configured for the specific event and total amount
-of bookings (both approved and in pending state) exceeds the specified threshold
+If "Waiting List" is configured for the specific event and total amount of 
+bookings (both approved and in pending state) exceeds the specified threshold
 booking is moved to "Waiting List" state. This is done by "booking summary" page
 logic - see update_booking() function for details.
 
@@ -98,8 +115,8 @@ What to do when new year comes
    it to "Awaiting Payment" state.
 
    You need to change business logic under the three blocks like this:
-        if ($EM_Booking->event_id == 16) {
-            // regular 2021 registration
+        if ($EM_Booking->event_id == 19) {
+            // regular 2022 registration
             ...
 
    Update event ID to match the new event ID. Also update ticket IDs and adjust
@@ -111,8 +128,9 @@ What to do when new year comes
    It hides/shows relevant registration form elements, updates combo-box
    values and does various validations.
 
-   Start with updating the event date - in the following line (line 122 in 2021):
-        var d1 = new Date("2021-12-09");
+   Start with updating the event date - in the beginning of updateForm() function
+   (line 148 in 2022):
+        var d1 = new Date("2022-12-03");
 
    Then update the business logic as needed.
 
@@ -130,6 +148,13 @@ What to do when new year comes
      public_html/site/wp-content/plugins/events-manager-secrets/secrets.txt
    codes that start with 1 are for volunteers
    codes that start with 2 are for presentors
+   codes that start with 3 are for VIPs and grant FREE participation
+   codes that start with 4 are for guests - this lets them register via 
+   volunteers/presenters registration page (i.e. even when regular registration
+   is closed) but doesn't grant any discounts
 
    generate a new secret code for organizing committee and place in into
      public_html/site/wp-content/plugins/events-manager-secrets/admin.txt
+
+   generate a new promo code (if relevant) and place in into
+     public_html/site/wp-content/plugins/events-manager-secrets/promo.txt
