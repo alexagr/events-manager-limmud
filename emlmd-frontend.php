@@ -306,8 +306,22 @@ class EM_Limmud_Frontend {
             var display_children_label = false;
             if (participation_type == "hotel") {
                 displayField("hotel_name", true);
-                // updateComboBox("hotel_name", [HOTEL_SHLOMO, HOTEL_CLUB]);
-                updateComboBox("hotel_name", [HOTEL_SHLOMO]);
+
+                if (document.getElementById('hotels-solomon')) {
+                    updateComboBox("hotel_name", [HOTEL_SHLOMO]);
+                } else if (document.getElementById('hotels-club')) {
+                    updateComboBox("hotel_name", [HOTEL_CLUB]);
+                } else if (document.getElementById('hotels-astoria')) {
+                    updateComboBox("hotel_name", [HOTEL_ASTORIA]);
+                } else if (document.getElementById('hotels-solomon-club')) {
+                    updateComboBox("hotel_name", [HOTEL_SHLOMO, HOTEL_CLUB]);
+                } else if (document.getElementById('hotels-solomon-astoria')) {
+                    updateComboBox("hotel_name", [HOTEL_SHLOMO, HOTEL_ASTORIA]);
+                } else if (document.getElementById('hotels-club-astoria')) {
+                    updateComboBox("hotel_name", [HOTEL_CLUB, HOTEL_ASTORIA]);
+                } else {
+                    updateComboBox("hotel_name", [HOTEL_SHLOMO, HOTEL_CLUB, HOTEL_ASTORIA]);
+                }
                 
                 displayField("room_type", true);
                 if (kids == 0) {
@@ -330,7 +344,6 @@ class EM_Limmud_Frontend {
                         display_room_label = true;
                     }
 
-                    /*
                     var hotelName = document.getElementsByName("hotel_name")[0];
                     if (hotelName.options[hotelName.selectedIndex].text != "Club Hotel") {
                         if (kids + adults == 5) {
@@ -339,7 +352,6 @@ class EM_Limmud_Frontend {
                             display_children_label = true;
                         }
                     }
-                    */
                 }
 
                 displayField("bus_needed", true);

@@ -667,7 +667,8 @@ class EM_Limmud_Booking {
                 }
             } else {
                 $EM_Event = $EM_Booking->get_event();
-                if (EM_Limmud_Misc::check_waiting_list($EM_Event) == 0) {
+                list($waiting_list_status, $waiting_list_limits) = EM_Limmud_Misc::check_waiting_list($EM_Event);
+                if ($waiting_list_status == 0) {
                     $EM_Booking->booking_status = 8;
                     $EM_Booking->add_note('Waiting List');
                     $EM_Booking->save();

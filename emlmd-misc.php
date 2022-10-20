@@ -283,11 +283,14 @@ class EM_Limmud_Misc {
     public static function check_waiting_list($EM_Event, $booking_hotel_name=NULL) {
         // check that event has enough spaces available - as per "waiting_list" meta-data variable
         // if $booking_hotel_name is not NULL - check rooms in specific hotel
-        // return values:
-        //   0 - spaces are not available in all hotels
-        //   1 - spaces are not available in $booking_hotel_name, but available in some other hotel
-        //   2 - spaces are available
+        // return array(status, waiting_list_limits), where:
+        //   status:
+        //     0 - spaces are not available in all hotels
+        //     1 - spaces are not available in $booking_hotel_name, but available in some other hotel
+        //     2 - spaces are available
+        //   waiting_list_limits: associative array of hotel names and remaining spaces
 
+        $waiting_list_limits = array();
         $waiting_list = get_post_meta($EM_Event->post_id, '_waiting_list', true);
         if (!empty($waiting_list) && (strlen($waiting_list) > 5)) {
             // "waiting_list" meta-data variable supports the following syntaxes:
@@ -297,7 +300,6 @@ class EM_Limmud_Misc {
             //       - rooms_available is number of rooms available in specific hotel
             //   - limit on number of bookings - e.g. "bookings=50"
             //   - limit on number of spaces - e.g. "spaces=50"
-            $hotel_rooms_limits = array();
             $EM_Bookings = $EM_Event->get_bookings();
 
             $waiting_list_array = explode(",", $waiting_list);
@@ -309,18 +311,24 @@ class EM_Limmud_Misc {
                 $hotel_name = $waiting_list_data[0];
                 $value = intval($waiting_list_data[1]);
 
-                if ($hotel_name == "spaces") {
+                $waiting_list_limits[$hotel_name] = $value;
+            }
+
+            if (empty($waiting_list_limits)) {
+                return array(2, $waiting_list_limits);
+            }
+
+            foreach ($waiting_list_limits as $key => $value) {
+                if ($key == "spaces") {
                     $booked_spaces = $EM_Bookings->get_booked_spaces();
                     if (get_option('dbem_bookings_approval_reserved')) {
                         $booked_spaces += $EM_Bookings->get_pending_spaces();
                     }
                     if ($booked_spaces >= $value) {
-                        return 0;
+                        return array(0, $waiting_list_limits);
                     }
-                    return 2;
+                    return array(2, $waiting_list_limits);
                 }
-
-                $hotel_rooms_limits[$hotel_name] = $value;
             }
 
             foreach ($EM_Bookings->bookings as $EM_Booking) {
@@ -334,9 +342,9 @@ class EM_Limmud_Misc {
                         } else {
                             $hotel_name = "bookings";
                         }
-                        foreach ($hotel_rooms_limits as $key => $value) {
+                        foreach ($waiting_list_limits as $key => $value) {
                             if (str_contains($hotel_name, $key)) {
-                                $hotel_rooms_limits[$key] = $value - 1;
+                                $waiting_list_limits[$key] = $value - 1;
                             }
                         }
                         break;
@@ -344,45 +352,140 @@ class EM_Limmud_Misc {
     		}
 
             $rooms_available = false;
-            foreach ($hotel_rooms_limits as $key => $value) {
+            foreach ($waiting_list_limits as $key => $value) {
                 if ($value > 0)
                     $rooms_available = true;
             }
             if (!$rooms_available) {
-                return 0;
+                return array(0, $waiting_list_limits);
             }
 
             if (empty($booking_hotel_name)) {
-                return 2;
+                return array(2, $waiting_list_limits);
             }
                 
-            foreach ($hotel_rooms_limits as $key => $value) {
-                if (str_contains($hotel_name, $key) && ($value > 0)) {
-                    return 2;
+            foreach ($waiting_list_limits as $key => $value) {
+                if (str_contains($booking_hotel_name, $key) && ($value > 0)) {
+                    return array(2, $waiting_list_limits);
                 }
             }
-            return 1;
+            return array(1, $waiting_list_limits);
         }
 
-        return 2;
+        return array(2, $waiting_list_limits);
     }
 
     public static function em_booking_form_before_tickets($EM_Event) {
-        if (self::check_waiting_list($EM_Event) == 0) {
-        ?>
-    <div class="info">
-        [:ru]В связи с большим количеством поступивших заявок, места с проживанием закончились. Вы можете записаться в лист ожидания и мы свяжемся с вами, если освободятся места.[:he]עקב ביקוש רב המקומות עם לינה אזלו. אתם יכולים להירשם לרשימת המתנה וניצור אתכם קשר במידה והמקומות יתפנו.[:]
-    </div>
-        <?php
+        list($waiting_list_status, $waiting_list_limits) = self::check_waiting_list($EM_Event);
+        if ($waiting_list_status == 0) {
+            ?>
+            <div class="info">
+                [:ru]В связи с большим количеством поступивших заявок, места с проживанием закончились. Вы можете записаться в лист ожидания и мы свяжемся с вами, если освободятся места.[:he]עקב ביקוש רב המקומות עם לינה אזלו. אתם יכולים להירשם לרשימת המתנה וניצור אתכם קשר במידה והמקומות יתפנו.[:]
+            </div>
+            <?php
+            return;
+        }
+
+        if (empty($waiting_list_limits)) {
+            return;
+        }
+
+        if (array_key_exists("King Solomon", $waiting_list_limits) && array_key_exists("Club", $waiting_list_limits) && array_key_exists("Astoria", $waiting_list_limits)) {
+            if ($waiting_list_limits["King Solomon"] > 0) {
+                if ($waiting_list_limits["Club"] > 0) {
+                    if ($waiting_list_limits["Astoria"] > 0) {
+                        ?>
+                        <div id="hotels-solomon-club-astoria">
+                            &nbsp;
+                        </div>
+                        <?php
+                    } else {
+                        ?>
+                        <div id="hotels-solomon-club" class="info">
+                            [:ru]В связи с большим количеством поступивших заявок, места в гостинице Astoria закончились. Вы можете заказать места в гостиницах King Solomon / המלך שלמה и Club Hotel.[:he]עקב ביקוש רב המקומות במלון אסטוריה אזלו. אתם יכולים להזמין מקומות במלונות המלך שלמה וקלאב הוטל.[:]
+                        </div>
+                        <?php
+                    }
+                } else {
+                    if ($waiting_list_limits["Astoria"] > 0) {
+                        ?>
+                        <div id="hotels-solomon-astoria" class="info">
+                            [:ru]В связи с большим количеством поступивших заявок, места в гостинице Club Hotel закончились. Вы можете заказать места в гостиницах King Solomon / המלך שלמה и Astoria.[:he]עקב ביקוש רב המקומות במלון קלאב הוטל אזלו. אתם יכולים להזמין מקומות במלונות המלך שלמה ואסטוריה.[:]
+                        </div>
+                        <?php
+                    } else {
+                        ?>
+                        <div id="hotels-solomon" class="info">
+                            [:ru]В связи с большим количеством поступивших заявок, места в гостиницах Club Hotel и Astoria закончились. Вы можете заказать места в гостинице King Solomon / המלך שלמה.[:he]עקב ביקוש רב המקומות במלונות קלאב הוטל ואסטוריה אזלו. אתם יכולים להזמין מקומות במלון המלך שלמה.[:]
+                        </div>
+                        <?php
+                    }
+                }
+            } else {
+                if ($waiting_list_limits["Club"] > 0) {
+                    if ($waiting_list_limits["Astoria"] > 0) {
+                        ?>
+                        <div id="hotels-club-astoria" class="info">
+                            [:ru]В связи с большим количеством поступивших заявок, места в гостинице King Solomon / המלך שלמה закончились. Вы можете заказать места в гостиницах Club Hotel и Astoria.[:he]עקב ביקוש רב המקומות במלון המלך שלמה אזלו. אתם יכולים להזמין מקומות במלונות קלאב הוטל ואסטוריה.[:]
+                        </div>
+                        <?php
+                    } else {
+                        ?>
+                        <div id="hotels-club" class="info">
+                            [:ru]В связи с большим количеством поступивших заявок, места в гостиницах King Solomon / המלך שלמה и Astoria закончились. Вы можете заказать места в гостинице Club Hotel.[:he]עקב ביקוש רב המקומות במלונות המלך שלמה ואסטוריה אזלו. אתם יכולים להזמין מקומות במלון קלאב הוטל.[:]
+                        </div>
+                        <?php
+                    }
+                } else {
+                    if ($waiting_list_limits["Astoria"] > 0) {
+                        ?>
+                        <div id="hotels-astoria" class="info">
+                            [:ru]В связи с большим количеством поступивших заявок, места в гостиницах King Solomon / המלך שלמה и Club Hotel закончились. Вы можете заказать места в гостинице Astoria.[:he]עקב ביקוש רב המקומות במלונות המלך שלמה וקלאב הוטל אזלו. אתם יכולים להזמין מקומות במלון אסטוריה.[:]
+                        </div>
+                        <?php
+                    }
+                }
+            }
+            return;
+        }
+
+        if (array_key_exists("King Solomon", $waiting_list_limits) && array_key_exists("Club", $waiting_list_limits)) {
+            if ($waiting_list_limits["King Solomon"] > 0) {
+                if ($waiting_list_limits["Club"] > 0) {
+                    ?>
+                    <div id="hotels-solomon-club">
+                        &nbsp;
+                    </div>
+                    <?php
+                } else {
+                    ?>
+                    <div id="hotels-solomon" class="info">
+                        [:ru]В связи с большим количеством поступивших заявок, места в гостинице Club Hotel закончились. Вы можете заказать места в гостинице King Solomon / המלך שלמה.[:he]עקב ביקוש רב המקומות במלון קלאב הוטל אזלו. אתם יכולים להזמין מקומות במלון המלך שלמה.[:]
+                    </div>
+                    <?php
+                }
+            } else {
+                if ($waiting_list_limits["Club"] > 0) {
+                    ?>
+                    <div id="hotels-club" class="info">
+                        [:ru]В связи с большим количеством поступивших заявок, места в гостинице King Solomon / המלך שלמה закончились. Вы можете заказать места в гостинице Club Hotel.[:he]עקב ביקוש רב המקומות במלון המלך שלמה אזלו. אתם יכולים להזמין מקומות במלון קלאב הוטל.[:]
+                    </div>
+                    <?php
+                }
+            }
+            return;
         }
     }
 
     public static function em_booking_validate($result, $EM_Booking) {
         if (array_key_exists('hotel_name', $EM_Booking->booking_meta['booking'])) {
             $hotel_name = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['hotel_name'], 'ru');
-            if (self::check_waiting_list($EM_Booking->get_event(), $hotel_name) == 1) {
-				$EM_Booking->add_error(__('[:en]There are no more rooms available in selected hotel - select another hotel[:ru]Места в выбранной гостинице закончились - выберите другую гостиницу[:he]במלון הנבחר נגמרו מקומות - נא לבחור מלון אחר[:]'));
-				$result = false;
+            if (empty($EM_Booking->booking_status)) {
+                list($waiting_list_status, $waiting_list_limits) = self::check_waiting_list($EM_Booking->get_event(), $hotel_name);
+                if ($waiting_list_status == 1) {
+                    $EM_Booking->add_error(__('[:ru]Места в выбранной гостинице закончились - выберите другую гостиницу[:he]במלון הנבחר נגמרו מקומות - נא לבחור מלון אחר[:]'));
+                    $result = false;
+                }
             }
         }
         return $result;    
