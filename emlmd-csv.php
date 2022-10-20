@@ -130,7 +130,7 @@ class EM_Limmud_CSV {
             $delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
             $delimiter = apply_filters('em_csv_delimiter', $delimiter);
 
-            $headers = array('event', 'ticket_name', 'order#', 'name', 'surname', 'sex', 'role', 'age_group', 'age', 'ticket_type', 'special_needs', 'comment', 'status', 'meal');
+            $headers = array('event', 'ticket_name', 'hotel_name', 'order#', 'name', 'surname', 'sex', 'role', 'age_group', 'age', 'ticket_type', 'special_needs', 'comment', 'status', 'meal');
             fputcsv($handle, $headers, $delimiter);
 
             $orders = array();
@@ -159,6 +159,7 @@ class EM_Limmud_CSV {
                     $EM_Form = EM_Booking_Form::get_form($event_id, $EM_Booking);
 					$order['special_needs'] = self::booking_field('special_needs', $EM_Form, $EM_Booking, false);
 					$order['comment'] = self::booking_field('dbem_comment', $EM_Form, $EM_Booking, false);
+                    $order['hotel_name'] = self::booking_field('hotel_name', $EM_Form, $EM_Booking);;
 
                     $order['children_num'] = 0;
                     $order['toddlers_num'] = 0;
@@ -230,8 +231,7 @@ class EM_Limmud_CSV {
 							}
 						}
 
-                        if (($ticket_name == 'Adult') || ($ticket_name == 'Adult in Triple') || ($ticket_name == 'Single') || 
-						    ($ticket_name == 'Child') || ($ticket_name == 'No Accomodation - 1 Day') || ($ticket_name == 'No Accomodation - 3 Days')) {
+                        if (preg_match("/^\s*(Adult|Adult in Triple|Single|Child|No Accomodation - 1 Day|No Accomodation - 3 Days)\s*$/", $ticket_name)) {
                             $ticket_data = array();
                             $ticket_data['name'] = $ticket_name;
 							$ticket_data['ticket_type'] = self::booking_field('ticket_type', $EM_Form, $EM_Booking);
@@ -247,9 +247,9 @@ class EM_Limmud_CSV {
                     $adult_id = 0;
                     $child_id = 0;
                     foreach($order['tickets'] as $key => $ticket) {
-                        if (($ticket['name'] == 'Adult') || ($ticket['name'] == 'Adult in Triple') || ($ticket['name'] == 'Single')) {
+                        if (preg_match("/^\s*(Adult|Adult in Triple|Single)\s*$/", $ticket['name'])) {
                             $order['tickets'][$key]['people'][] = $order['adults'][$adult_id++];
-                        } elseif ($ticket['name'] == 'Child') {
+                        } elseif (preg_match("/^\s*Child\s*$/", $ticket['name'])) {
                             $order['tickets'][$key]['people'][] = $order['children'][$child_id++];
                         } else {
                             if ($adult_id < count($order['adults'])) {
@@ -263,7 +263,7 @@ class EM_Limmud_CSV {
                     // verify that the order has tickets for all people
                     if (($adult_id < count($order['adults'])) || ($child_id < count($order['children']))) {
                         $ticket_data = array();
-                        $ticket_data['name'] = "Not enough tickets";
+                        $ticket_data['name'] = "Not enough tickets: " . strval($adult_id) . " < " . strval(count($order['adults'])) . " || " . strval($child_id) . " < " . strval(count($order['children']));
                         $ticket_data['ticket_type'] = "";
                         $ticket_data['people'] = array();
                         $person = array();
@@ -300,6 +300,7 @@ class EM_Limmud_CSV {
                        $row = array();
                        $row[] = $order['event'];
                        $row[] = $ticket['name'];
+                       $row[] = $order['hotel_name'];
                        $row[] = $order['id'];
                        $row[] = $person['name'];
                        $row[] = $person['surname'];
@@ -436,8 +437,7 @@ class EM_Limmud_CSV {
 							}
 						}
 
-                        if (($ticket_name == 'Adult') || ($ticket_name == 'Adult in Triple') || ($ticket_name == 'Single') ||
-						    ($ticket_name == 'Child') || ($ticket_name == 'No Accomodation - 1 Day') || ($ticket_name == 'No Accomodation - 3 Days')) {
+                        if (preg_match("/^\s*(Adult|Adult in Triple|Single|Child|No Accomodation - 1 Day|No Accomodation - 3 Days)\s*$/", $ticket_name)) {
                             $ticket_data = array();
                             $ticket_data['name'] = $ticket_name;
 							$ticket_data['ticket_type'] = self::booking_field('ticket_type', $EM_Form, $EM_Booking);
@@ -448,7 +448,7 @@ class EM_Limmud_CSV {
                             }
                         }
 
-                        if (($ticket_name == 'No Accomodation - 1 Day') || ($ticket_name == 'No Accomodation - 3 Days')) {
+                        if (preg_match("/^\s*(No Accomodation - 1 Day|No Accomodation - 3 Days)\s*$/", $ticket_name)) {
                             $order['no_accomodation'] = true;
                         }
                     }
@@ -461,9 +461,9 @@ class EM_Limmud_CSV {
                     $adult_id = 0;
                     $child_id = 0;
                     foreach($order['tickets'] as $key => $ticket) {
-                        if (($ticket['name'] == 'Adult') || ($ticket['name'] == 'Adult in Triple') || ($ticket['name'] == 'Single')) {
+                        if (preg_match("/^\s*(Adult|Adult in Triple|Single)\s*$/", $ticket['name'])) {
                             $order['tickets'][$key]['people'][] = $order['adults'][$adult_id++];
-                        } elseif ($ticket['name'] == 'Child') {
+                        } elseif (preg_match("/^\s*Child\s*$/", $ticket['name'])) {
                             $order['tickets'][$key]['people'][] = $order['children'][$child_id++];
                         } else {
                             if ($adult_id < count($order['adults'])) {
@@ -477,7 +477,7 @@ class EM_Limmud_CSV {
                     // verify that the order has tickets for all people
                     if (($adult_id < count($order['adults'])) || ($child_id < count($order['children']))) {
                         $ticket_data = array();
-                        $ticket_data['name'] = "Not enough tickets";
+                        $ticket_data['name'] = "Not enough tickets: " . strval($adult_id) . " < " . strval(count($order['adults'])) . " || " . strval($child_id) . " < " . strval(count($order['children']));
                         $ticket_data['ticket_type'] = "";
                         $ticket_data['people'] = array();
                         $person = array();
