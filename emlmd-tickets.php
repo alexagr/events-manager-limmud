@@ -61,12 +61,16 @@ class EM_Limmud_Tickets {
             
             $hotel_name = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['hotel_name'], 'ru');
             if (!array_key_exists($hotel_name, $hotel_bookings))
-                $hotel_bookings[$hotel_name] = array('pending'=>0, 'approved'=>0, 'not_fully_paid'=>0, 'waiting_list'=>0);
+                $hotel_bookings[$hotel_name] = array('pending'=>0, 'partial'=>0, 'approved'=>0, 'not_fully_paid'=>0, 'waiting_list'=>0);
 
             switch ($EM_Booking->booking_status) {
                 case 0:
                 case 5:
-                    $hotel_bookings[$hotel_name]['pending'] += 1;
+                    if (EM_Limmud_Paypal::get_total_paid($EM_Booking) > 0) {
+                        $hotel_bookings[$hotel_name]['partial'] += 1;
+                    } else {
+                        $hotel_bookings[$hotel_name]['pending'] += 1;
+                    }
                     break;
                 case 1:
                     $hotel_bookings[$hotel_name]['approved'] += 1;
@@ -91,8 +95,9 @@ class EM_Limmud_Tickets {
                     <tr valign="top">
                         <th><?php esc_html_e('Hotel Name','events-limmud'); ?></th>
                         <th><?php esc_html_e('Booked Rooms','events-limmud'); ?></th>
-                        <th><?php esc_html_e('Pending Rooms','events-limmud'); ?></th>
-                        <th><?php esc_html_e('Not Fully Paid','events-limmud'); ?></th>
+                        <th><?php esc_html_e('Partially Paid','events-limmud'); ?></th>
+                        <th><?php esc_html_e('Awaiting Payment','events-limmud'); ?></th>
+                        <th><?php esc_html_e('Not Fully Paid / Expired','events-limmud'); ?></th>
                         <th><?php esc_html_e('Waiting List','events-limmud'); ?></th>
                         <th>&nbsp;</th>
                     </tr>
@@ -108,6 +113,9 @@ class EM_Limmud_Tickets {
                                 </td>
                                 <td class="hotel-booked-rooms">
                                     <span class="hotel_booked_rooms"><?php echo $value['approved']; ?></span>
+                                </td>
+                                <td class="hotel-pending-rooms">
+                                    <span class="hotel_pending_rooms"><?php echo $value['partial']; ?></span>
                                 </td>
                                 <td class="hotel-pending-rooms">
                                     <span class="hotel_pending_rooms"><?php echo $value['pending']; ?></span>
