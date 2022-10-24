@@ -52,7 +52,7 @@ class EM_Limmud_CSV {
             $delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
             $delimiter = apply_filters('em_csv_delimiter', $delimiter);
 
-            $headers = array('id', 'name', 'email', 'status', 'event_id', 'ticket_name', 'ticket_price', 'phone', 'city', 'ticket_days', 'ticket_type', 'room_type', 'bus_needed', 'special_needs', 'comment', 'first_name', 'last_name', 'sex', 'birthday', 'age', 'passport', 'role', 'secret');
+            $headers = array('id', 'name', 'email', 'status', 'event_id', 'ticket_name', 'ticket_price', 'phone', 'city', 'ticket_days', 'ticket_type', 'room_type', 'bus_needed', 'special_needs', 'comment', 'first_name', 'last_name', 'birthday', 'age', 'passport', 'role', 'secret');
             fputcsv($handle, $headers, $delimiter);
 
             $events = EM_Events::get(array('scope'=>'all'));
@@ -88,6 +88,10 @@ class EM_Limmud_CSV {
                             foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
                                 $full_row = $row;
                                 foreach( $attendee_data as $field_label => $field_value) {
+                                    $label = apply_filters('translate_text', $field_label, 'ru');
+                                    if ($label == 'Пол') {
+                                        continue;
+                                    }
                                     $value = apply_filters('translate_text', $field_value, 'ru');
                                     if ($field_value != 'n/a') {
                                         $full_row[] = apply_filters('translate_text', $field_value, 'ru');
@@ -95,7 +99,6 @@ class EM_Limmud_CSV {
                                         $full_row[] = '';
                                     }
 
-                                    $label = apply_filters('translate_text', $field_label, 'ru');
                                     if ($label == 'Дата рождения') {
                                         $birth_date = explode('/', $field_value);
                                         if (count($birth_date) == 3) {
@@ -130,7 +133,7 @@ class EM_Limmud_CSV {
             $delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
             $delimiter = apply_filters('em_csv_delimiter', $delimiter);
 
-            $headers = array('event', 'ticket_name', 'hotel_name', 'order#', 'name', 'surname', 'sex', 'role', 'age_group', 'age', 'ticket_type', 'special_needs', 'comment', 'status', 'meal');
+            $headers = array('event', 'ticket_name', 'hotel_name', 'order#', 'name', 'surname', 'role', 'age_group', 'age', 'ticket_type', 'special_needs', 'comment', 'status', 'meal');
             fputcsv($handle, $headers, $delimiter);
 
             $orders = array();
@@ -186,9 +189,6 @@ class EM_Limmud_CSV {
 										}
 										if ($label == 'Фамилия (на английском)') {
 											$person['surname'] = $field_value; 
-										}
-										if ($label == 'Пол') {
-											$person['sex'] = apply_filters('translate_text', $field_value, 'ru'); 
 										}
 										if ($label == 'Дата рождения') {
 											$person['birthday'] = $field_value; 
@@ -269,7 +269,6 @@ class EM_Limmud_CSV {
                         $person = array();
                         $person['name'] = '';
                         $person['surname'] = '';
-                        $person['sex'] = '';
                         $person['role'] = '';
                         $person['age_group'] = '';
                         $person['age'] = '';
@@ -304,7 +303,6 @@ class EM_Limmud_CSV {
                        $row[] = $order['id'];
                        $row[] = $person['name'];
                        $row[] = $person['surname'];
-                       $row[] = $person['sex'];
                        $row[] = $person['role'];
                        $row[] = $person['age_group'];
                        $row[] = $person['age'];
@@ -393,9 +391,6 @@ class EM_Limmud_CSV {
 										if ($label == 'Фамилия (на английском)') {
 											$person['surname'] = $field_value;
 										}
-										if ($label == 'Пол') {
-											$person['sex'] = apply_filters('translate_text', $field_value, 'ru');
-										}
 										if ($label == 'Дата рождения') {
 											$person['birthday'] = $field_value;
 											$birth_date = explode('/', $field_value);
@@ -483,7 +478,6 @@ class EM_Limmud_CSV {
                         $person = array();
                         $person['name'] = '';
                         $person['surname'] = '';
-                        $person['sex'] = '';
                         $person['role'] = '';
                         $person['age_group'] = '';
                         $person['age'] = '';
@@ -597,9 +591,6 @@ class EM_Limmud_CSV {
                                     }
                                     if ($label == 'Фамилия (на английском)') {
                                         $person['surname'] = $field_value;
-                                    }
-                                    if ($label == 'Пол') {
-                                        $person['sex'] = apply_filters('translate_text', $field_value, 'ru');
                                     }
                                     if ($label == 'Дата рождения') {
                                         $person['birthday'] = $field_value;
