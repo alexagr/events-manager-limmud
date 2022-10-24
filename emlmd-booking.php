@@ -278,7 +278,7 @@ class EM_Limmud_Booking {
 
                 if ($admin_discount > 0) {
                 ?>
-                    <tr><th>[:en]Admin discount[:ru]Дополнительная скидка[:he]הנחה מיוחדת[:]</th><td> <?php echo $admin_discount . ' &#8362;' ?></td></tr>
+                    <tr><th>[:en]Admin discount[:ru]Дополнительная скидка[:he]הנחה מיוחדת[:]</th><td> -<?php echo $admin_discount . ' &#8362;' ?></td></tr>
                 <?php
                 }
 
