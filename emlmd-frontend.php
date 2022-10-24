@@ -280,6 +280,7 @@ class EM_Limmud_Frontend {
                 displayElementByName("too_many_adults_label", (adults > 3));
                 displayElementByName("children_label", false);
                 displayElementByName("hotel_label", false);
+                displayElementByName("astoria_label", false);
                 displaySubmit(false);
                 displayField("hotel_name", false);
                 displayField("room_type", false);
@@ -287,7 +288,7 @@ class EM_Limmud_Frontend {
                 return;
             }
 
-			displayElementByName("too_little_adults_label", false);
+            displayElementByName("too_little_adults_label", false);
             displayElementByName("too_many_adults_label", false);
             
             els = document.getElementsByName("participation_type");
@@ -304,6 +305,7 @@ class EM_Limmud_Frontend {
             var display_room_label = false;
             var display_hotel_label = false;
             var display_children_label = false;
+            var display_astoria_label = false;
             if (participation_type == "hotel") {
                 displayField("hotel_name", true);
 
@@ -324,6 +326,7 @@ class EM_Limmud_Frontend {
                 }
                 
                 displayField("room_type", true);
+                var hotelName = document.getElementsByName("hotel_name")[0];
                 if (kids == 0) {
                     if (adults == 1) {
                         updateComboBox("room_type", [ROOM_DOUBLE, ROOM_TRIPLE, ROOM_SINGLE]);
@@ -344,14 +347,17 @@ class EM_Limmud_Frontend {
                         display_room_label = true;
                     }
 
-                    var hotelName = document.getElementsByName("hotel_name")[0];
-                    if (hotelName.options[hotelName.selectedIndex].text != "Club Hotel") {
+                    if (hotelName.options[hotelName.selectedIndex].text.startsWith("King Solomon")) {
                         if (kids + adults == 5) {
                             display_hotel_label = true;
                         } else {
                             display_children_label = true;
                         }
                     }
+                }
+
+                if (hotelName.options[hotelName.selectedIndex].text.startsWith("Astoria") && (kids + adults > 2)) {
+                    display_astoria_label = true;
                 }
 
                 displayField("bus_needed", true);
@@ -372,8 +378,9 @@ class EM_Limmud_Frontend {
             displayElementByName("room_label", display_room_label);
             displayElementByName("hotel_label", display_hotel_label);
             displayElementByName("children_label", display_children_label);
+            displayElementByName("astoria_label", display_astoria_label);
 
-            var display_submit = !display_room_label && !display_hotel_label;
+            var display_submit = !display_room_label && !display_hotel_label && !display_astoria_label;
             displaySubmit(display_submit);
         }
         
