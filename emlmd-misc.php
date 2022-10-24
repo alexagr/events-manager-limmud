@@ -21,6 +21,7 @@ class EM_Limmud_Misc {
         add_action('em_booking_form_before_tickets',array(__CLASS__, 'em_booking_form_before_tickets'), 10, 1);
         add_filter('em_bookings_get_pending_spaces', array(__CLASS__, 'em_bookings_get_pending_spaces'), 2, 2);
         add_filter('em_booking_validate', array(__CLASS__, 'em_booking_validate'), 13, 2);
+        add_action('em_bookings_single_metabox_footer',array(__CLASS__, 'em_bookings_single_metabox_footer'), 10, 1);
     }
 
     public static function show_edit_columns($columns) { 
@@ -501,6 +502,19 @@ class EM_Limmud_Misc {
         }
 		return $count;
 	}
+
+    public static function em_bookings_single_metabox_footer($EM_Booking) {
+        ?>
+        <div id="em-booking-link" class="postbox">
+            <h3>
+                <?php esc_html_e( 'Payment Link', 'events-limmud'); ?>
+            </h3>
+            <div class="inside">
+                <a href="<?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking); ?>"><?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking); ?></a>
+            </div>
+        </div>
+        <?php
+    }
 }
 
 EM_Limmud_Misc::init();
