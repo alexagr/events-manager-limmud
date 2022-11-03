@@ -44,7 +44,7 @@ class EM_Limmud_CSV {
         if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && !empty($_REQUEST['limmud_export']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')) {
 
             header("Content-Type: application/octet-stream; charset=utf-8");
-            header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-bookings-export.csv");
+            header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-bookings-" . date('Y-m-d-h-i', time()) . ".csv");
             do_action('em_csv_header_output');
             echo "\xEF\xBB\xBF"; // UTF-8 for MS Excel (a little hacky... but does the job)
 
@@ -60,8 +60,8 @@ class EM_Limmud_CSV {
                 if (($EM_Event->event_id != 19) && ($EM_Event->event_id != 20) && ($EM_Event->event_id != 21)) {
                     continue;
                 }
+                $event_date = date("U", $EM_Event->start()->getTimestamp());
                 foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {
-					$event_date = date("U", $EM_Booking->get_event()->start()->getTimestamp());
                     $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
                     foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
                         $EM_Form = EM_Booking_Form::get_form($event_id, $EM_Booking);
@@ -125,7 +125,7 @@ class EM_Limmud_CSV {
         if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && !empty($_REQUEST['limmud_accomodation']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')) {
 
             header("Content-Type: application/octet-stream; charset=utf-8");
-            header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-bookings-accomodation.csv");
+            header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-accomodation-" . date('Y-m-d-h-i', time()) . ".csv");
             do_action('em_csv_header_output');
             echo "\xEF\xBB\xBF"; // UTF-8 for MS Excel (a little hacky... but does the job)
 
@@ -143,6 +143,7 @@ class EM_Limmud_CSV {
                 if (($EM_Event->event_id != 19) && ($EM_Event->event_id != 20) && ($EM_Event->event_id != 21)) {
                     continue;
                 }
+                $event_date = date("U", $EM_Event->start()->getTimestamp());
                 foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {
                     $order = array();
                     $order['event'] = $EM_Event->event_id;
@@ -173,7 +174,6 @@ class EM_Limmud_CSV {
                     }
 
                     // populate arrays from attendees data
-					$event_date = date("U", $EM_Booking->get_event()->start()->getTimestamp());
                     $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
                     foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
                         $ticket_name = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->ticket_name, 'ru');  
@@ -327,7 +327,7 @@ class EM_Limmud_CSV {
         if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && !empty($_REQUEST['limmud_hotel']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')) {
 
             header("Content-Type: application/octet-stream; charset=utf-8");
-            header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-bookings-hotel.csv");
+            header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-hotel-" . date('Y-m-d-h-i', time()) . ".csv");
             do_action('em_csv_header_output');
             echo "\xEF\xBB\xBF"; // UTF-8 for MS Excel (a little hacky... but does the job)
 
@@ -345,6 +345,7 @@ class EM_Limmud_CSV {
                 if (($EM_Event->event_id != 19) && ($EM_Event->event_id != 21)) {
                     continue;
                 }
+                $event_date = date("U", $EM_Event->start()->getTimestamp());
                 foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {
                     $order = array();
                     $order['event'] = $EM_Event->event_id;
@@ -374,7 +375,6 @@ class EM_Limmud_CSV {
                     }
 
                     // populate arrays from attendees data
-					$event_date = date("U", $EM_Booking->get_event()->start()->getTimestamp());
                     $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
                     foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
                         $ticket_name = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->ticket_name, 'ru');
@@ -537,7 +537,7 @@ class EM_Limmud_CSV {
         if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && !empty($_REQUEST['limmud_transport']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')) {
 
             header("Content-Type: application/octet-stream; charset=utf-8");
-            header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-bookings-transport.csv");
+            header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-transport-" . date('Y-m-d-h-i', time()) . ".csv");
             do_action('em_csv_header_output');
             echo "\xEF\xBB\xBF"; // UTF-8 for MS Excel (a little hacky... but does the job)
 
@@ -555,8 +555,8 @@ class EM_Limmud_CSV {
                 if (($EM_Event->event_id != 19) && ($EM_Event->event_id != 21)) {
                     continue;
                 }
+                $event_date = date("U", $EM_Event->start()->getTimestamp());
                 foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {
-
                     $order = array();
                     $order['event_id'] = $EM_Event->event_id;
                     $order['id'] = $EM_Booking->booking_id;
