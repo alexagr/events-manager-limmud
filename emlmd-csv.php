@@ -13,14 +13,14 @@ class EM_Limmud_CSV {
     public static function em_bookings_table_export_options() {
         ?>
         <hr />
-        <h4>Limmud 2022 reports</h4>
+        <h4>Limmud 2023 reports</h4>
         <p>There reports collect data from all relevant events and use pre-defined formats. Generic split and columns to export settings are irrelevant.</p>
-        <p>Full bookings report <input type="checkbox" name="limmud_export" value="1" />
+        <p>Full bookings report <input type="checkbox" name="limmud_full" value="1" />
         <a href="#" title="Complete information about all bookings (including cancelled)">?</a></p>
-        <p>Accomodation report <input type="checkbox" name="limmud_accomodation" value="1" />
-        <a href="#" title="Accomodation report (only approved and pending bookings)">?</a></p>
+        <p>Accomodation report <input type="checkbox" name="limmud_approved" value="1" />
+        <a href="#" title="Approved and pending bookings">?</a></p>
         <p>Hotel report <input type="checkbox" name="limmud_hotel" value="1" />
-        <a href="#" title="Hotel report (only approved bookings with accomodation)">?</a></p>
+        <a href="#" title="Report for hotel (only approved bookings with accomodation)">?</a></p>
         <p>Transport report <input type="checkbox" name="limmud_transport" value="1" />
         <a href="#" title="Transport report (only approved and pending bookings)">?</a></p>
         <hr />
@@ -41,10 +41,13 @@ class EM_Limmud_CSV {
 	}
 
     public static function intercept_csv_export() {
-        if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && !empty($_REQUEST['limmud_export']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')) {
+        if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && !empty($_REQUEST['limmud_full']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')) {
+            /*
+            Full export - all bookings and all tickets
+            */
 
             header("Content-Type: application/octet-stream; charset=utf-8");
-            header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-bookings-" . date('Y-m-d-h-i', time()) . ".csv");
+            header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-full-" . date('Y-m-d-h-i', time()) . ".csv");
             do_action('em_csv_header_output');
             echo "\xEF\xBB\xBF"; // UTF-8 for MS Excel (a little hacky... but does the job)
 
@@ -52,12 +55,12 @@ class EM_Limmud_CSV {
             $delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
             $delimiter = apply_filters('em_csv_delimiter', $delimiter);
 
-            $headers = array('id', 'name', 'email', 'status', 'event_id', 'ticket_name', 'ticket_price', 'phone', 'city', 'ticket_days', 'ticket_type', 'room_type', 'bus_needed', 'special_needs', 'comment', 'first_name', 'last_name', 'birthday', 'age', 'passport', 'role', 'secret');
+            $headers = array('id', 'name', 'email', 'status', 'event_id', 'ticket_name', 'ticket_price', 'phone', 'city', 'past_participation', 'ticket_days', 'ticket_type', 'room_type', 'bus_needed', 'special_needs', 'comment', 'first_name', 'last_name', 'birthday', 'age', 'passport', 'role', 'secret');
             fputcsv($handle, $headers, $delimiter);
 
             $events = EM_Events::get(array('scope'=>'all'));
             foreach ($events as $EM_Event) {
-                if (($EM_Event->event_id != 19) && ($EM_Event->event_id != 20) && ($EM_Event->event_id != 21)) {
+                if (($EM_Event->event_id != 22) && ($EM_Event->event_id != 23) && ($EM_Event->event_id != 24)) {
                     continue;
                 }
                 $event_date = date("U", $EM_Event->start()->getTimestamp());
@@ -75,6 +78,7 @@ class EM_Limmud_CSV {
                         $row[] = $EM_Ticket_Booking->get_ticket()->get_price(true);
                         $row[] = '"' . $EM_Booking->get_person()->phone . '"';
                         $row[] = $EM_Booking->booking_meta['registration']['dbem_city'];
+						$row[] = self::booking_field('past_participation', $EM_Form, $EM_Booking);
 
 						$row[] = self::booking_field('ticket_days', $EM_Form, $EM_Booking);
 						$row[] = self::booking_field('ticket_type', $EM_Form, $EM_Booking);
@@ -122,10 +126,13 @@ class EM_Limmud_CSV {
             exit();
         }
 
-        if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && !empty($_REQUEST['limmud_accomodation']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')) {
+        if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && !empty($_REQUEST['limmud_approved']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')) {
+            /*
+            Only Approved and Awaiting Payment orders
+            */
 
             header("Content-Type: application/octet-stream; charset=utf-8");
-            header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-accomodation-" . date('Y-m-d-h-i', time()) . ".csv");
+            header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-approved-" . date('Y-m-d-h-i', time()) . ".csv");
             do_action('em_csv_header_output');
             echo "\xEF\xBB\xBF"; // UTF-8 for MS Excel (a little hacky... but does the job)
 
@@ -133,14 +140,14 @@ class EM_Limmud_CSV {
             $delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
             $delimiter = apply_filters('em_csv_delimiter', $delimiter);
 
-            $headers = array('event', 'ticket_name', 'hotel_name', 'order#', 'name', 'surname', 'role', 'age_group', 'age', 'ticket_type', 'special_needs', 'comment', 'status', 'meal');
+            $headers = array('event', 'ticket_name', 'hotel_name', 'order#', 'name', 'surname', 'role', 'age_group', 'age', 'ticket_type', 'special_needs', 'comment', 'status', 'meal', 'email', 'phone');
             fputcsv($handle, $headers, $delimiter);
 
             $orders = array();
 
             $events = EM_Events::get(array('scope'=>'all'));
             foreach ($events as $EM_Event) {
-                if (($EM_Event->event_id != 19) && ($EM_Event->event_id != 20) && ($EM_Event->event_id != 21)) {
+                if (($EM_Event->event_id != 22) && ($EM_Event->event_id != 23) && ($EM_Event->event_id != 24)) {
                     continue;
                 }
                 $event_date = date("U", $EM_Event->start()->getTimestamp());
@@ -150,6 +157,7 @@ class EM_Limmud_CSV {
                     $order['id'] = $EM_Booking->booking_id;
                     $order['person'] = $EM_Booking->get_person()->get_name();
                     $order['email'] = $EM_Booking->get_person()->user_email;
+                    $order['phone'] = '"' . $EM_Booking->get_person()->phone . '"';
                     $order['status'] = $EM_Booking->get_status(true);
                     if (($order['status'] != 'Approved') && ($order['status'] != 'Awaiting Payment')) {
                         continue;
@@ -169,7 +177,7 @@ class EM_Limmud_CSV {
                     $order['toddlers_num'] = 0;
                     $order['meal'] = 2;
 
-                    if (strpos($order['comment'], 'MEAL#1') !== false) {
+                    if (strpos($order['comment'], '#MEAL_1') !== false) {
                         $order['meal'] = 1;
                     }
 
@@ -179,9 +187,19 @@ class EM_Limmud_CSV {
                         $ticket_name = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->ticket_name, 'ru');  
 						if ($ticket_name == 'Количество участников') {
 							if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
+                                $i = 0;
 								foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
 									$person = array();
 									$person['role'] = 'участник';
+                                    if (($i == 0) && str_contains($order['comment'], '#PRESENTER') && !str_contains($order['comment'], '#PRESENTER_'))
+                                        $person['role'] = 'презентер';
+                                    if (($i > 0) && str_contains($order['comment'], '#PRESENTER_' . strval($i+1)))
+                                        $person['role'] = 'презентер';
+                                    if (($i == 0) && str_contains($order['comment'], '#VOLUNTEER') && !str_contains($order['comment'], '#VOLUNTEER_'))
+                                        $person['role'] = 'волонтер';
+                                    if (($i > 0) && str_contains($order['comment'], '#VOLUNTEER_' . strval($i+1)))
+                                        $person['role'] = 'волонтер';
+                                    $i += 1;
 									foreach( $attendee_data as $field_label => $field_value) {
 										$label = apply_filters('translate_text', $field_label, 'ru');
 										if ($label == 'Имя (на английском)') {
@@ -200,10 +218,12 @@ class EM_Limmud_CSV {
 													: (date("Y", $event_date) - $birth_date[2]));
 											
 												$person['age'] = $age;
-												if ($age >= 12) {
+												if ($age >= 18) {
 													$person['age_group'] = 'adult';
 												} else {
-													if ($age >= 3) {
+													if ($age >= 12) {
+														$person['age_group'] = 'youth';
+                                                    } elseif ($age >= 2) {
 														$person['age_group'] = 'child';
 													} else {
 														$person['age_group'] = 'toddler';
@@ -218,9 +238,12 @@ class EM_Limmud_CSV {
 										if ($label == 'Участвует в качестве') {
 											$person['role'] = apply_filters('translate_text', $field_value, 'ru'); 
 										}
+                                        if (($person['role'] == 'организатор') || ($person['role'] == 'презентер')) {
+                                            $order['meal'] = 1;
+                                        }
 									}
 									
-									if ($person['age_group'] == 'adult') {
+									if (($person['age_group'] == 'adult') || ($person['age_group'] == 'youth')) {
 										$order['adults'][] = $person;
 									} elseif ($person['age_group'] == 'child') {
 										$order['children'][] = $person;
@@ -260,6 +283,7 @@ class EM_Limmud_CSV {
                         }
                     }
 
+                    /*
                     // verify that the order has tickets for all people
                     if (($adult_id < count($order['adults'])) || ($child_id < count($order['children']))) {
                         $ticket_data = array();
@@ -273,6 +297,29 @@ class EM_Limmud_CSV {
                         $person['age_group'] = '';
                         $person['age'] = '';
                         $ticket_data['people'][] = $person;
+                        $order['tickets'][] = $ticket_data;
+                    }
+                    */
+
+                    // we use "per room" tickets in 2023 - hence let's just add missing tickets for adults and children
+                    if ($adult_id < count($order['adults'])) {
+                        $ticket_data = array();
+                        $ticket_data['name'] = 'Adult';
+                        $ticket_data['ticket_type'] = "";
+                        $ticket_data['people'] = array();
+                        for ($i = $adult_id; $i < count($order['adults']); $i++) {
+                            $ticket_data['people'][] = $order['adults'][$i];
+                        }
+                        $order['tickets'][] = $ticket_data;
+                    }
+                    if ($child_id < count($order['children'])) {
+                        $ticket_data = array();
+                        $ticket_data['name'] = 'Child';
+                        $ticket_data['ticket_type'] = "";
+                        $ticket_data['people'] = array();
+                        for ($i = $child_id; $i < count($order['children']); $i++) {
+                            $ticket_data['people'][] = $order['children'][$i];
+                        }
                         $order['tickets'][] = $ticket_data;
                     }
 
@@ -315,6 +362,8 @@ class EM_Limmud_CSV {
                        } else {
                            $row[] = '';
                        }
+                       $row[] = $order['email'];
+                       $row[] = $order['phone'];
                        fputcsv($handle, $row, $delimiter);
                    }
                }
@@ -325,6 +374,9 @@ class EM_Limmud_CSV {
         }
 
         if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && !empty($_REQUEST['limmud_hotel']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')) {
+            /*
+            Report for hotel - single line per room
+            */
 
             header("Content-Type: application/octet-stream; charset=utf-8");
             header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-hotel-" . date('Y-m-d-h-i', time()) . ".csv");
@@ -342,7 +394,7 @@ class EM_Limmud_CSV {
 
             $events = EM_Events::get(array('scope'=>'all'));
             foreach ($events as $EM_Event) {
-                if (($EM_Event->event_id != 19) && ($EM_Event->event_id != 21)) {
+                if (($EM_Event->event_id != 22) && ($EM_Event->event_id != 24)) {
                     continue;
                 }
                 $event_date = date("U", $EM_Event->start()->getTimestamp());
@@ -380,9 +432,19 @@ class EM_Limmud_CSV {
                         $ticket_name = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->ticket_name, 'ru');
 						if ($ticket_name == 'Количество участников') {
 							if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
+                                $i = 0;
 								foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
 									$person = array();
 									$person['role'] = 'участник';
+                                    if (($i == 0) && str_contains($order['comment'], '#PRESENTER') && !str_contains($order['comment'], '#PRESENTER_'))
+                                        $person['role'] = 'презентер';
+                                    if (($i > 0) && str_contains($order['comment'], '#PRESENTER_' . strval($i+1)))
+                                        $person['role'] = 'презентер';
+                                    if (($i == 0) && str_contains($order['comment'], '#VOLUNTEER') && !str_contains($order['comment'], '#VOLUNTEER_'))
+                                        $person['role'] = 'волонтер';
+                                    if (($i > 0) && str_contains($order['comment'], '#VOLUNTEER_' . strval($i+1)))
+                                        $person['role'] = 'волонтер';
+                                    $i += 1;
 									foreach( $attendee_data as $field_label => $field_value) {
 										$label = apply_filters('translate_text', $field_label, 'ru');
 										if ($label == 'Имя (на английском)') {
@@ -404,7 +466,7 @@ class EM_Limmud_CSV {
 												if ($age >= 12) {
 													$person['age_group'] = 'adult';
 												} else {
-													if ($age >= 3) {
+													if ($age >= 2) {
 														$person['age_group'] = 'child';
 													} else {
 														$person['age_group'] = 'toddler';
@@ -469,6 +531,7 @@ class EM_Limmud_CSV {
                         }
                     }
 
+                    /*
                     // verify that the order has tickets for all people
                     if (($adult_id < count($order['adults'])) || ($child_id < count($order['children']))) {
                         $ticket_data = array();
@@ -482,6 +545,28 @@ class EM_Limmud_CSV {
                         $person['age_group'] = '';
                         $person['age'] = '';
                         $ticket_data['people'][] = $person;
+                        $order['tickets'][] = $ticket_data;
+                    }
+                    */
+                    // we use "per room" tickets in 2023 - hence let's just add missing tickets for adults and children
+                    if ($adult_id < count($order['adults'])) {
+                        $ticket_data = array();
+                        $ticket_data['name'] = 'Adult';
+                        $ticket_data['ticket_type'] = "";
+                        $ticket_data['people'] = array();
+                        for ($i = $adult_id; $i < count($order['adults']); $i++) {
+                            $ticket_data['people'][] = $order['adults'][$i];
+                        }
+                        $order['tickets'][] = $ticket_data;
+                    }
+                    if ($child_id < count($order['children'])) {
+                        $ticket_data = array();
+                        $ticket_data['name'] = 'Child';
+                        $ticket_data['ticket_type'] = "";
+                        $ticket_data['people'] = array();
+                        for ($i = $child_id; $i < count($order['children']); $i++) {
+                            $ticket_data['people'][] = $order['children'][$i];
+                        }
                         $order['tickets'][] = $ticket_data;
                     }
 
@@ -535,6 +620,9 @@ class EM_Limmud_CSV {
         }
 
         if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && !empty($_REQUEST['limmud_transport']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')) {
+            /*
+            Transport report
+            */
 
             header("Content-Type: application/octet-stream; charset=utf-8");
             header("Content-Disposition: Attachment; filename=".sanitize_title(get_bloginfo())."-transport-" . date('Y-m-d-h-i', time()) . ".csv");
@@ -545,14 +633,14 @@ class EM_Limmud_CSV {
             $delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
             $delimiter = apply_filters('em_csv_delimiter', $delimiter);
 
-            $headers = array('ticket_id', 'ticket_type', 'order#', 'destination', 'name', 'surname', 'birthday', 'role', 'toddlers', 'special_needs', 'comment', 'status');
+            $headers = array('ticket_id', 'ticket_type', 'order#', 'destination', 'name', 'surname', 'birthday', 'role', 'toddlers', 'special_needs', 'comment', 'status', 'hotel', 'email');
             fputcsv($handle, $headers, $delimiter);
 
             $orders = array();
 
             $events = EM_Events::get(array('scope'=>'future'));
             foreach ($events as $EM_Event) {
-                if (($EM_Event->event_id != 19) && ($EM_Event->event_id != 21)) {
+                if (($EM_Event->event_id != 22) && ($EM_Event->event_id != 24)) {
                     continue;
                 }
                 $event_date = date("U", $EM_Event->start()->getTimestamp());
@@ -575,6 +663,7 @@ class EM_Limmud_CSV {
                     $order['bus_needed'] = apply_filters('translate_text', $EM_Form->get_formatted_value($EM_Form->form_fields['bus_needed'], $EM_Booking->booking_meta['booking']['bus_needed']), 'ru');
                     $order['special_needs'] = $EM_Form->get_formatted_value($EM_Form->form_fields['special_needs'], $EM_Booking->booking_meta['booking']['special_needs']);
                     $order['comment'] = $EM_Form->get_formatted_value($EM_Form->form_fields['dbem_comment'], $EM_Booking->booking_meta['booking']['dbem_comment']);
+                    $order['hotel_name'] = self::booking_field('hotel_name', $EM_Form, $EM_Booking);;
 
                     // populate arrays from tickets and attendees data
                     $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
@@ -582,8 +671,19 @@ class EM_Limmud_CSV {
                         $ticket_name = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->ticket_name, 'ru');  
 
                         if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
+                            $i = 0;
                             foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
                                 $person = array();
+                                $person['role'] = 'участник';
+                                if (($i == 0) && str_contains($order['comment'], '#PRESENTER') && !str_contains($order['comment'], '#PRESENTER_'))
+                                    $person['role'] = 'презентер';
+                                if (($i > 0) && str_contains($order['comment'], '#PRESENTER_' . strval($i+1)))
+                                    $person['role'] = 'презентер';
+                                if (($i == 0) && str_contains($order['comment'], '#VOLUNTEER') && !str_contains($order['comment'], '#VOLUNTEER_'))
+                                    $person['role'] = 'волонтер';
+                                if (($i > 0) && str_contains($order['comment'], '#VOLUNTEER_' . strval($i+1)))
+                                    $person['role'] = 'волонтер';
+                                $i += 1;
                                 foreach( $attendee_data as $field_label => $field_value) {
                                     $label = apply_filters('translate_text', $field_label, 'ru');
                                     if ($label == 'Имя (на английском)') {
@@ -605,7 +705,7 @@ class EM_Limmud_CSV {
                                             if ($age >= 12) {
                                                 $person['age_group'] = 'adult';
                                             } else {
-                                                if ($age >= 3) {
+                                                if ($age >= 2) {
                                                     $person['age_group'] = 'child';
                                                 } else {
                                                     $person['age_group'] = 'toddler';
@@ -621,11 +721,19 @@ class EM_Limmud_CSV {
                                     }
                                 }
 
-                                if ($person['role'] == 'презентер') {
-                                    if (strpos($order['comment'], '#child_program') !== false) {
-                                        $person['role'] = 'мадрих детской программы';
-                                    }
+                                if (($person['role'] == 'презентер') && (strpos($order['comment'], '#CHILDREN') !== false)) {
+                                    $person['role'] = 'мадрих детской программы';
                                 }
+
+                                $person['bus_needed'] = '';
+                                if ((strpos($order['comment'], '#BUS_' . strval($i+1) . '_NO') !== false) || (strpos($order['comment'], '#BUS_' . strval($i+1) . '_NA') !== false))
+                                    continue;
+                                if (strpos($order['comment'], '#BUS_' . strval($i+1) . '_TA') !== false)
+                                    $person['bus_needed'] = 'Тель Авив';
+                                if (strpos($order['comment'], '#BUS_' . strval($i+1) . '_J') !== false)
+                                    $person['bus_needed'] = 'Иерусалим';
+                                if (strpos($order['comment'], '#BUS_' . strval($i+1) . '_H') !== false)
+                                    $person['bus_needed'] = 'Хайфа';
 
                                 if ($person['age_group'] == 'adult' || $person['age_group'] == 'child') {
                                     $order['people'][] = $person;
@@ -639,18 +747,9 @@ class EM_Limmud_CSV {
                             $ticket_data = array();
                             $ticket_data['name'] = $ticket_name;
                             $ticket_data['people'] = array();
+                            $ticket_data['bus_needed'] = $order['bus_needed'];
                             
                             for ($i = 0; $i < $EM_Ticket_Booking->get_spaces(); $i++) {
-                                $ticket_data['bus_needed'] = $order['bus_needed'];
-                                if (strpos($order['comment'], 'TRANSPORT'.($i+1).'#TA') !== false) {
-                                    $ticket_data['bus_needed'] = 'Тель Авив';
-                                }
-                                if (strpos($order['comment'], 'TRANSPORT'.($i+1).'#J') !== false) {
-                                    $ticket_data['bus_needed'] = 'Иерусалим';
-                                }
-                                if (strpos($order['comment'], 'TRANSPORT'.($i+1).'#H') !== false) {
-                                    $ticket_data['bus_needed'] = 'Хайфа';
-                                }
                                 $order['tickets'][] = $ticket_data;
                             }
                         }
@@ -663,7 +762,11 @@ class EM_Limmud_CSV {
                     // populate tickets
                     $person_id = 0;
                     foreach($order['tickets'] as $key => $room) {
-                        $order['tickets'][$key]['people'][] = $order['people'][$person_id++];
+                        if ($order['people'][$person_id]['bus_needed'] != '') {
+                            $order['tickets'][$key]['bus_needed'] = $order['people'][$person_id]['bus_needed'];
+                        }
+                        $order['tickets'][$key]['people'][] = $order['people'][$person_id];
+                        $person_id++;
                     }
                     
                     // verify that the order has tickets for all people
@@ -728,6 +831,8 @@ class EM_Limmud_CSV {
                        $row[] = $order['special_needs'];
                        $row[] = $order['comment'];
                        $row[] = $order['status'];
+                       $row[] = $order['hotel_name'];
+                       $row[] = $order['email'];
                        fputcsv($handle, $row, $delimiter);
                    }
                }
