@@ -103,6 +103,22 @@ bookings (both approved and in pending state) exceeds the specified threshold
 booking is moved to "Waiting List" state. This is done by "booking summary" page
 logic - see update_booking() function for details.
 
+Four types of reports can be generated:
+  * Full bookings report - contains all bookings and all tickets
+  * Approved bookings report - contains only approved and awating payment bookings,
+      one line per person
+  * Hotel report - one line per room
+  * Transportation report - only people who ordered transportation
+
+Special hashtags that can be used in booking comment:
+  * #PRESENTER - 1st participant is presenter (e.g. he ordered a place in 
+      regular registration - where "role" is missing)
+  * #PRESENTER_N - Nth participant is presenter
+  * #VOLUNTEER / #VOLUNTEER_N - same as above for volunteers
+  * #CHILDREN - participants with "presenter" role are working on children's program
+  * #BUS_N_TA / #BUS_N_J / #BUS_N_H / #BUS_N_NO - Nth participant needs bus to
+      Tel Aviv / Jerusalem / Haifa / doesn't need bus (used when participants
+      in the same order need transportation from different cities)
 
 What to do when new year comes
 ------------------------------

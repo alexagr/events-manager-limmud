@@ -62,7 +62,7 @@ class EM_Limmud_Tickets {
             
             $hotel_name = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['hotel_name'], 'ru');
             if (!array_key_exists($hotel_name, $hotel_bookings))
-                $hotel_bookings[$hotel_name] = array('pending'=>0, 'partial'=>0, 'approved'=>0, 'not_fully_paid'=>0, 'waiting_list'=>0);
+                $hotel_bookings[$hotel_name] = array('limits'=>0, 'pending'=>0, 'partial'=>0, 'approved'=>0, 'not_fully_paid'=>0, 'waiting_list'=>0);
 
             switch ($EM_Booking->booking_status) {
                 case 0:
@@ -85,6 +85,30 @@ class EM_Limmud_Tickets {
             }
         }
 
+        $waiting_list = get_post_meta($EM_Event->post_id, '_waiting_list', true);
+        if (!empty($waiting_list) && (strlen($waiting_list) > 5)) {
+            $waiting_list_array = explode(",", $waiting_list);
+            foreach ($waiting_list_array as $waiting_list_str) {
+                $waiting_list_data = explode("=", $waiting_list_str);
+                if ((count($waiting_list_data) != 2) || !is_numeric($waiting_list_data[1]))
+                    continue;
+
+                $key = $waiting_list_data[0];
+                $value = intval($waiting_list_data[1]);
+
+                $found = false;
+                foreach ($hotel_bookings as $hotel_name => $hotel_data) {
+                    if (str_contains($hotel_name, $key)) {
+                        $hotel_bookings[$hotel_name]['limits'] += $value;
+                        $found = true;
+                    }
+                }
+
+                if (!$found)
+                    $hotel_bookings[$key] = array('limits'=>0, 'pending'=>0, 'partial'=>0, 'approved'=>0, 'not_fully_paid'=>0, 'waiting_list'=>0);
+            }
+        }
+
         if (count($hotel_bookings) > 0) {
         ?>
         <div class="wrap">
@@ -99,6 +123,7 @@ class EM_Limmud_Tickets {
                         <th><?php esc_html_e('Awaiting Payment','events-limmud'); ?></th>
                         <th><?php esc_html_e('Not Fully Paid / Expired','events-limmud'); ?></th>
                         <th><?php esc_html_e('Waiting List','events-limmud'); ?></th>
+                        <th><?php esc_html_e('Limits','events-limmud'); ?></th>
                         <th>&nbsp;</th>
                     </tr>
                 </thead>    
@@ -125,6 +150,9 @@ class EM_Limmud_Tickets {
                                 </td>
                                 <td class="hotel-waiting-list">
                                     <span class="hotel_waiting_list"><?php echo $value['waiting_list']; ?></span>
+                                </td>
+                                <td class="hotel-total-rooms">
+                                    <span class="hotel_total_rooms"><?php echo $value['limits']; ?></span>
                                 </td>
                             </tr>
                         </tbody>
@@ -155,6 +183,7 @@ class EM_Limmud_Tickets {
         $hotel_bookings = array();
         if (!empty($events)) {
             foreach ($events as $EM_Event) {
+                $hotel_total = array();
                 $EM_Bookings = $EM_Event->get_bookings();
                 foreach ($EM_Bookings->bookings as $EM_Booking) {
                     if (!array_key_exists('hotel_name', $EM_Booking->booking_meta['booking']))
@@ -162,7 +191,9 @@ class EM_Limmud_Tickets {
                     
                     $hotel_name = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['hotel_name'], 'ru');
                     if (!array_key_exists($hotel_name, $hotel_bookings))
-                        $hotel_bookings[$hotel_name] = array('pending'=>0, 'partial'=>0, 'approved'=>0, 'not_fully_paid'=>0, 'waiting_list'=>0);
+                        $hotel_bookings[$hotel_name] = array('limits'=>0, 'pending'=>0, 'partial'=>0, 'approved'=>0, 'not_fully_paid'=>0, 'waiting_list'=>0);
+                    if (!array_key_exists($hotel_name, $hotel_total))
+                        $hotel_total[$hotel_name] = 0;
         
                     switch ($EM_Booking->booking_status) {
                         case 0:
@@ -172,18 +203,47 @@ class EM_Limmud_Tickets {
                             } else {
                                 $hotel_bookings[$hotel_name]['pending'] += 1;
                             }
+                            $hotel_total[$hotel_name] += 1;
                             break;
                         case 1:
                             $hotel_bookings[$hotel_name]['approved'] += 1;
+                            $hotel_total[$hotel_name] += 1;
                             break;
                         case 7:
                             $hotel_bookings[$hotel_name]['not_fully_paid'] += 1;
+                            $hotel_total[$hotel_name] += 1;
                             break;
                         case 8:
                             $hotel_bookings[$hotel_name]['waiting_list'] += 1;
+                            $hotel_total[$hotel_name] += 1;
                             break;
                     }
                 }
+
+                $waiting_list = get_post_meta($EM_Event->post_id, '_waiting_list', true);
+                if (!empty($waiting_list) && (strlen($waiting_list) > 5)) {
+                    $waiting_list_array = explode(",", $waiting_list);
+                    foreach ($waiting_list_array as $waiting_list_str) {
+                        $waiting_list_data = explode("=", $waiting_list_str);
+                        if ((count($waiting_list_data) != 2) || !is_numeric($waiting_list_data[1]))
+                            continue;
+        
+                        $key = $waiting_list_data[0];
+                        $value = intval($waiting_list_data[1]);
+        
+                        $found = false;
+                        foreach ($hotel_bookings as $hotel_name => $hotel_data) {
+                            if (str_contains($hotel_name, $key)) {
+                                $hotel_bookings[$hotel_name]['limits'] += max($hotel_total[$hotel_name], $value);
+                                $found = true;
+                            }
+                        }
+        
+                        if (!$found)
+                            $hotel_bookings[$key] = array('limits'=>0, 'pending'=>0, 'partial'=>0, 'approved'=>0, 'not_fully_paid'=>0, 'waiting_list'=>0);
+                    }
+                }
+        
             }
         }
 
@@ -201,6 +261,7 @@ class EM_Limmud_Tickets {
                         <th><?php esc_html_e('Awaiting Payment','events-limmud'); ?></th>
                         <th><?php esc_html_e('Not Fully Paid / Expired','events-limmud'); ?></th>
                         <th><?php esc_html_e('Waiting List','events-limmud'); ?></th>
+                        <th><?php esc_html_e('Limits','events-limmud'); ?></th>
                         <th>&nbsp;</th>
                     </tr>
                 </thead>    
@@ -227,6 +288,9 @@ class EM_Limmud_Tickets {
                                 </td>
                                 <td class="hotel-waiting-list">
                                     <span class="hotel_waiting_list"><?php echo $value['waiting_list']; ?></span>
+                                </td>
+                                <td class="hotel-total-rooms">
+                                    <span class="hotel_total_rooms"><?php echo $value['limits']; ?></span>
                                 </td>
                             </tr>
                         </tbody>
