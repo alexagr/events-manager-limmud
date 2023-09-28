@@ -135,6 +135,7 @@ class EM_Limmud_Frontend {
         function updateForm() {
             var adults = 0; 
             var kids = 0;
+            var child_program = false;
             var toddlers = 0;
             var registration = "";
             var participation_type = ""; 
@@ -155,6 +156,9 @@ class EM_Limmud_Frontend {
                         } else {
                             toddlers++;
                         }
+                    }
+                    if ((age >= 3) && (age <= 17)) {
+                        child_program = true;
                     }
                 }
 
@@ -346,14 +350,36 @@ class EM_Limmud_Frontend {
             displayElementByName("room_label", display_room_label);
             displayElementByName("too_many_adults_label", display_too_many_adults_label);
             displayElementByName("too_little_adults_label", display_too_little_adults_label);
+            
+            var child_program_label_div = document.getElementById("child_program_label_div");
+            if (child_program_label_div) {
+                if (child_program) {
+                    child_program_label_div.style.display = "block";
+                } else {
+                    child_program_label_div.style.display = "none";
+                }
+            }
 
             var display_submit = !display_room_label && !display_too_many_adults_label && !display_too_little_adults_label;
+
+            var personal_data = document.getElementsByName("personal_data");
+            if ((personal_data.length > 0) && !personal_data[0].checked) {
+                display_submit = false;
+            }
+
+            var photo_use = document.getElementsByName("photo_use");
+            if ((photo_use.length > 0) && !photo_use[0].checked) {
+                display_submit = false;
+            }
+
             displaySubmit(display_submit);
         }
         
         $("select").change(updateForm);
         $(".em-tickets tbody").on("change", ".input-date-select", updateForm);
         $(".em-tickets tbody").on("change", ".input-field-participation_type", updateForm);
+        $("#personal_data").change(updateForm);
+        $("#photo_use").change(updateForm);
         updateForm();
 
     <?php
