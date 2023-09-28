@@ -235,13 +235,13 @@ class EM_Limmud_Frontend {
                 else if (document.getElementsByTagName("html")[0].getAttribute("lang").includes("he"))
                 {
                     if ((adults == 0) && (kids == 0)) {
-                        summary_text += "אין אף משתתף מעל גיל 2";
+                        summary_text += "אין אף משתתף/ת מעל גיל 2";
                     } else {
                         if (adults == 1) {
-                            summary_text += "משתתף מבוגר אחד (מעל גיל 12)";
+                            summary_text += "משתתף/ת מבוגר/ת אחד/ת (מעל גיל 12)";
                         }
                         else if (adults > 1) {
-                            summary_text += adults.toString() + " משתתפים מבוגרים (מעל גיל 12)";
+                            summary_text += adults.toString() + " משתתפים/ות מבוגרים/ות (מעל גיל 12)";
                         }
                         if ((kids > 0) && (summary_text != "")) {
                             if (toddlers > 0) {
@@ -251,10 +251,10 @@ class EM_Limmud_Frontend {
                             }
                         }
                         if (kids == 1) {
-                            summary_text += "ילד אחד (מגיל 2 עד 11)";
+                            summary_text += "ילד/ה אחד/ת (מגיל 2 עד 11)";
                         }
                         else if (kids > 1) {
-                            summary_text += kids.toString() + " ילדים (מגיל 2 עד 11)";
+                            summary_text += kids.toString() + " ילדים/ות (מגיל 2 עד 11)";
                         }
                         if (toddlers > 0) {
                             summary_text += " ו";
@@ -265,7 +265,7 @@ class EM_Limmud_Frontend {
                             }
                         }
                     }
-                    els[0].innerText = "בהרשמתכם " + summary_text + ".";
+                    els[0].innerText = "בהרשמתכם/ן " + summary_text + ".";
                     els[0].style.color = "dodgerblue";
                 }
                 else

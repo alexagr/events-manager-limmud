@@ -195,7 +195,7 @@ class EM_Limmud_Misc {
         unset($columns['price']);
         
         // change ticket type and spaces titles
-        // $columns['type'] = "<h5>[:ru]Количество участников[:he]כמות משתתפים[:]</h5>";
+        // $columns['type'] = "<h5>[:ru]Количество участников[:he]כמות משתתפים/ות[:]</h5>";
         // $columns['spaces'] = "<h5>#</h5>";
         $columns['type'] = "";
         $columns['spaces'] = "";
@@ -458,7 +458,7 @@ class EM_Limmud_Misc {
         if ($waiting_list_status == 0) {
             ?>
             <div class="info">
-                [:ru]В связи с большим количеством поступивших заявок, места с проживанием закончились. Вы можете записаться в лист ожидания и мы свяжемся с вами, если освободятся места.[:he]עקב ביקוש רב המקומות עם לינה אזלו. אתם יכולים להירשם לרשימת המתנה וניצור אתכם קשר במידה והמקומות יתפנו.[:]
+                [:ru]В связи с большим количеством поступивших заявок, места с проживанием закончились. Вы можете записаться в лист ожидания и мы свяжемся с вами, если освободятся места.[:he]עקב ביקוש רב המקומות עם לינה אזלו. אתם/ן יכולים/ות להירשם לרשימת המתנה וניצור אתכם/ן קשר במידה והמקומות יתפנו.[:]
             </div>
             <?php
             return;
@@ -599,16 +599,16 @@ class EM_Limmud_Misc {
         $child_num = EM_Limmud_Booking::$child_num;
         if (!self::check_room_limit($EM_Booking->get_event(), $adult_num, $child_num)) {
             if ($child_num > 0) {
-                $EM_Booking->add_error(__('[:ru]Номера для ' . strval($adult_num) . ' взрослых и ' . strval($child_num) . ' детей закончились[:he]חדרים ל-' . strval($adult_num) . ' מבוגרים ו-' . strval($child_num) . ' ילדים נגמרו[:]'));
+                $EM_Booking->add_error(__('[:ru]Номера для ' . strval($adult_num) . ' взрослых и ' . strval($child_num) . ' детей закончились[:he]חדרים ל-' . strval($adult_num) . ' מבוגרים/ות ו-' . strval($child_num) . ' ילדים/ות נגמרו[:]'));
             } else {
                 if ($adult_num == 1) {
                     $EM_Booking->add_error(__('[:ru]Одноместные номера закончились[:he]חדרים ליחידים נגמרו[:]'));
                 } elseif ($adult_num == 2) {
                     $EM_Booking->add_error(__('[:ru]Двухместные номера закончились[:he]חדרים זוגיים נגמרו[:]'));
                 } elseif ($adult_num == 3) {
-                    $EM_Booking->add_error(__('[:ru]Трехместные номера закончились[:he]חדרים לשלושה מבוגרים נגמרו[:]'));
+                    $EM_Booking->add_error(__('[:ru]Трехместные номера закончились[:he]חדרים לשלוש/ה מבוגרים/ות נגמרו[:]'));
                 } else {
-                    $EM_Booking->add_error(__('[:ru]Номера для ' . strval($adult_num) . ' взрослых закончились[:he]חדרים ל-' . strval($adult_num) . ' מבוגרים נגמרו[:]'));
+                    $EM_Booking->add_error(__('[:ru]Номера для ' . strval($adult_num) . ' взрослых закончились[:he]חדרים ל-' . strval($adult_num) . ' מבוגרים/ות נגמרו[:]'));
                 }
             }
             $result = false;
