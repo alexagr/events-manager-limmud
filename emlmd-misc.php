@@ -252,7 +252,6 @@ class EM_Limmud_Misc {
         if ($return['result'] && (get_option('dbem_automatic_payment') == 'enable')) {
             $my_booking_summary_page_id = get_option('dbem_booking_summary_page');
             if ($my_booking_summary_page_id != 0) {
-                // $return['redirect'] = 'http://limmudfsu.org.il/site/booking-summary/?booking_id=' . $EM_Booking->booking_id;
                 $return['redirect'] = get_post_permalink($my_booking_summary_page_id) . '&booking_id=' . $EM_Booking->booking_id . '&secret=' . md5($EM_Booking->person->user_email);
             }
         }
@@ -262,22 +261,34 @@ class EM_Limmud_Misc {
     public static function em_events_admin_bookings_footer(){
         global $EM_Event;
         $waiting_list = get_post_meta($EM_Event->post_id, '_waiting_list', true);
+        $room_limit = get_post_meta($EM_Event->post_id, '_room_limit', true);
 		?>
         <p>
             <label>Waiting List</label>
             <input type="text" name="waiting_list" size="30" value="<?php echo $waiting_list; ?>" /><br />
             <em>Defines amount of available rooms/spaces after which tickets will be moved to &quot;Waiting List&quot;. Syntax #1: comma-separated list of hotel_name=rooms_num, where hotel_name is partial &quot;hotel_name&quot; booking attribute - e.g. &quot;King Solomon=30,Club=50,Astoria=0&quot;. Syntax #2: limit number of bookings - &quot;bookings=50&quot;. Syntax #3: limit number of spaces - &quot;spaces=150&quot;. Leave blank for no limit.</em>
         </p>
+        <p>
+            <label>Room Limit</label>
+            <input type="text" name="room_limit" size="30" value="<?php echo $room_limit; ?>" /><br />
+            <em>Defines limit for specific room types. Syntax: comma-separated list of &lt;adults_num&gt;+&lt;children_num&gt;=&lt;limit&gt; - e.g. &quot;3+0=15,2+3=8&quot;. Leave blank for no limit.</em>
+        </p>
 		<?php
 	}
 
     public static function em_event_save_meta_pre($EM_Event){
         if( !empty($EM_Event->duplicated) ) return; //if just duplicated, we ignore this and let EM carry over duplicate event data
-        if( !empty($_REQUEST['waiting_list']) && (strlen($_REQUEST['waiting_list']) > 5)) {
+        if( !empty($_REQUEST['waiting_list']) && (strlen($_REQUEST['waiting_list']) > 3)) {
             update_post_meta($EM_Event->post_id, '_waiting_list', $_REQUEST['waiting_list']);
         }
         else {
             update_post_meta($EM_Event->post_id, '_waiting_list', '');
+        }
+        if( !empty($_REQUEST['room_limit']) && (strlen($_REQUEST['room_limit']) > 3)) {
+            update_post_meta($EM_Event->post_id, '_room_limit', $_REQUEST['room_limit']);
+        }
+        else {
+            update_post_meta($EM_Event->post_id, '_room_limit', '');
         }
 	}
 
@@ -293,7 +304,7 @@ class EM_Limmud_Misc {
 
         $waiting_list_limits = array();
         $waiting_list = get_post_meta($EM_Event->post_id, '_waiting_list', true);
-        if (!empty($waiting_list) && (strlen($waiting_list) > 5)) {
+        if (!empty($waiting_list) && (strlen($waiting_list) > 3)) {
             // "waiting_list" meta-data variable supports the following syntaxes:
             //   - comma-separated list of hotel_name=rooms_available - e.g. "King Solomon=30,Club Hotel=50,Astoria=0"
             //     where:
@@ -376,6 +387,58 @@ class EM_Limmud_Misc {
         return array(2, $waiting_list_limits);
     }
 
+    public static function check_room_limit($EM_Event, $adult_num, $child_num) {
+        // check that event has enough rooms of specific type available - as per "room_limit" meta-data variable
+        // return status (bool)
+
+        $room_name = strval($adult_num) . '+' . strval($child_num);
+
+        $room_limit_limits = array();
+        $room_limit = get_post_meta($EM_Event->post_id, '_room_limit', true);
+        if (!empty($room_limit) && (strlen($room_limit) > 3)) {
+            // "room_limit" meta-data variable contains comma-separated list of <adult_num>+<child_num>=<limit>
+            // e.g. "3+0=15,3+2=8"
+            $room_limit_array = explode(",", $room_limit);
+            foreach ($room_limit_array as $room_limit_str) {
+                $room_limit_data = explode("=", $room_limit_str);
+                if ((count($room_limit_data) != 2) || !is_numeric($room_limit_data[1]))
+                    continue;
+
+                if ($room_limit_data[0] == $room_name) {
+                    $value = intval($room_limit_data[1]);
+
+                    $count = 0;
+                    $EM_Bookings = $EM_Event->get_bookings();
+                    foreach ($EM_Bookings->bookings as $EM_Booking) {
+                        switch ($EM_Booking->booking_status) {
+                            case 0:
+                            case 1:
+                            case 5:
+                            case 7:
+                                if (array_key_exists('room_type', $EM_Booking->booking_meta['booking'])) {
+                                    $participation_type == 'с проживанием';
+                                    if (array_key_exists('participation_type', $EM_Booking->booking_meta['booking'])) {
+                                        $participation_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['participation_type'], 'ru');
+                                    }
+                                    if ($participation_type != 'без проживания') {
+                                        EM_Limmud_Booking::calculate_participants($EM_Booking);
+                                        if (($adult_num == EM_Limmud_Booking::$adult_num) && ($child_num == EM_Limmud_Booking::$child_num)) {
+                                            $count++;
+                                        }
+                                    }
+                                }
+                                break;
+                        }
+                    }
+
+                    return ($count < $value);
+                }
+            }
+        }
+        
+        return True;
+    }
+
     public static function em_booking_form_before_tickets($EM_Event) {
         list($waiting_list_status, $waiting_list_limits) = self::check_waiting_list($EM_Event);
         if ($waiting_list_status == 0) {
@@ -391,6 +454,7 @@ class EM_Limmud_Misc {
             return;
         }
 
+        /*
         if (array_key_exists("King Solomon", $waiting_list_limits) && array_key_exists("Club", $waiting_list_limits) && array_key_exists("Astoria", $waiting_list_limits)) {
             if ($waiting_list_limits["King Solomon"] > 0) {
                 if ($waiting_list_limits["Club"] > 0) {
@@ -476,9 +540,21 @@ class EM_Limmud_Misc {
             }
             return;
         }
+        */
     }
 
     public static function em_booking_validate($result, $EM_Booking) {
+        if (!array_key_exists('room_type', $EM_Booking->booking_meta['booking'])) {
+            return $result;
+        }
+
+        if (array_key_exists('participation_type', $EM_Booking->booking_meta['booking'])) {
+            $participation_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['participation_type'], 'ru');
+            if ($participation_type == 'без проживания') {
+                return $result;
+            }
+        }
+
         if (array_key_exists('hotel_name', $EM_Booking->booking_meta['booking'])) {
             $hotel_name = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['hotel_name'], 'ru');
             if (empty($EM_Booking->booking_status)) {
@@ -489,6 +565,19 @@ class EM_Limmud_Misc {
                 }
             }
         }
+
+        EM_Limmud_Booking::calculate_participants($EM_Booking);
+        $adult_num = EM_Limmud_Booking::$adult_num;
+        $child_num = EM_Limmud_Booking::$child_num;
+        if (!self::check_room_type($adult_num, $child_num)) {
+            if ($child_num > 0) {
+                $EM_Booking->add_error(__('[:ru]Комнаты для ' . strval($adult_num) . ' взрослых и ' . strval($child_num) . ' детей закончились[:he]חדרים ל-' . strval($adult_num) . ' מבוגרים ו-' . strval($child_num) . ' ילדים נגמרו[:]'));
+            } else {
+                $EM_Booking->add_error(__('[:ru]Комнаты для ' . strval($adult_num) . ' взрослых закончились[:he]חדרים ל-' . strval($adult_num) . ' מבוגרים נגמרו[:]'));
+            }
+            $result = false;
+        }
+
         return $result;    
     }
 
