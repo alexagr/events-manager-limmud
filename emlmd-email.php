@@ -119,6 +119,10 @@ class EM_Limmud_Emails {
                 if (($field['type'] != 'html') && ($field['type'] != 'checkbox') && isset($EM_Booking->booking_meta['booking'][$fieldid]) && ($EM_Booking->booking_meta['booking'][$fieldid] != 'n/a') && ($EM_Booking->booking_meta['booking'][$fieldid] != 'N/A')) {
                     $replace = $replace . apply_filters('translate_text', $field['label'], $lang) . " : " . apply_filters('translate_text', $EM_Booking->booking_meta['booking'][$fieldid], $lang) . "\n";
                 }                        
+                if (($field['type'] == 'checkbox') && isset($EM_Booking->booking_meta['booking'][$fieldid])) {
+                    $value = ($EM_Booking->booking_meta['booking'][$fieldid]) ? '[:ru]да[:he]כן[:]' : '[:ru]нет[:he]לא[:]';
+                    $replace = $replace . apply_filters('translate_text', $field['label'], $lang) . " : " . apply_filters('translate_text', $value, $lang) . "\n";
+                }                        
             }
         }
         return $replace;
