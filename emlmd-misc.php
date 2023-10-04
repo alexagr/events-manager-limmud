@@ -274,7 +274,7 @@ class EM_Limmud_Misc {
         <p>
             <label>Waiting List</label>
             <input type="text" name="waiting_list" size="30" value="<?php echo $waiting_list; ?>" /><br />
-            <em>Defines amount of available rooms/spaces after which tickets will be moved to &quot;Waiting List&quot;. Syntax #1: comma-separated list of hotel_name=rooms_num, where hotel_name is partial &quot;hotel_name&quot; booking attribute - e.g. &quot;King Solomon=30,Club=50,Astoria=0&quot;. Syntax #2: limit number of bookings - &quot;bookings=50&quot;. Syntax #3: limit number of spaces - &quot;spaces=150&quot;. Leave blank for no limit.</em>
+            <em>Defines amount of available rooms/spaces after which tickets will be moved to &quot;Waiting List&quot;. Syntax #1: comma-separated list of hotel_name=rooms_num, where hotel_name is partial &quot;hotel_name&quot; booking attribute - e.g. &quot;King Solomon=30,Club=50,Astoria=0&quot;. Syntax #2: limit number of bookings - &quot;bookings=50&quot;. Syntax #3: limit number of spaces - &quot;spaces=150&quot;. Syntax #4 (only for events with &quot;participation_type&quot; attribute): limit number of rooms / spaces without accomodation - &quot;rooms=70&quot; or &quot;no-accomodation=50&quot;. Leave blank for no limit.</em>
         </p>
         <p>
             <label>Room Limit</label>
@@ -331,10 +331,10 @@ class EM_Limmud_Misc {
             if ((count($waiting_list_data) != 2) || !is_numeric($waiting_list_data[1]))
                 continue;
 
-            $hotel_name = $waiting_list_data[0];
+            $key = $waiting_list_data[0];
             $value = intval($waiting_list_data[1]);
 
-            $waiting_list_limits[$hotel_name] = $value;
+            $waiting_list_limits[$key] = $value;
         }
 
         if (empty($waiting_list_limits)) {
@@ -360,13 +360,24 @@ class EM_Limmud_Misc {
                 case 1:
                 case 5:
                 case 7:
-                    $hotel_name = "";
+                    $count = 1;
+                    $hotel_name = '';
                     if (array_key_exists('hotel_name', $EM_Booking->booking_meta['booking'])) {
                         $hotel_name = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['hotel_name'], 'ru');
                     }
+                    $limit_name = '';
+                    if (array_key_exists('room_type', $EM_Booking->booking_meta['booking']) && array_key_exists('participation_type', $EM_Booking->booking_meta['booking'])) {
+                        $participation_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['participation_type'], 'ru');
+                        if ($participation_type == 'с проживанием') {
+                            $limit_name = 'rooms';
+                        } else {
+                            $limit_name = 'no-accomodation';
+                            $count = $EM_Booking->get_spaces();
+                        }
+                    }
                     foreach ($waiting_list_limits as $key => $value) {
-                        if (((strlen($hotel_name) > 0) && str_contains($hotel_name, $key)) || ($key == "bookings")) {
-                            $waiting_list_limits[$key] = $value - 1;
+                        if ((!empty($hotel_name) && str_contains($hotel_name, $key)) || (!empty($limit_name) && ($key == $limit_name)) || ($key == "bookings")) {
+                            $waiting_list_limits[$key] = $value - $count;
                         }
                     }
                     break;
