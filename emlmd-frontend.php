@@ -294,7 +294,7 @@ class EM_Limmud_Frontend {
                     display_too_little_adults_label = true;
                     updateComboBox("room_type", [ROOM_INVALID]);
                 }
-                else if (adults >= 3) {
+                else if (adults > 3) {
                     display_too_many_adults_label = true;
                     updateComboBox("room_type", [ROOM_INVALID]);
                 }
