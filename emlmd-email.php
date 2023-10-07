@@ -234,6 +234,51 @@ class EM_Limmud_Emails {
             if ($full_result == '#_EVENTYEAR') {
                 $replace = $EM_Booking->get_event()->start()->format('Y');
             }
+
+            if ($full_result == '#_BOOKINGNAMES') {
+                $event_date = date("U", $EM_Booking->get_event()->start()->getTimestamp());
+                $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
+                $names = array();
+                if (array_key_exists('additional_emails', $EM_Booking->booking_meta['booking'])) {
+                    foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
+                        if (($EM_Ticket_Booking->get_price() >= 0) && ($EM_Ticket_Booking->get_price() < 1)) {
+                            if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
+                                foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
+                                    $first_name = '';
+                                    $last_name = '';
+                                    foreach( $attendee_data as $attendee_label => $attendee_value) {
+                                        $label = apply_filters('translate_text', $attendee_label, 'ru');
+                                        if (str_contains($label, 'Имя')) {
+                                            $first_name = trim($attendee_value);
+                                        }
+                                        if (str_contains($label, 'Фамилия')) {
+                                            $last_name = trim($attendee_value);
+                                        }
+                                    }
+                                    if (!empty($first_name) && !empty($last_name)) {
+                                        $names[] = $first_name . ' ' . $last_name;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (empty($names)) {
+                    $replace = $EM_Booking->get_person()->get_name();
+                } else {
+                    $replace = implode(', ', $names);
+                }
+            }
+
+            if ($full_result == '#_BOOKINGEMAILS') {
+                $replace = $EM_Booking->get_person()->user_email;
+                if (array_key_exists('additional_emails', $EM_Booking->booking_meta['booking'])) {
+                    $additional_emails = $EM_Booking->booking_meta['booking']['additional_emails'];
+                    $additional_emails = preg_replace('/[\s,]+/', ', ', $additional_emails);
+                    $replace .= ', ' . $additional_emails;
+                }
+            }
         }
         return $replace;
     }   

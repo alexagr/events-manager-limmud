@@ -669,7 +669,7 @@ class EM_Limmud_Misc {
             if( !empty($msg['user']['attachments']) && is_array($msg['user']['attachments']) ) {
                 $attachments = $msg['user']['attachments'];
             }
-            foreach ($additionals_email_array as $additional_email) {
+            foreach ($additional_emails_array as $additional_email) {
                 if (!empty($additional_email)) {
                     // ignore failures in email_send
                     $EM_Booking->email_send( $msg['user']['subject'], $msg['user']['body'], $additional_email, $attachments );
