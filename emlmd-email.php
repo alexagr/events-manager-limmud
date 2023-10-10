@@ -236,7 +236,6 @@ class EM_Limmud_Emails {
             }
 
             if ($full_result == '#_BOOKINGNAMES') {
-                $event_date = date("U", $EM_Booking->get_event()->start()->getTimestamp());
                 $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
                 $names = array();
                 if (array_key_exists('additional_emails', $EM_Booking->booking_meta['booking'])) {
@@ -274,10 +273,14 @@ class EM_Limmud_Emails {
             if ($full_result == '#_BOOKINGEMAILS') {
                 $replace = $EM_Booking->get_person()->user_email;
                 if (array_key_exists('additional_emails', $EM_Booking->booking_meta['booking'])) {
-                    $additional_emails = $EM_Booking->booking_meta['booking']['additional_emails'];
+                    $additional_emails = trim($EM_Booking->booking_meta['booking']['additional_emails']);
                     $additional_emails = preg_replace('/[\s,]+/', ', ', $additional_emails);
                     $replace .= ', ' . $additional_emails;
                 }
+            }
+
+            if ($full_result == '#_EVENTNAMERU') {
+                $replace = apply_filters('translate_text', $EM_Booking->get_event()->event_name, 'ru');
             }
         }
         return $replace;

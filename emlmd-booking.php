@@ -125,11 +125,49 @@ class EM_Limmud_Booking {
 
             self::update_booking($EM_Booking);
 
+            $user_email = $EM_Booking->person->user_email;
+            $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
+            $names = array();
+            if (array_key_exists('additional_emails', $EM_Booking->booking_meta['booking'])) {
+                $additional_emails = trim($EM_Booking->booking_meta['booking']['additional_emails']);
+                $additional_emails = preg_replace('/[\s,]+/', ', ', $additional_emails);
+                $user_email .= ', ' . $additional_emails;
+
+                foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
+                    if (($EM_Ticket_Booking->get_price() >= 0) && ($EM_Ticket_Booking->get_price() < 1)) {
+                        if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
+                            foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
+                                $first_name = '';
+                                $last_name = '';
+                                foreach( $attendee_data as $attendee_label => $attendee_value) {
+                                    $label = apply_filters('translate_text', $attendee_label, 'ru');
+                                    if (str_contains($label, 'Имя')) {
+                                        $first_name = trim($attendee_value);
+                                    }
+                                    if (str_contains($label, 'Фамилия')) {
+                                        $last_name = trim($attendee_value);
+                                    }
+                                }
+                                if (!empty($first_name) && !empty($last_name)) {
+                                    $names[] = $first_name . ' ' . $last_name;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (empty($names)) {
+                $user_name = $EM_Booking->get_person()->get_name();
+            } else {
+                $user_name = implode(', ', $names);
+            }
+
             ?>
             <h3>[:en]Booking #[:ru]СТАТУС РЕГИСТРАЦИИ[:he]פרטי ההזמנה[:]</h3>
             <table id="booking-table">
-            <tr><th>[:en]Name[:ru]Имя[:he]שם[:]</th><td><?php echo $EM_Booking->person->get_name() ?></td></tr>
-            <tr><th>[:en]E-mail[:ru]E-mail[:he]דוא"ל[:]</th><td><?php echo $EM_Booking->person->user_email ?></td></tr>
+            <tr><th>[:en]Name[:ru]Имя[:he]שם[:]</th><td><?php echo $user_name ?></td></tr>
+            <tr><th>[:en]E-mail[:ru]E-mail[:he]דוא"ל[:]</th><td><?php echo $user_email ?></td></tr>
             <tr><th>[:en]Booking #[:ru]Номер заказа[:he]הזמנה מס'[:]</th><td><?php echo $_REQUEST['booking_id'] ?></td></tr>
             <tr><th>[:en]Status[:ru]Статус[:he]סטטוס[:]</th><td><?php
             switch ($EM_Booking->booking_status) {
