@@ -260,7 +260,7 @@ class EM_Limmud_Misc {
         if ($return['result'] && (get_option('dbem_automatic_payment') == 'enable')) {
             $my_booking_summary_page_id = get_option('dbem_booking_summary_page');
             if ($my_booking_summary_page_id != 0) {
-                $return['redirect'] = get_post_permalink($my_booking_summary_page_id) . '&booking_id=' . $EM_Booking->booking_id . '&secret=' . md5($EM_Booking->person->user_email);
+                $return['redirect'] = get_post_permalink($my_booking_summary_page_id) . '&booking_id=' . $EM_Booking->booking_id . '&secret=' . md5($EM_Booking->person->user_email) . '&scroll=true';
             }
         }
         return $return;

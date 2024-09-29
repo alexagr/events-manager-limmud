@@ -323,7 +323,7 @@ class EM_Limmud_Paypal {
         }
     }
 
-	public static function show_buttons($EM_Booking, $partial=false) 
+	public static function show_buttons($EM_Booking, $partial=false, $scroll=false) 
     {
         if ($partial) {
 	?>
@@ -342,7 +342,12 @@ class EM_Limmud_Paypal {
             } ?>&currency=<?php echo get_option('dbem_bookings_currency', 'ILS') ?>"></script>
         <div id="paypal-button-container" style="display: none; max-width: 360px;"></div>
         <script type="text/javascript">
-            window.onload = function() { document.getElementById('paypal-button-container').style.display = 'block'; };
+            window.onload = function() { 
+                document.getElementById('paypal-button-container').style.display = 'block'; 
+    <?php if ($scroll) { ?>
+                document.getElementById('payment-link').scrollIntoView();
+    <?php } ?>
+            };
             paypal.Buttons({
                 style: {
                     label: 'pay'

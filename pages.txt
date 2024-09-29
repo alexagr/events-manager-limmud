@@ -1,0 +1,1126 @@
+1. Booking Success Page
+-----------------------
+
+Title: "Booking Success" (in both languages)
+Permalink: https://limmudfsu.org.il/site/booking-success/
+
+ru:
+---
+
+<a id="text"></a>
+<script type="text/javascript">
+window.onload = function() { document.getElementById('text').scrollIntoView(); };
+</script>
+<h3>ПОЗДРАВЛЯЕМ!</h3>
+<b>Вы успешно зарегистрировались на встречу друзей #_EVENTNAME.</b>
+<!--
+<b>Вы успешно зарегистрировались на фестиваль #_EVENTNAME.</b>
+-->
+Номер вашей регистрации: <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a>
+
+<!--
+Следите за обновлениями и новостями фестиваля на нашей <a href="https://facebook.com/Limmud">странице</a> в Facebook или на <a href="https://limmudfsu.org.il">сайте</a>.
+-->
+
+Если у вас возникнут вопросы связанные с регистрацией, свяжитесь с нами по адресу <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud #_EVENTYEAR">reg@limmudfsu.org.il</a>.
+
+До встречи в декабре!
+Организационный комитет Лимуд FSU Израиль
+
+
+he:
+--
+
+<h3>ברכות!</h3>
+<b>נרשמתם/ן בהצלחה למפגש חברים של #_EVENTNAME.</b>
+<!--
+<b>נרשמתם/ן בהצלחה לפסטיבל #_EVENTNAME.</b>
+-->
+מספר ההרשמה שלכם/ן: <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a>
+
+<!--
+עקבו אחרי חדשות הפסטיבל ועדכונים בדף <a href="https://facebook.com/Limmud">הפייסבוק</a> שלנו ובאתר <a href="https://limmudfsu.org.il">האינטרנט</a>.
+-->
+
+אם יש לכם/ן שאלות בקשר להרשמה צרו קשר איתנו בדוא"ל <a href="mailto:reg@limmudfsu.org.il">reg@limmudfsu.org.il</a>.
+
+נתראה בדצמבר!
+הוועדה המארגנת של לימוד FSU ישראל
+
+
+2. Partial Payment Success Page
+-------------------------------
+
+Title: "Partial Payment Success" (in both languages)
+Permalink: https://limmudfsu.org.il/site/partial-payment-success/
+
+ru:
+---
+<a id="text"></a>
+<script type="text/javascript">
+window.onload = function() { document.getElementById('text').scrollIntoView(); };
+</script>
+<h3>ПОЗДРАВЛЯЕМ!</h3>
+<b>Вы успешно оплатили часть вашего заказа.</b>
+Номер вашей регистрации: <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a>
+
+Для завершения регистрации, пожалуйста, перешлите <a href="#_BOOKINGSUMMARYURL">линк на регистрацию</a> вашим соседям и попросите их оплатить оставшуюся часть заказа.
+
+Eсли у вас есть какие-то вопросы или проблемы с оплатой, свяжитесь с нами по адресу <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud #_EVENTYEAR">reg@limmudfsu.org.il</a>.
+
+С уважением,
+Организационный комитет Лимуд FSU Израиль
+
+he:
+---
+<h3>ברכות!</h3>
+<b>תשלום חלקי התקבל בהצלחה.</b>
+מספר ההרשמה שלכם/ן: <a href="#_BOOKINGSUMMARYURL">##_BOOKINGID</a>
+
+על מנת להשלים את ההרשמה יש להעביר את <a href="#_BOOKINGSUMMARYURL">לינק להרשמה</a> למשתתפים/ות אחרים/ות הלנים/ות איתכם/ן בחדר ולבקש מהם/ן להסדיר את התשלום עבור חלקם/ן בהזמנה.
+
+אם יש לכם/ן שאלות או בקשות מיוחדות צרו איתנו קשר בדוא"ל <a href="mailto:reg@limmudfsu.org.il?subject=Booking ##_BOOKINGID for Limmud #_EVENTYEAR ">reg@limmudfsu.org.il</a>.
+
+בכבוד רב.
+הוועדה המארגנת של לימוד FSU ישראל
+
+
+3. Booking Summary Page
+-----------------------
+
+Title: "Booking Summary" (in both languages)
+Permalink: https://limmudfsu.org.il/site/booking-summary/
+
+content (in both languages): "CONTENT"
+
+4. Main Page
+------------
+
+ru:
+---
+Title: "Лимуд FSU Израиль 2022"
+Content:
+
+<div class="notice" dir="rtl">לגרסה בשפה עברית לחצו  <a href="http://limmudfsu.org.il/site/he/limmud2022-registration">כאן</a>.</div>
+
+Дорогие друзья!
+
+Мы очень рады, что вы решили приехать на фестиваль Лимуд FSU Израиль 2022.
+
+Процесс регистрации на фестиваль в этом году имеет ряд СУЩЕСТВЕННЫХ отличий. Поэтому, пожалуйста, внимательно прочтите следующие несколько параграфов, обращая особенное внимание на слова, выделенные ЗАГЛАВНЫМИ БУКВАМИ.
+
+<h3>МЕСТО ПРОВЕДЕНИЯ</h3>
+
+Фестиваль Лимуд FSU Израиль 2022 пройдёт с 1 по 3 декабря в городе Тверия в ДВУХ ГОСТИНИЦАХ - <a href="https://www.kingsolomontib.co.il/">King Solomon / המלך שלמה</a> и <a href="https://www.clubhotels-israel.com/club-hotel-tiberias">Club Hotel</a>, расположенных на берегу озера Кинерет неподалёку друг от друга.
+
+<!--
+Фестиваль Лимуд FSU Израиль 2022 пройдёт с 1 по 3 декабря в городе Тверия в гостинице <a href="https://www.kingsolomontib.co.il/">King Solomon / המלך שלמה</a>, расположенной на берегу озера Кинерет.
+-->
+
+<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3353.6602186994164!2d35.52455654345648!3d32.80126754795697!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151c3e5f115eaef1%3A0xaef978f239cf7389!2zS2luZyBTb2xvbW9uIFRpYmVyaWFzIEhvdGVsIC0g157XnNeV158g15TXntec15og16nXnNee15Qg15jXkdeo15nXlA!5e0!3m2!1sen!2sil!4v1663503268895!5m2!1sen!2sil" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+В гостинице King Solomon / המלך שלמה будет проходить большинство мероприятий фестиваля - лекции, мастер-классы, концерты и т.д. В гостинице Club Hotel будет проходить детская программа.
+
+Несмотря на то, что на карте гостиницы находятся совсем близко, в реальности они расположены на склоне горы и переход между гостиницами возможен только в обход по улицам города. Расстояние - около 1 километра; при ходьбе неспешным шагом переход занимает около 15 минут. Для удобства участников во время фестиваля между гостиницами будут курсировать маршрутные автобусы.
+
+<!-- В обеих гостиницах есть синагога, которая будет открыта на протяжении всего фестиваля.-->
+
+&nbsp;
+<h3>УЧАСТИЕ В ФЕСТИВАЛЕ</h3>
+
+Вы можете принять участие в фестивале Лимуд FSU Израиль 2022 в одном из следующих форматов:
+<ul>
+<li>участие с проживанием</li>
+<li>участие без проживания</li>
+</ul>
+
+Каждый участник Лимуда получает возможность принимать участие во всех мероприятиях фестиваля - лекциях, мастер-классах, концертах и т.д. Для детей от 3 до 11 лет (включительно) будет организована детская программа. Помимо этого, будет организована специальная программа для подростков - от 12 до 17 лет - подготовленная совместно с <a href="https://makomil.org">MAKOM.IL</a>. Таким образом участники от 12 до 17 лет смогут принять участие либо в подростковой программе, либо во взрослой, либо комбинировать оба варианта.
+
+&nbsp;
+<h3>УЧАСТИЕ С ПРОЖИВАНИЕМ</h3>
+
+Участники, регистрирующиеся на фестиваль с проживанием, должны выбрать гостиницу - <a href="https://www.kingsolomontib.co.il/">King Solomon / המלך שלמה</a>, <a href="https://www.clubhotels-israel.com/club-hotel-tiberias">Club Hotel</a> или <a href="https://www.astoria.co.il/">Astoria</a> - в которой они хотят проживать.
+
+<!--
+Участники, регистрирующиеся на фестиваль с проживанием, должны выбрать гостиницу - <a href="https://www.kingsolomontib.co.il/">King Solomon / המלך שלמה</a> или <a href="https://www.clubhotels-israel.com/club-hotel-tiberias">Club Hotel</a> - в которой они хотят проживать.
+-->
+
+Номера в гостинице King Solomon / המלך שלמה оборудованы двуспальной кроватью и раскладным диваном. Они идеально подходят для двух взрослых участников (от 12 лет и старше) и семей из двух взрослых участников (от 12 лет и старше) и одного или двух детей (от 3 до 11 лет).
+
+<div style="text-align: center">
+<img src="https://www.kingsolomontib.co.il//octopus/upload/images/rooms/20.jpg" alt="Room" width="500" height="auto" />
+<i>Номер в гостинице King Solomon / המלך שלמה </i>
+</div>
+
+Номера в гостинице Club Hotel более просторные и состоят из двух комнат: спальни и салона. Последний, при размещении в номере семьи, переоборудуется в детскую спальню и может вместить до трёх детей. Комнаты разделены дверью.
+
+<div style="text-align: center">
+<img src="https://www.clubhotels-israel.com/Octopus/Upload/images/Rooms/clubhoteltverianov18-127.jpg" alt="Bedroom" width="500" height="auto" /> 
+<i>Номер в гостинице Club Hotel - спальня</i>
+</div>
+
+<div style="text-align: center">
+<img src="https://www.clubhotels-israel.com/Octopus/Upload/images/Rooms/clubhoteltverianov18-126.jpg" alt="Livingroom" width="500" height="auto" />
+<i>Номер в гостинице Club Hotel - салон</i>
+</div>
+
+Из всех номеров в обеих гостиницах открывается вид на Кинерет.
+
+&nbsp;
+<h3>ДОПОЛНИТЕЛЬНАЯ ОПЦИЯ ДЛЯ УЧАСТИЯ С ПРОЖИВАНИЕМ - ГОСТИНИЦА АСТОРИЯ</h3>
+
+В связи с большим количеством заявок, во втором туре регистрации мы открываем дополнительную опцию для участия в фестивале с проживанием - гостиницу <a href="https://www.astoria.co.il/">Astoria</a>. Гостиница расположена на расстоянии около 1 километра от гостиницы <a href="https://www.kingsolomontib.co.il/">King Solomon / המלך שלמה</a>, в которой будет проходить большинство мероприятий фестиваля. При ходьбе неспешным шагом переход занимает около 12 минут.
+
+Номера в гостинице Astoria могут разместить до двух человек и идеально подходят для двух взрослых участников (от 12 лет и старше).
+
+<div style="text-align: center">
+<img src="https://www.astoria.co.il/files/catalog/item/thumbsrc/352346235.jpg" alt="Room" width="500" height="auto" />
+<i>Номер в гостинице Astoria</i>
+</div>
+
+В отличие от двух других гостиниц, номера в гостинице Astoria не выходят на Кинерет, и в части из них отсутствует балкон.
+
+&nbsp;
+<h3>СТОИМОСТЬ УЧАСТИЯ С ПРОЖИВАНИЕМ</h3>
+
+Стоимость участия в фестивале с проживанием:
+<ul>
+<li>взрослые и подростки (от 12 лет и старше) - 1290 ₪</li>
+<li>дети (от 3 до 11 лет) - 600 ₪</li>
+<li>младенцы (менее 3 лет) - бесплатно</li>
+</ul>
+
+Помимо вышесказанного в обеих гостиницах есть возможность размещения в номере ТРЁХ ВЗРОСЛЫХ участников (от 12 лет и старше) - два спальных места на раздельных кроватях и третье место на раскладном диване. При таком размещении действует специальный тариф - 990 ₪ на человека.
+
+<!--
+Помимо вышесказанного есть возможность размещения в номере ТРЁХ ВЗРОСЛЫХ участников (от 12 лет и старше) - два спальных места на раздельных кроватях и третье место на раскладном диване. При таком размещении действует специальный тариф - 990 ₪ на человека.
+-->
+
+ОБРАТИТЕ ВНИМАНИЕ, что вышеуказанный специальный тариф на проживание в трёхместном номере (990 ₪ на человека) распространяется ТОЛЬКО на номера, в которых проживают РОВНО ТРИ взрослых участника (от 12 лет и старше). В остальных случаях стоимость места в номере для участника от 12 лет и старше - 1290 ₪. Например, стоимость номера, в котором проживает один взрослый и два ребёнка младше 12 лет составит 1290 + 600 * 2 = 2490 ₪.
+
+Имеется также возможность проживания в номере одного человека; стоимость такого проживания - 2580 ₪.
+
+Вышеприведённые тарифы включают в себя участие во всех сессиях и мероприятиях фестиваля на протяжении трёх дней (включая концерт-открытие, мастер-классы и детскую программу), а также проживание в гостинице и питание (четверг - ужин, пятница - завтрак, обед и ужин, суббота - завтрак и обед). Участники питаются в той гостинице, в которой они проживают.
+
+Стоимость выездных экскурсий, если таковые будут, в вышеуказанную сумму не включена. Их оплата будет организована отдельно на стойке HelpDesk на самом фестивале.
+
+&nbsp;
+<h3>ПОДВОЗКА</h3>
+
+Для участников, зарегистрировавшихся на фестиваль С ПРОЖИВАНИЕМ, будет организована подвозка из Тель-Авива, Иерусалима и Хайфы. 
+<ul>
+<li>стоимость подвозки: из Тель-Авива и Иерусалима - 100 ₪, из Хайфы - 50 ₪</li>
+<li>для детей до 3-х лет подвозка бесплатна</li>
+<li>цена включает проезд в обоих направлениях</li>
+<li>ориентировочное время отправления подвозок НА ФЕСТИВАЛЬ: 1 декабря, из Тель-Авива и Иерусалима - в 14:00, из Хайфы - в 15:00</li>
+<li>ориентировочное время отправления подвозок ОБРАТНО: 3 декабря в 18:00</li>
+<li>точное время и место отправления подвозок будут объявлены позже</li>
+</ul>
+
+Мы настоятельно рекомендуем всем участникам в этом году воспользоваться подвозкой, т.к. количество парковочных мест в обеих гостиницах ОЧЕНЬ ограничено.
+
+&nbsp;
+<h3>УЧАСТИЕ БЕЗ ПРОЖИВАНИЯ</h3>
+
+Стоимость участия в фестивале без проживания ДЛЯ ВСЕХ участников (и взрослых, и детей):
+<ul>
+<li>весь фестиваль (три дня) - 600 ₪</li>
+<li>один день - 300 ₪</li>
+</ul>
+
+Участие без проживания ВКЛЮЧАЕТ в себя дневные и вечерние трапезы (четверг - ужин, пятница - обед и ужин, суббота - обед). Завтраки в стоимость участия без проживания НЕ ВКЛЮЧЕНЫ. Участники без проживания питаются в гостинице King Solomon / המלך שלמה.
+
+&nbsp;
+<h3>ПОВТОРЕНИЕ - МАТЬ УЧЕНИЯ</h3>
+
+Кратко резюмируем вышесказанное. Если вы смотрите сайт с телефона и картинка слишком мелкая, поверните телефон на бок.
+<img src="https://limmudfsu.org.il/site/wp-content/uploads/2022/10/limmud-2022-prices-rus.png" alt="" width="826" height="1139" class="alignnone size-full wp-image-4418" />
+
+&nbsp;
+<h3>ПРОЦЕСС РЕГИСТРАЦИИ</h3>
+
+Регистрация на фестиваль с проживанием возможна только при заказе КОМНАТЫ ЦЕЛИКОМ. Это означает, например, что если вы планируете приехать на фестиваль один, но хотите проживать в двухместном или трёхместном номере, вам необходимо САМОМУ найти себе соседа/ей по комнате и заполнить СОВМЕСТНУЮ регистрацию на ВСЕХ людей, которые будут проживать с вами в номере (т.е. на себя и ваших соседей). 
+
+Обратите внимание, что НА КАЖДУЮ комнату должна быть заполнена РОВНО ОДНА анкета регистрации. Т.е. если вы заполнили анкету регистрации на себя и вашего соседа, вашему соседу НЕ НУЖНО заполнять ещё одну анкету. При оплате заказа у вас будет опция оплатить свою часть суммы и переслать линк на оплату соседу, чтобы он завершил оплату.
+
+Если для размещения вашей семьи необходимо несколько номеров - например, вы едете вместе с детьми и бабушкой / дедушкой - вам необходимо заполнить НЕСКОЛЬКО анкет - по одной анкете на комнату. При этом каждая комната должна быть заказана ЦЕЛИКОМ.
+
+В процессе регистрации вам будет предложено ВЫБРАТЬ ГОСТИНИЦУ, в которой вы заказываете номер. Несмотря на то, что стоимость регистрации одинакова для обеих гостиниц, измененение гостиницы после оплаты заказа НЕВОЗМОЖНО (количество комнат в гостиницах ограничено и мы резервируем вам комнату в определённой гостинице).
+
+&nbsp;
+<h3>ОПЛАТА РЕГИСТРАЦИИ</h3>
+
+Оплата регистрации происходит В ПРОЦЕССЕ ОФОРМЛЕНИЯ ЗАКАЗА. После заполнения анкеты система автоматически рассчитывает стоимость заказа и предоставляет вам возможность оплатить его. 
+
+Как и в прошлые годы все оплаты осуществляются через платёжную систему <a href="https://www.paypal.com">PayPal</a>. При этом у вас есть возможность произвести оплату как со счета PayPal, так и напрямую с кредитной карты (без открытия счета PayPal). Обратите внимание, что система PayPal принимает только кредитные карты, которые поддерживают оплату за границей - Visa, Mastercard и т.д. 
+
+Для вашего удобства имеется возможность ЧАСТИЧНОЙ оплаты заказа. Подробные инструкции вы найдёте на странице оплаты. Например, если вы заказали комнату вместе со своими друзьями, вы сможете оплатить свою часть заказа и переслать линк на оплату друзьям, чтобы они оплатили свою / оставшуюся часть. Заказ считается оплаченным ТОЛЬКО когда все участники оплатили своё участие.
+
+Система PayPal не позволяет осуществлять разбивку заказа на платежи. Однако вы можете связаться с вашей кредитной компанией и договориться с ней об отсроченном платеже для конкретной транзакции.
+
+В случае если вы по ошибке закрыли страницу оплаты заказа, проверьте вашу почту - в ней вы найдёте мейл с линком на страницу оплаты заказа. Если вы не находите мейла в папке "Входящие", проверьте папку "Спам" - иногда сообщения от системы регистрации попадают туда.
+
+&nbsp;
+<h3>ДАТА РЕГИСТРАЦИИ</h3>
+
+Регистрация на фестиваль Лимуд FSU Израиль 2022 с проживанием происходит в два этапа. Каждый этап регистрации ограничен по времени и количеству доступных мест.
+<ul>
+<li>Первый этап регистрации с проживанием откроется в конце октября, после праздника Суккот.</li>
+<li>Второй этап пройдёт в середине ноября, при условии что останутся свободные места после регистрации волонтеров и презентеров.</li>
+</ul>
+
+Регистрация на фестиваль Лимуд FSU Израиль 2022 без проживания откроется в конце октября и будет открыта всё время, пока места без проживания не закончатся.
+
+О начале регистрации будет объявлено на наших страницах в <a href="https://www.facebook.com/Limmud/">Facebook</a> и <a href="https://www.instagram.com/limmud.israel">Instagram</a>.
+
+&nbsp;
+<h3>ОТМЕНА РЕГИСТРАЦИИ И ВОЗВРАТ ДЕНЕГ</h3>
+В случае если вы зарегистрировались и оплатили ваше участие в фестивале, однако по каким-либо причинам вынуждены отменить регистрацию, вам необходимо подать соответствующую просьбу в письменной форме на мейл <a href="mailto:reg@limmudfsu.org.il">reg@limmudfsu.org.il</a>.
+
+<ul>
+<li>при отмене регистрации не позднее 6 ноября вы получите полный возврат денег (100%)</li>
+<li>при отмене регистрации не позднее 13 ноября вы получите возврат 50% от стоимости заказа</li>
+</ul>
+
+&nbsp;
+<h3>ЧАСТЫЕ ВОПРОСЫ</h3>
+
+ВОПРОС: Я заполнил и оплатил регистрацию, но не получил письма с подтверждением. Что делать?
+ОТВЕТ: Проверьте папку "Спам" - возможно письмо попало туда. Если вы не можете найти письмо, напишите нам на адрес <a href="mailto:reg@limmudfsu.org.il">reg@limmudfsu.org.il</a>
+
+ВОПРОС: Могу ли я оплатить заказ не через систему PayPal, а, например, наличными деньгами?
+ОТВЕТ: К сожалению, нет. По техническим причинам оплата участия в фестивале может производиться ТОЛЬКО через систему PayPal.
+
+ВОПРОС: Мне нужна подвозка только в одну сторону. Сколько это будет стоить?
+ОТВЕТ: Стоимость подвозки не меняется от количества направлений.
+
+ВОПРОС: Как заказать подвозку при регистрации без проживания?
+ОТВЕТ: К сожалению, никак. Подвозка предоставляется только участникам, регистрирующимся с проживанием.
+
+&nbsp;
+<h3>АНКЕТЫ РЕГИСТРАЦИИ</h3>
+<a href="http://limmudfsu.org.il/site/ru/events/limmud2022">Регистрация с проживанием</a>
+<a href="http://limmudfsu.org.il/site/ru/events/limmud2022-no-accomodation">Регистрация без проживания</a>
+<a href="http://limmudfsu.org.il/site/ru/events/limmud2022-volunteers">Регистрация для волонтеров и презентеров</a>
+
+<script>
+document.getElementsByName("viewport")[0].setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes");
+</script>
+
+he:
+---
+Title: "לימוד FSU ישראל 2022"
+Content:
+
+<div class="notice" dir="ltr">Для версии на русском языке нажмите <a href="http://limmudfsu.org.il/site/ru/limmud2022-registration">сюда</a>.</div>
+
+חברים יקרים!
+
+אנו שמחים מאוד שהחלטת להגיע ללימוד FSU ישראל 2022.
+
+תהליך ההרשמה לפסטיבל השנה שונה משמעותית משנים קודמות. לכן, אנא קרא/' בעיון את הפסקאות הבאות, תוך דגש על מילים המסומנות <span style="color: blue">בכחול</span>.
+
+<h3>מקום</h3>
+
+פסטיבל לימוד FSU ישראל 2022 יתקיים מה-1 עד ה-3 בדצמבר בעיר טבריה <span style="color: blue">בשני</span> בתי מלון - <a href="https://www.kingsolomontib.co.il">המלך שלמה</a> ו<a href="https://www.clubhotels-israel.com/club-hotel-tiberias">קלאב הוטל</a> הממוקמים על שפת אגם הכנרת.
+
+<!--
+פסטיבל לימוד FSU ישראל 2022 יתקיים מה-1 עד ה-3 בדצמבר בעיר טבריה במלון <a href="https://www.kingsolomontib.co.il">המלך שלמה</a> הממוקם על שפת אגם הכנרת.
+-->
+
+<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3353.6602186994164!2d35.52455654345648!3d32.80126754795697!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x151c3e5f115eaef1%3A0xaef978f239cf7389!2zS2luZyBTb2xvbW9uIFRpYmVyaWFzIEhvdGVsIC0g157XnNeV158g15TXntec15og16nXnNee15Qg15jXkdeo15nXlA!5e0!3m2!1sen!2sil!4v1663503268895!5m2!1sen!2sil" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+במלון המלך שלמה יתקיימו רוב אירועי הפסטיבל - הרצאות, סדנאות, הופעות וכו'. במלון קלאב הוטל תתקיים תוכנית ילדים.
+
+למרות שהמלונות נראים קרובים מאוד על המפה, בפועל הם ממוקמים על צלע ההר והמעבר בין המלונות אפשרי רק בעקיפה דרך רחובות העיר. המרחק - כקילומטר אחד. בהליכה בקצב נינוח, המעבר אורך כ-15 דקות. בזמן הפסטיבל בין המלונות ינועו הסעות לנוחיות המשתתפים.
+
+<!--
+בשטח המלון ישנו בית הכנסת שיפעל במהלך כל הפסטיבל.
+-->
+
+&nbsp;
+<h3>השתתפות בפסטיבל</h3>
+
+ניתן להשתתף בפסטיבל לימוד FSU ישראל 2022 באחת מהדרכים הבאות:
+<ul>
+<li>השתתפות עם לינה</li>
+<li>השתתפות ללא לינה</li>
+</ul>
+
+כל משתתפי הפסטיבל רשאים לקחת חלק בכל אירועי הפסטיבל. ילדים מגיל 3 עד 11 (כולל) יוכלו להשתתף בתוכנית ילדים המותאמת לגילם. בנוסף לכך תיהיה תוכנית נוער המיועדת לגילאים 12 עד 17 בשיתוף <a href="https://makomil.org">MAKOM.IL</a>. כך, משתתפים מגיל 12 עד 17 יוכלו לקחת חלק בתוכנית המתבגרים או בתוכנית המבוגרים, או לשלב בין שתי האפשרויות.
+
+&nbsp;
+<h3>השתתפות עם לינה</h3>
+
+על הנרשמים לפסטיבל עם לינה לבחור מלון - <a href="https://www.kingsolomontib.co.il/">המלך שלמה</a>, <a href="https://www.clubhotels-israel.com/club-hotel-tiberias">קלאב הוטל</a> או <a href="https://www.astoria.co.il/">אסטוריה</a> - בו הם רוצים ללון.
+
+החדרים במלון המלך שלמה מצוידים במיטה זוגית ובספה נפתחת. הם מתאימים במיוחד עבור שני מבוגרים (מגיל 12 ומעלה) ומשפחות של שני מבוגרים (מגיל 12 ומעלה) וילד אחד או שניים (מגיל 3 עד 11).
+
+<div style="text-align: center">
+<img src="https://www.kingsolomontib.co.il//octopus/upload/images/rooms/20.jpg" alt="Room" width="500" height="auto" />
+<i>חדר במלון המלך שלמה</i>
+</div>
+
+החדרים במלון קלאב הוטל מרווחים יותר ומורכבים משני חדרים: חדר שינה וסלון. כאשר מדובר בחדר משפחתי, הסלון הופך לחדר שינה לילדים ויכול להכיל עד שלושה ילדים. החדרים מופרדים בדלת.
+
+<div style="text-align: center">
+<img src="https://www.clubhotels-israel.com/Octopus/Upload/images/Rooms/clubhoteltverianov18-127.jpg" alt="Bedroom" width="500" height="auto" /> 
+<i>חדר במלון קלאב הוטל - חדר שינה</i>
+</div>
+
+<div style="text-align: center">
+<img src="https://www.clubhotels-israel.com/Octopus/Upload/images/Rooms/clubhoteltverianov18-126.jpg" alt="Livingroom" width="500" height="auto" />
+<i>חדר במלון קלאב הוטל - סלון</i>
+</div>
+
+מכל החדרים בשני בתי מלון נשקף נוף על הכנרת.
+
+&nbsp;
+<h3>אופציה נוספת להשתתפות עם לינה - מלון אסטוריה</h3>
+
+בשל ריבוי הזמנות, בסבב ההרשמה השני נפתחת אופציה נוספת להשתתפות בפסטיבל עם לינה - מלון <a href="https://www.astoria.co.il/">אסטוריה</a>. המלון ממוקם כקילומטר אחד ממלון <a href="https://www.kingsolomontib.co.il/">המלך שלמה</a> שיארח את רוב אירועי הפסטיבל. בהליכה בקצב נינוח, המעבר אורך כ-12 דקות.
+
+החדרים במלון אסטוריה יכולים להכיל עד שני אנשים ומתאימים במיוחד עבור שני מבוגרים (מגיל 12 ומעלה).
+
+<div style="text-align: center">
+<img src="https://www.astoria.co.il/files/catalog/item/thumbsrc/352346235.jpg" alt="Room" width="500" height="auto" />
+<i>חדר במלון אסטוריה</i>
+</div>
+
+בניגוד לשני המלונות האחרים, החדרים במלון אסטוריה אינם פונים לכנרת ולחלקם אין מרפסת.
+
+&nbsp;
+<h3>עלות השתתפות עם לינה</h3>
+
+עלות ההשתתפות בפסטיבל עם לינה:
+<ul>
+<li>מבוגרים וילדים בני 12 ומעלה - 1290 ₪</li>
+<li>ילדים מגיל 3 עד 11 (כולל) - 600 ₪</li>
+<li>תינוקות (מתחת לגיל 3) - ללא עלות</li>
+</ul>
+
+בנוסף לאמור לעיל, בשני בתי מלון ניתן לארח בחדר <span style="color: blue">שלושה מבוגרים</span> (מגיל 12 ומעלה) - שני אנשים על מיטות נפרדות ואדם נוסף על ספה נפתחת. על אירוח כזה חל תעריף מיוחד - 990 ₪ לאדם.
+
+ישנה גם אפשרות לשהות בחדר לבד; עלות חדר כזה היא 2580 ₪.
+
+שימו לב שתעריף המיוחד של לינה בחדר עם לשלושה מבוגרים הנקוב מעלה (990 ₪ לאדם) תקף רק במקרה <span style="color: blue">שכל המתגוררים</span> בחדר הם משתתפים <span style="color: blue">בוגרים</span> (בני 12 ומעלה). בכל המקרה האחר עלות של מקום למשתתף מגיל 12 ומעלה היא 1290 ₪. לדוגמא, עלות החדר בו מתגוררים מבוגר אחד, ושני ילדים מתחת לגיל 12, תהיה 1290 + 2 * 600 = 2490 ₪.
+
+התעריפים הנקובים מעלה כוללים השתתפות בכל האירועים של הפסטיבל במשך שלושה ימים (כולל טקס הפתיחה, כיתות אמן ותכנית ילדים), כמו גם לינה וארוחות במלון (חמישי - ארוחת ערב, שישי - ארוחות בוקר, צהריים וערב, שבת - ארוחות בוקר וצהריים). המשתתפים אוכלים במלון בו הם שוהים.
+
+עלות הטיולים - אם יהיו - אינה כלולה בסכום זה, ותגבה בנפרד בעמדת HELPDESK בפסטיבל עצמו.
+
+&nbsp;
+<h3>הסעות</h3>
+
+לרשות המשתתפים שנרשמו לפסטיבל עם לינה יעמוד שירות הסעות מערים הבאות - תל אביב, ירושלים וחיפה.
+<ul>
+<li>עלות ההסעה: מתל אביב וירושלים - 100 ₪, מחיפה - 50 ₪</li>
+<li>הסעות חינם לילדים מתחת לגיל 3</li>
+<li>המחיר כולל נסיעה בשני הכיוונים</li>
+<li>הזמן המתוכנן של ההסעה הלוך: 1 בדצמבר, מתל אביב וירושלים - ב-14:00, מחיפה - ב-15:00</li>
+<li>הזמן המתוכנן של ההסעה חזור: 3 בדצמבר ב-18:00</li>
+<li>הזמן והמקום המדוייקים יפורסמו בהמשך</li>
+</ul>
+
+אנו ממליצים בחום לכל המשתתפים לנצל את שירות ההסעות השנה, מפני שמספר מקומות החניה בשני המלונות מוגבל מאוד.
+
+&nbsp;
+<h3>השתתפות ללא לינה</h3>
+עלות ההשתתפות בפסטיבל ללא לינה <span style="color: blue">לכל המשתתפים</span> (מבוגרים וילדים כאחד):
+<ul>
+<li>כל ימי הפסטיבל (שלושה ימים) - 600 ₪</li>
+<li>יום אחד - 300 ₪</li>
+</ul>
+
+השתתפות ללא לינה כוללת את הארוחות הבאות: חמישי - ארוחת ערב, שישי - ארוחות צהריים וערב, שבת – ארוחת צהריים. ארוחות בוקר <span style="color: blue">אינן כלולות</span> במחיר.
+
+&nbsp;
+<h3>תהליך ההרשמה</h3>
+
+ההרשמה לפסטיבל עם לינה אפשרית רק בהזמנת <span style="color: blue">חדר שלם</span>. זה אומר, למשל, שאם אתם מתכננים להגיע לפסטיבל לבד, אבל רוצים לשהות בחדר זוגי או בחדר עם שלושה מבוגרים, עליכם למצוא לעצמכם שותף/ים ולמלא את ההרשמה המשותפת על כל האנשים שישהו בחדר (כלומר, על עצמכם ועל שותפכם).
+
+שימו לב כי יש למלא <span style="color: blue">טופס הרשמה אחד</span> בדיוק עבור <span style="color: blue">כל חדר</span>. זה אומר שאם מילאתם את טופס ההרשמה עבור עצמכם ועבור השותפים שלכם לחדר, השותפים <span style="color: blue">אינם צריכים</span> למלא את טופס הנוסף. בעת התשלום עבור ההרשמה, תינתן לכם אפשרות לבצע תשלום חלקי - על חלקכם בהזמנה - ולהעביר את הקישור לתשלום לשותפכם על מנת שישלימו את התשלום.
+
+אם המשפחה שלכם זקוקה למספר חדרים - למשל, אתם נוסעים עם הילדים והסבים / סבתות - תצטרכו למלא מספר טפסים - טופס אחד לכל חדר. כרגיל, יש להזמין כל חדר במלואו.
+
+במהלך ההרשמה תתבקשו <span style="color: blue">לבחור את המלון</span> בו אתם מזמינים חדר. למרות שדמי הרישום זהים לשני המלונות, <span style="color: blue">לא ניתן לשנות</span> את המלון לאחר תשלום ההזמנה (מספר החדרים בבתי המלון מוגבל ואנו מזמינים עבורכם חדר במלון מסוים).
+
+&nbsp;
+<h3>תשלום על ההרשמה</h3>
+
+התשלום עבור ההשתתפות בפסטיבל מתבצע <span style="color: blue">בעת ההרשמה</span>. לאחר מילוי טופס ההרשמה המערכת מחשבת אוטומטית את עלות ההזמנה ומעבירה אתכם לדף התשלום.
+
+בדומה לשנים קודמות, התשלום מתבצע באמצעות מערכת PayPal. ניתן לשלם דרך חשבון ה-PayPal  שלכם או ישירות מכרטיס האשראי (מבלי לפתוח חשבון PayPal). שימו לב שמערכת PayPal מקבלת רק כרטיסי אשראי שמאפשרים תשלום בחו"ל - כגון ויזה ומסטרקרד.
+
+לנוחיותכם, ניתנת האפשרות לבצע את <span style="color: blue">התשלום החלקי</span>. למשל בהזמנת חדר זוגי כל משתתף יכול לשלם את חלקו בהזמנה. ההוראות המפורטות מופיעות בדף התשלום. ההזמנה תאושר רק לאחר הסדרת <span style="color: blue">התשלום המלא</span>.
+
+מערכת PayPal לא מאפשרת ביצוע עסקה בתשלומים. עם זאת, תוכלו ליצור קשר עם חברת האשראי שלכם ולהסדיר תשלום דחוי עבור עסקה מסוימת.
+
+אם בטעות סגרתם את דף התשלום – בדקו את דואר האלקטרוני שלכם – שם תמצאו מכתב אם קישור לדף התשלום. אם אתם לא מוצאים את המכתב בדקו תיקיית SPAM – לפעמים מכתבים ממערכת ההזמנות מופיעים שם.
+
+&nbsp;
+<h3>מועדי רישום</h3>
+ההרשמה לפסטיבל לימוד FSU ישראל 2022 עם לינה מתקיימת בשני שלבים, כאשר כל שלב מוגבל בזמן וכמות המקומות. 
+<ul>
+<li>שלב ראשון ייפתח בסוף אוקטובר, לאחר סוכות.</li>
+<li>שלב שני ייפתח באמצע נובמבר בתנאי שישארו מקומות פנויים לאחר רישום מרצים ומתנדבים.</li>
+</ul>
+
+הרשמה לפסטיבל ללא לינה תפתח בסוף אוקטובר ותישאר פתוחה כל עוד המקומות ללא לינה זמינים.
+
+התאריכים המדויקים יפורסמו בדפים שלנו ב<a href="https://www.facebook.com/Limmud/">פייסבוק</a> ו<a href="https://www.instagram.com/limmud.israel">אינסטגרם</a>.
+
+&nbsp;
+<h3> ביטול הרשמה והחזר כספי </h3>
+
+אם נרשמתם ושילמתם עבור השתתפותכם בפסטיבל, אך אתם נאלצים לבטל את ההרשמה מכל סיבה שהיא, עליכם להגיש בקשה בכתב לדוא"ל <a href="mailto:reg@limmudfsu.org.il">reg@limmudfsu.org.il</a>.
+
+<ul>
+<li>מגישי בקשת ביטול עד 6 בנובמבר זכאים להחזר מלא (100%)</li>
+<li>מגישי בקשת ביטול עד 13 בנובמבר זכאים ל-50% החזר</li>
+</ul>
+
+&nbsp;
+<h3>טפסי הרשמה</h3>
+
+<a href="http://limmudfsu.org.il/site/he/events/limmud2022">הרשמה עם לינה</a>
+<a href="http://limmudfsu.org.il/site/he/events/limmud2022-no-accomodation">הרשמה ללא לינה</a>
+<a href="http://limmudfsu.org.il/site/he/events/limmud2022-volunteers">הרשמה למתנדבים ומרצים</a>
+
+
+5. Registration Page #1
+-----------------------
+
+Permalink: https://limmudfsu.org.il/site/events/limmud2023/
+
+ru Title: Регистрация на Лимуд 2023 с проживанием
+ru Content:
+
+<div class="notice" dir="rtl">אם הנכם/ן מעדיפים/ות לבצע הרשמה בשפה עברית לחצו <a href="/site/he/events/limmud2023">כאן</a>.</div>
+
+<div class="info">Для регистрации на фестиваль без проживания, нажмите <a href="/site/ru/events/limmud2023-no-accomodation">сюда</a>.</div>
+
+Для получения подробной информации об условиях и процессе регистрации, нажмите <a href="/site/ru/limmud2023-registration">сюда</a>.
+
+<!--div class="info">Регистрация на Лимуд 2023 откроется в октябре.</div-->
+<div class="info">В связи с текущей ситуацией регистрация на Лимуд 2023 откладывается.</div>
+
+<hr>
+
+<!--
+Первый этап регистрации с проживанием прошел 5 октября. Второй этап откроется 26 октября в 19:00. 
+
+В связи повышенным спросом, количество мест на втором этапе будет ОЧЕНЬ ОГРАНИЧЕНО. По их окончании все заполненные заявки автоматически попадут в ЛИСТ ОЖИДАНИЯ. В случае, если по какой-либо причине освободятся места с проживанием, мы свяжемся с участниками, записанными в лист ожидания, в порядке очередности. Однако шанс, что это произойдёт, относительно не велик.
+
+Если вы попали в лист ожидания, но заинтересованы приехать на фестиваль и без проживания, заполните <a href="/site/ru/events/limmud2021-no-accomodation">анкету</a> регистрации без проживания и оплатите ваше участие. В случае, если вам предоставится возможность оплатить заявку с проживанием, мы вычтем уже оплаченную вами сумму.
+
+<div class="info">Напоминаем, что регистрация без проживания все еще <a href="/site/ru/events/limmud2021-no-accomodation">открыта</a>, однако в этом году есть ограничение и на количество мест без проживания.</div>
+<br>
+<hr>
+-->
+
+<!--
+<div class="info">Первый этап регистрации с проживанием завершен. Второй этап откроется 26 октября в 19:00. Обратите внимание, что регистрация без проживания <a href="/site/ru/events/limmud2021-no-accomodation">открыта</a>.</div>
+-->
+
+<br>
+<h3>РЕГИСТРАЦИЯ</h3>
+
+<!-- COUNTDOWN TIMER -->
+
+<style type="text/css"> 
+  #clockdiv{
+    font-family: sans-serif;
+    color: #fff;
+    display: inline-block;
+    font-weight: 300;
+    text-align: center;
+    font-size: 30px;
+  }
+  #clockdiv > div{
+    padding: 10px;
+    border-radius: 3px;
+    background: #00BF96;
+    display: inline-block;
+  }
+  #clockdiv div > span{
+    padding: 15px;
+    border-radius: 3px;
+    background: #00816A;
+    display: inline-block;
+  }
+  .smalltext{
+    padding-top: 5px;
+    font-size: 16px;
+  }
+  #em-booking, #em-booking-title{
+    display: none;
+  }
+</style>
+
+<div id="clocktext">До открытия регистрации осталось:</div>
+<div id="clockdiv"><div><span class="hours"></span><div class="smalltext">Часов</div></div><div><span class="minutes"></span><div class="smalltext">Минут</div></div><div><span class="seconds"></span><div class="smalltext">Секунд</div></div></div>
+<br />
+
+
+<div id='js-test' class="notice">
+Ошибка: для заполнения регистрации необходим браузер с поддержкой JavaScript
+</div>
+
+<script type="text/javascript">
+  function getTimeRemaining(endtime) {
+    var t = Date.parse(endtime) - Date.parse(new Date());
+    var seconds = Math.floor((t / 1000) % 60);
+    var minutes = Math.floor((t / 1000 / 60) % 60);
+    var hours = Math.floor(t / 1000 / 60 / 60);
+    if (t < 0) {
+      seconds = 0;
+      minutes = 0;
+      hours = 0;
+    }
+    return {
+      'total': t,
+      'hours': hours,
+      'minutes': minutes,
+      'seconds': seconds
+    };
+  }
+  function showForm() {
+    document.getElementById('clocktext').style.display = "none";
+    document.getElementById('clockdiv').style.display = "none";
+    document.getElementById('em-booking').style.display = "inline-block";
+  }
+  function initializeClock(endtime) {
+    var clock = document.getElementById('clockdiv');
+    var hoursSpan = clock.querySelector('.hours');
+    var minutesSpan = clock.querySelector('.minutes');
+    var secondsSpan = clock.querySelector('.seconds');
+    var intervalCount = 0;
+    function updateClock() {
+      var t = getTimeRemaining(endtime);
+      if (++intervalCount > 3600) {
+        intervalCount = 0;
+        location.reload(true);
+      }
+      if (t.hours < 10) {
+          hoursSpan.innerHTML = '0' + t.hours;
+      } else {
+          hoursSpan.innerHTML = t.hours.toString();
+      }
+      minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
+      secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
+      if (t.total <= 0) {
+        clearInterval(timeinterval);
+        showForm();
+      }
+    }
+    var timeinterval = setInterval(updateClock, 1000);
+    updateClock();
+  }
+  function startCountdown() {
+    document.getElementById('js-test').style.display = "none";
+    if (window.location.href.includes("admin=show")) {
+      showForm();
+    } else {
+      initializeClock('October 1 2023 19:00:00 GMT+0300');
+    }
+  }
+  if(window.addEventListener) {
+    window.addEventListener('load', startCountdown, false); //W3C
+  }
+  else {
+    window.attachEvent('onload', startCountdown); //IE
+  }
+</script>
+
+<br />
+
+
+he Title: הרשמה ללימוד 2023 עם לינה
+he Content:
+
+<div dir="ltr" class="notice">
+Если вы предпочитаете заполнить регистрацию на русском языке, нажмите <a href="/site/ru/events/limmud2023">сюда</a>.
+</div>
+
+<div dir="rtl" class="info">
+אם הנכם רוצים להרשם לפסטיבל ללא לינה לחצו <a href="/site/he/events/limmud2023-no-accomodation">כאן</a>.
+</div>
+
+לקבלת מידע מפורט אודות תנאים ותהליך הרישום לחצו <a href="/site/he/limmud2023-registration">כאן</a>.
+
+
+<!--div class="info">הרשמה לפסטיבל תיפתח באוקטובר.</div-->
+<div class="info">על רקה
+על רקע המצב הבטחוני הרשמה לפסטיבל נדחת עד להודעה חדשה.</div>
+
+<hr>
+<!--
+השלב הראשון של ההרשמה עם לינה התקיים ב-5 באוקטובר. השלב השני ייפתח ב-26 באוקטובר בשעה 19:00.
+
+עקב ביקוש רב מספר המקומות בשלב השני מוגבל מאוד. כאשר המקומות יגמרו ההרשמות יועברו לרשימת המתנה. אם מסיבה כלשהי יתפנו המקומות עם לינה, ניצור קשר עם המשתתפים ברשימת ההמתנה לפי סדר ההרשמה. עם זאת, הסיכוי שזה יקרה קטן יחסית.
+
+אם הרשמתכם הועברה לרשימת המתנה, אך אתם מעוניינים להשתתף בפסטיבל גם ללא לינה, מלאו את <a href="/site/he/events/limmud2021-no-accomodation">טופס</a> ההרשמה ללא לינה והסדירו את התשלום. במקרה ותינתן לכם אפשרות להשלים את ההרשמה עם לינה, נפחית את הסכום שכבר שולם.
+
+<div dir="rtl" class="info">
+להזכירכם ההרשמה ללא לינה עדיין <a href="/site/he/events/limmud2021-no-accomodation">פתוחה</a>, אך השנה יש מגבלה גם על כמות המקומות ללא לינה.
+</div>
+<br>
+<hr>
+-->
+
+<br>
+<h3>הרשמה</h3>
+
+<!-- COUNTDOWN TIMER -->
+
+<style type="text/css"> 
+  #clockdiv{
+    font-family: sans-serif;
+    color: #fff;
+    display: inline-block;
+    font-weight: 300;
+    text-align: center;
+    font-size: 30px;
+  }
+  #clockdiv > div{
+    padding: 10px;
+    border-radius: 3px;
+    background: #00BF96;
+    display: inline-block;
+  }
+  #clockdiv div > span{
+    padding: 15px;
+    border-radius: 3px;
+    background: #00816A;
+    display: inline-block;
+  }
+  .smalltext{
+    padding-top: 5px;
+    font-size: 16px;
+  }
+  #em-booking, #em-booking-title{
+    display: none;
+  }
+</style>
+
+<div id="clocktext">ההרשמה תפתח בעוד:</div>
+<div id="clockdiv"><div><span class="seconds"></span><div class="smalltext">שניות</div></div><div><span class="minutes"></span><div class="smalltext">דקות</div></div><div><span class="hours"></span><div class="smalltext">שעות</div></div></div>
+<br />
+
+<div id='js-test' class="notice">
+שגיאה: להרשמה נדרש דפדפן תומך JavaScript
+</div>
+
+<script type="text/javascript">
+  function getTimeRemaining(endtime) {
+    var t = Date.parse(endtime) - Date.parse(new Date());
+    var seconds = Math.floor((t / 1000) % 60);
+    var minutes = Math.floor((t / 1000 / 60) % 60);
+    var hours = Math.floor(t / 1000 / 60 / 60);
+    if (t < 0) {
+      seconds = 0;
+      minutes = 0;
+      hours = 0;
+    }
+    return {
+      'total': t,
+      'hours': hours,
+      'minutes': minutes,
+      'seconds': seconds
+    };
+  }
+  function showForm() {
+    document.getElementById('clocktext').style.display = "none";
+    document.getElementById('clockdiv').style.display = "none";
+    document.getElementById('em-booking').style.display = "inline-block";
+  }
+  function initializeClock(endtime) {
+    var clock = document.getElementById('clockdiv');
+    var hoursSpan = clock.querySelector('.hours');
+    var minutesSpan = clock.querySelector('.minutes');
+    var secondsSpan = clock.querySelector('.seconds');
+    var intervalCount = 0;
+    function updateClock() {
+      var t = getTimeRemaining(endtime);
+      if (++intervalCount > 3600) {
+        intervalCount = 0;
+        location.reload(true);
+      }
+      if (t.hours < 10) {
+          hoursSpan.innerHTML = '0' + t.hours;
+      } else {
+          hoursSpan.innerHTML = t.hours.toString();
+      }
+      minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
+      secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
+      if (t.total <= 0) {
+        clearInterval(timeinterval);
+        showForm();
+      }
+    }
+    var timeinterval = setInterval(updateClock, 1000);
+    updateClock();
+  }
+  function startCountdown() {
+    document.getElementById('js-test').style.display = "none";
+    if (window.location.href.includes("admin=show")) {
+      showForm();
+    } else {
+        initializeClock('October 1 2023 19:00:00 GMT+0300');
+    }
+  }
+  if(window.addEventListener) {
+    window.addEventListener('load', startCountdown, false); //W3C
+  }
+  else {
+    window.attachEvent('onload', startCountdown); //IE
+  }
+</script>
+
+<br />
+
+
+5. Registration Page #2
+-----------------------
+
+Permalink: https://limmudfsu.org.il/site/events/limmud2023-no-accomodation
+
+ru Title: Регистрация на Лимуд 2023 без проживания
+ru Content:
+
+<div dir="rtl" class="notice">
+אם הנכם/ן מעדיפים/ות לבצע הרשמה בשפה עברית לחצו <a href="/site/he/events/limmud2023-no-accomodation">כאן</a>.
+</div>
+
+<div class="info">
+Для регистрации на фестиваль с проживанием, нажмите <a href="/site/ru/events/limmud2023">сюда</a>.
+</div>
+
+Для получения подробной информации об условиях и процессе регистрации, нажмите <a href="/site/ru/limmud2023-registration">сюда</a>.
+
+<br />
+<h3>РЕГИСТРАЦИЯ</h3>
+
+<!-- div class="info">Регистрация на Лимуд 2023 откроется в октябре.</div-->
+<div class="info">В связи с текущей ситуацией регистрация на Лимуд 2023 откладывается.</div>
+
+<!-- COUNTDOWN TIMER -->
+
+<style type="text/css"> 
+  #clockdiv{
+    font-family: sans-serif;
+    color: #fff;
+    display: inline-block;
+    font-weight: 300;
+    text-align: center;
+    font-size: 30px;
+  }
+  #clockdiv > div{
+    padding: 10px;
+    border-radius: 3px;
+    background: #00BF96;
+    display: inline-block;
+  }
+  #clockdiv div > span{
+    padding: 15px;
+    border-radius: 3px;
+    background: #00816A;
+    display: inline-block;
+  }
+  .smalltext{
+    padding-top: 5px;
+    font-size: 16px;
+  }
+  #em-booking, #em-booking-title{
+    display: none;
+  }
+</style>
+
+<div id="clocktext">До открытия регистрации осталось:</div>
+<div id="clockdiv"><div><span class="hours"></span><div class="smalltext">Часов</div></div><div><span class="minutes"></span><div class="smalltext">Минут</div></div><div><span class="seconds"></span><div class="smalltext">Секунд</div></div></div>
+<br />
+
+
+<div id='js-test' class="notice">
+Ошибка: для заполнения регистрации необходим браузер с поддержкой JavaScript
+</div>
+
+<script type="text/javascript">
+  function getTimeRemaining(endtime) {
+    var t = Date.parse(endtime) - Date.parse(new Date());
+    var seconds = Math.floor((t / 1000) % 60);
+    var minutes = Math.floor((t / 1000 / 60) % 60);
+    var hours = Math.floor(t / 1000 / 60 / 60);
+    if (t < 0) {
+      seconds = 0;
+      minutes = 0;
+      hours = 0;
+    }
+    return {
+      'total': t,
+      'hours': hours,
+      'minutes': minutes,
+      'seconds': seconds
+    };
+  }
+  function showForm() {
+    document.getElementById('clocktext').style.display = "none";
+    document.getElementById('clockdiv').style.display = "none";
+    document.getElementById('em-booking').style.display = "inline-block";
+  }
+  function initializeClock(endtime) {
+    var clock = document.getElementById('clockdiv');
+    var hoursSpan = clock.querySelector('.hours');
+    var minutesSpan = clock.querySelector('.minutes');
+    var secondsSpan = clock.querySelector('.seconds');
+    var intervalCount = 0;
+    function updateClock() {
+      var t = getTimeRemaining(endtime);
+      if (++intervalCount > 3600) {
+        intervalCount = 0;
+        location.reload(true);
+      }
+      if (t.hours < 10) {
+          hoursSpan.innerHTML = '0' + t.hours;
+      } else {
+          hoursSpan.innerHTML = t.hours.toString();
+      }
+      minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
+      secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
+      if (t.total <= 0) {
+        clearInterval(timeinterval);
+        showForm();
+      }
+    }
+    var timeinterval = setInterval(updateClock, 1000);
+    updateClock();
+  }
+  function startCountdown() {
+    document.getElementById('js-test').style.display = "none";
+    if (window.location.href.includes("admin=show")) {
+      showForm();
+    } else {
+        initializeClock('October 1 2023 19:00:00 GMT+0300');
+    }
+  }
+  if(window.addEventListener) {
+    window.addEventListener('load', startCountdown, false); //W3C
+  }
+  else {
+    window.attachEvent('onload', startCountdown); //IE
+  }
+</script>
+
+<br />
+
+
+he Title: הרשמה ללימוד 2023 ללא לינה
+he Content:
+
+<div dir="ltr" class="notice">
+Если вы предпочитаете заполнить регистрацию на русском языке, нажмите <a href="/site/ru/events/limmud2023-no-accomodation">сюда</a>.
+</div>
+
+<div dir="rtl" class="info">
+אם הנכם/ן רוצים/ות להרשם לפסטיבל עם לינה לחצו <a href="/site/he/events/limmud2023">כאן</a>.
+</div>
+
+לקבלת מידע מפורט אודות תנאים ותהליך הרישום לחצו <a href="/site/he/limmud2023-registration">כאן</a>.
+
+<br />
+<h3>הרשמה</h3>
+
+<!--div class="info">הרשמה לפסטיבל תיפתח באוקטובר.</div-->
+<div class="info">על רקע המצב הבטחוני הרשמה לפסטיבל נדחת עד להודעה חדשה.</div>
+
+<!-- COUNTDOWN TIMER -->
+
+<style type="text/css"> 
+  #clockdiv{
+    font-family: sans-serif;
+    color: #fff;
+    display: inline-block;
+    font-weight: 300;
+    text-align: center;
+    font-size: 30px;
+  }
+  #clockdiv > div{
+    padding: 10px;
+    border-radius: 3px;
+    background: #00BF96;
+    display: inline-block;
+  }
+  #clockdiv div > span{
+    padding: 15px;
+    border-radius: 3px;
+    background: #00816A;
+    display: inline-block;
+  }
+  .smalltext{
+    padding-top: 5px;
+    font-size: 16px;
+  }
+  #em-booking, #em-booking-title{
+    display: none;
+  }
+</style>
+
+<div id="clocktext">ההרשמה תפתח בעוד:</div>
+<div id="clockdiv"><div><span class="seconds"></span><div class="smalltext">שניות</div></div><div><span class="minutes"></span><div class="smalltext">דקות</div></div><div><span class="hours"></span><div class="smalltext">שעות</div></div></div>
+<br />
+
+<div id='js-test' class="notice">
+שגיאה: להרשמה נדרש דפדפן תומך JavaScript
+</div>
+
+<script type="text/javascript">
+  function getTimeRemaining(endtime) {
+    var t = Date.parse(endtime) - Date.parse(new Date());
+    var seconds = Math.floor((t / 1000) % 60);
+    var minutes = Math.floor((t / 1000 / 60) % 60);
+    var hours = Math.floor(t / 1000 / 60 / 60);
+    if (t < 0) {
+      seconds = 0;
+      minutes = 0;
+      hours = 0;
+    }
+    return {
+      'total': t,
+      'hours': hours,
+      'minutes': minutes,
+      'seconds': seconds
+    };
+  }
+  function showForm() {
+    document.getElementById('clocktext').style.display = "none";
+    document.getElementById('clockdiv').style.display = "none";
+    document.getElementById('em-booking').style.display = "inline-block";
+  }
+  function initializeClock(endtime) {
+    var clock = document.getElementById('clockdiv');
+    var hoursSpan = clock.querySelector('.hours');
+    var minutesSpan = clock.querySelector('.minutes');
+    var secondsSpan = clock.querySelector('.seconds');
+    var intervalCount = 0;
+    function updateClock() {
+      var t = getTimeRemaining(endtime);
+      if (++intervalCount > 3600) {
+        intervalCount = 0;
+        location.reload(true);
+      }
+      if (t.hours < 10) {
+          hoursSpan.innerHTML = '0' + t.hours;
+      } else {
+          hoursSpan.innerHTML = t.hours.toString();
+      }
+      minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
+      secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
+      if (t.total <= 0) {
+        clearInterval(timeinterval);
+        showForm();
+      }
+    }
+    var timeinterval = setInterval(updateClock, 1000);
+    updateClock();
+  }
+  function startCountdown() {
+    document.getElementById('js-test').style.display = "none";
+    if (window.location.href.includes("admin=show")) {
+      showForm();
+    } else {
+        initializeClock('October 1 2023 19:00:00 GMT+0300');
+    }
+  }
+  if(window.addEventListener) {
+    window.addEventListener('load', startCountdown, false); //W3C
+  }
+  else {
+    window.attachEvent('onload', startCountdown); //IE
+  }
+</script>
+
+<br />
+
+
+6. Registration Page #3
+-----------------------
+
+Permalink: https://limmudfsu.org.il/site/events/limmud2023-volunteers/
+
+ru Title: Регистрация на Лимуд 2023 для волонтеров, презентеров и гостей фестиваля
+ru Content:
+
+<div class="notice" dir="rtl">אם הנכם/ן מעדיפים/ות לבצע הרשמה בשפה עברית לחצו <a href="/site/he/events/limmud2023-volunteers">כאן</a>.</div>
+
+Для получения подробной информации об условиях и процессе регистрации, нажмите <a href="/site/ru/limmud2023-registration">сюда</a>.
+
+&nbsp;<br>
+Волонтерам и презентерам фестиваля Лимуд FSU Израиль полагаются следующие специальные условия:
+<ul>
+<li>скидка 720 ₪ (50% от стоимости места) при проживании в двухместном и семейном номере</li>
+<li>скидка 608 ₪ (50% от стоимости места) при проживании в трехместном номере</li>
+<li>скидка 400 ₪ (50% от стоимости места) для презентеров при трехдневном участии в фестивале без проживания</li>
+<li>презентеры находящиеся на фестивале один день (своей сессии) без проживания, имеют право на бесплатное участие во всех мероприятиях фестиваля, включая трапезы</li>
+<li>бесплатная подвозка для волонтеров и презентеров ПРОЖИВАЮЩИХ на фестивале</li>
+<li><span style="background-color: yellow">ОБРАТИТЕ ВНИМАНИЕ:</span> скидки не распространяются на членов семьи и одноместные номера</li>
+</ul>
+
+<hr>
+
+Прежде чем заполнять эту регистрацию, вам необходимо получить ПОДТВЕРЖДЕНИЕ о том, что вы участвуете в фестивале в качестве волонтера / презентера. Для этого необходимо заполнить <a href="/site/ru/volunteer">анкету волонтера</a> или <a href="/site/ru/self-presentor">анкету презентера</a>. Комитеты волонтеров / презентеров рассмотрят вашу заявку и, в случае положительного ответа, вышлют вам СЕКРЕТНЫЙ КОД для регистрации.
+
+Если вы планируете приехать на фестиваль с проживанием, вам необходимо заполнить регистрацию на себя и на членов вашей семьи / друзей, с которыми вы будете проживать в одном номере. Укажите напротив вашего имени, что вы ВОЛОНТЕР / ПРЕЗЕНТЕР и впишите СЕКРЕТНЫЙ КОД, который вы получили. Укажите напротив членов вашей семьи / друзей, что они УЧАСТНИКИ.
+
+Если вы планируете приехать на фестиваль один, но заинтересованы в проживании в двухместном / трехместном номере, напишите нам через <a href="/site/ru#contact-us">контактную форму</a> на сайте. Mы постараемся подобрать вам соседа из числа волонтеров / презентеров и свяжемся с вами для оформления регистрации.
+
+Если вы планируете приехать на фестиваль без проживания, вы также можете указать в вашей регистрации членов вашей семьи / друзей, и оплатить общий заказ. Или же вы можете заполнить регистрацию только на себя, а ваши друзья сами заполнят и оплатят <a href="/site/ru/events/limmud2023-no-accomodation">регистрацию без проживания</a>.
+
+&nbsp;<br>
+
+<!--
+<div class="info">Регистрация на Лимуд 2023 откроется 10 октября в 19:00.</div>
+-->
+
+<hr>
+
+
+he Title: הרשמה ללימוד 2023 למרצים/ות, מתנבדים/ות ואורחים/ות
+he Content:
+
+<div dir="ltr" class="notice">
+Если вы предпочитаете заполнить регистрацию на русском языке, нажмите <a href="/site/ru/events/limmud2023-volunteers/">сюда</a>.
+</div>
+
+לקבלת מידע מפורט אודות תנאים ותהליך הרישום לחצו <a href="/site/he/limmud2023-registration">כאן</a>.
+
+&nbsp;<br>
+
+מרצים/ות ומתנדים/ות של פסטיבל לימוד FSU ישראל נהנים/ות מתנאים הבאים:
+<ul>
+<li>הנחה של 720 ₪ (50% מעלות מקום) על בסיס לינה בחדר זוגי או משפחתי</li>
+<li>הנחה של 608 ₪ (50% מעלות מקום) על בסיס לינה בחדר לשלושה מבוגרים</li>
+<li>הנחה של 400 ₪ (50% מעלות מקום) למרצים/ות המשתתפים/ות בפסטיבל ללא לינה במשך שלושה ימים</li>
+<li>מרצים/ות המשתתפים/ות בפסטיבל במשך יום אחד (יום הרצאתם/ן) ללא לינה זכאים/ות להשתתף בחינם בכל אירועי הפסטיבל באותו יום, כולל ארוחות</li>
+<li>הסעה בחינם למרצים/ות ומתנדבים/ות המשתתפים/ות בפסטיבל עם לינה</li>
+<li><span style="background-color: yellow">שימו לב:</span> ההנחות אינן חלות על בני משפחה וחדרים ליחיד</li>
+</ul>
+
+<hr>
+
+לפני מילוי טופס זו, עליכם/ן לקבל אישור שאתם/ן משתתפים/ות בפסטיבל כמתנדבים/ות ו/או מרצים/ות. לשם כך יש למלא <a href="/site/volunteer"> שאלון מתנדבים</a> או <a href="/site/self-presentor">שאלון מרצים</a>. בקשתכם/ן תבדק על ידי ועדות מתנדבים / מרצים ואם תאושר, ישלח לכם/ן <b>קוד סודי</b> להרשמה.
+
+אם אתם/ן מתכננים/ות להגיע לפסטיבל עם לינה, תצטרכו להשלים רישום עבור עצמכם/ן ועבור בני/ות משפחתכם/ן ו/או חברים/ות איתם תשהו באותו חדר. ציינו מול שמכם/ו שאתם/ו <b>מתנדבים/ות</b> ו/או <b>מרצים/ות</b> ורשמו את <b>הקוד הסודי</b> שקיבלתם/ן. ציין ליד בני המשפחה ו/או חברים/ות שהם <b>משתתפים</b>.
+
+אם אתם/ן מתכננים/ות להגיע לפסטיבל לבד, אך מעוניינים/ות להתארח בחדר זוגי / טריפל, אנא פנו אלינו באמצעות <a href="/site/#contact-us">טופס</a> באתר. ננסה למצוא לכם/ן שכן/נה מבין המתנדבים/ות ו/או המרצים/ות וניצור איתכם/ן קשר להשלמת ההרשמה.
+
+אם אתם/ן מתכננים/ות להגיע לפסטיבל ללא לינה, תוכלו לכלול בהרשמה גם את בני/ות משפחתכם/ן ו/או חברים/ות שלכם/ן, ולשלם על כל הההזמנה. או לחלופין למלא את ההרשמה רק עבורכם/ן, והחברים/ות שלכם/ן ימלאו את <a href="/site/events/limmud2023-no-accomodation">ההרשמה ללא לינה</a> באופן עצמאי.
+
+&nbsp;<br>
+
+<!--
+<div class="info">הרשמה לפסטיבל תיפתח ב-10 באוקטובר ב-19:00.</div>
+-->
+
+<hr>
+

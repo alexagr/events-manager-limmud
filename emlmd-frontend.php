@@ -185,6 +185,11 @@ class EM_Limmud_Frontend {
                     els = document.getElementsByName("em_tickets[298][spaces]");
                     if (els.length > 0) {
                         registration = "volunteers";
+                    } else {
+                        els = document.getElementsByName("em_tickets[322][spaces]");
+                        if (els.length > 0) {
+                            registration = "friends";
+                        }
                     }
                 }
             }
@@ -346,7 +351,7 @@ class EM_Limmud_Frontend {
                 displayField("ticket_days", true);
                 updateComboBox("ticket_days", [TICKET_3_DAYS, TICKET_1_DAY]);
             }
-                     
+            
             displayElementByName("room_label", display_room_label);
             displayElementByName("too_many_adults_label", display_too_many_adults_label);
             displayElementByName("too_little_adults_label", display_too_little_adults_label);

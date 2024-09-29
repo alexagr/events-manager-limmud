@@ -60,7 +60,7 @@ class EM_Limmud_CSV {
 
             $events = EM_Events::get(array('scope'=>'all'));
             foreach ($events as $EM_Event) {
-                if (($EM_Event->event_id != 22) && ($EM_Event->event_id != 23) && ($EM_Event->event_id != 24)) {
+                if (($EM_Event->event_id != 22) && ($EM_Event->event_id != 23) && ($EM_Event->event_id != 24) && ($EM_Event->event_id != 25)) {
                     continue;
                 }
                 $event_date = date("U", $EM_Event->start()->getTimestamp());

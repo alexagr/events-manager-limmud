@@ -69,7 +69,9 @@ class EM_Limmud_Booking {
                         $EM_Booking = em_get_booking($_REQUEST['booking_id']);
                         if (($EM_Booking->booking_status == 1) && (EM_Limmud_Paypal::get_secret($EM_Booking, 'payment_success') == $_REQUEST['secret'])) {
                             $content = str_replace('#_BOOKINGID', $_REQUEST['booking_id'], $page_content);
+                            $content = str_replace('#_BOOKINGSUMMARYURL', EM_Limmud_Paypal::get_payment_link($EM_Booking), $content);
                             $event_year = date("Y", date("U", $EM_Booking->get_event()->start()->getTimestamp()));
+                            $content = str_replace('#_EVENTYEAR', $event_year, $content);
                             $content = str_replace('#_EVENTNAME', "[:ru]Лимуд FSU Израиль [:he]לימוד FSU ישראל[:] " . $event_year, $content);
                         }
                     }
@@ -88,6 +90,9 @@ class EM_Limmud_Booking {
                         if ((($EM_Booking->booking_status == 5) || ($EM_Booking->booking_status == 1)) && (EM_Limmud_Paypal::get_secret($EM_Booking, 'partial_payment_success') == $_REQUEST['secret'])) {
                             $content = str_replace('#_BOOKINGID', $_REQUEST['booking_id'], $page_content);
                             $content = str_replace('#_BOOKINGSUMMARYURL', EM_Limmud_Paypal::get_payment_link($EM_Booking), $content);
+                            $event_year = date("Y", date("U", $EM_Booking->get_event()->start()->getTimestamp()));
+                            $content = str_replace('#_EVENTYEAR', $event_year, $content);
+                            $content = str_replace('#_EVENTNAME', "[:ru]Лимуд FSU Израиль [:he]לימוד FSU ישראל[:] " . $event_year, $content);
                         }
                     }
                 }
@@ -359,6 +364,7 @@ class EM_Limmud_Booking {
 
         if ($EM_Booking->booking_status == 5) {
         ?>
+            <a id="payment-link"></a>
             <h3>[:ru]ОПЛАТА РЕГИСТРАЦИИ[:he]תשלום עבור הזמנה[:]</h3>
             <div id="payment-buttons-container">
         <?php
@@ -367,12 +373,12 @@ class EM_Limmud_Booking {
                 <p>[:ru]Для вашего удобства, имеется возможность частичной оплаты заказа. Например, каждый участник может оплатить свою часть стоимости заказа.[:he]לנוחיותכם/ן, ניתנת האפשרות לביצוע תשלום חלקי. למשל כל משתתף/ת יכול/ה לשלם את חלקו/ה בהזמנה.[:]</p>
                 <p>[:ru]Для частичной оплаты заказа измените сумму оплаты, прежде чем нажать на одну из следующих кнопок. По окончании оплаты перешлите <a href="<?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking) ?>">линк на эту страницу</a> другим участникам - чтобы они оплатили свою часть заказа. Обратите внимание, что полную оплату заказа необходимо произвести в течение 48 часов.[:he]לביצוע תשלום חלקי, יש לשנות את סכום התשלום לפני לחיצה על כפתור התשלום. לאחר התשלום יש להעביר את <a href="<?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking) ?>">הקישור לדף זה</a> לשער המשתתפים/ות – על מנת שיסדירו את התשלום עבור חלקם/ן בהזמנה. שימו לב כי התשלום המלא עבור ההזמנה חייב להתבצע תוך 48 שעות.[:]</p>
         <?php
-                EM_Limmud_Paypal::show_buttons($EM_Booking, true);
+                EM_Limmud_Paypal::show_buttons($EM_Booking, true, !empty($_REQUEST['scroll']));
             } else {
         ?>
                 <p>[:ru]Для оплаты регистрации нажмите на одну из следующих кнопок[:he]לתשלום עבור הזמנה לחצו על אחד מכפתורים הבאים[:]:</p>
         <?php
-                EM_Limmud_Paypal::show_buttons($EM_Booking);
+                EM_Limmud_Paypal::show_buttons($EM_Booking, false, !empty($_REQUEST['scroll']));
             }
         ?>
             </div>
@@ -720,6 +726,15 @@ class EM_Limmud_Booking {
                 if ($discount_num > 0) {
                     self::add_ticket($EM_Booking, $discount_bus_ticket, $discount_num);
                 }
+            }
+        }
+
+        if ($EM_Booking->event_id == 25) {
+            // limmud 2023 friends meetup registration
+            $donation = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['donation'], 'ru');
+            $donation = preg_replace('/[^0-9]+/', '', $donation);
+            if (!empty($donation)) {
+                self::add_ticket($EM_Booking, 323, intval($donation) / 50);
             }
         }
 
