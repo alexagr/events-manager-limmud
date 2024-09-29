@@ -42,6 +42,7 @@ class EM_Limmud {
         include('emlmd-frontend.php');
         include('emlmd-secret.php');
         include('emlmd-paypal.php');
+        include('emlmd-paid.php');
         include('emlmd-booking.php');
     }
         

@@ -186,9 +186,9 @@ class EM_Limmud_Frontend {
                     if (els.length > 0) {
                         registration = "volunteers";
                     } else {
-                        els = document.getElementsByName("em_tickets[322][spaces]");
+                        els = document.getElementsByName("em_tickets[325][spaces]");
                         if (els.length > 0) {
-                            registration = "friends";
+                            registration = "one-day";
                         }
                     }
                 }

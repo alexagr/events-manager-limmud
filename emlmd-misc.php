@@ -645,7 +645,7 @@ class EM_Limmud_Misc {
                 <?php esc_html_e( 'Payment Link', 'events-limmud'); ?>
             </h3>
             <div class="inside">
-                <a href="<?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking); ?>"><?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking); ?></a>
+                <a href="<?php echo EM_Limmud_Booking::get_payment_link($EM_Booking); ?>"><?php echo EM_Limmud_Booking::get_payment_link($EM_Booking); ?></a>
             </div>
         </div>
         <?php

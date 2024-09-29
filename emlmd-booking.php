@@ -4,6 +4,24 @@ class EM_Limmud_Booking {
     public static function init() {
         add_filter('the_title', array(__CLASS__, 'the_title'));
         add_filter('the_content', array(__CLASS__, 'the_content'), 10, 2);
+        add_action('wp_head', array(__CLASS__, 'wp_head'));
+    }
+
+    public static function get_secret($EM_Booking, $seed = false) {
+        $secret_text = $EM_Booking->person->user_email;
+        if (!empty($seed)) {
+            $secret_text .= $seed;
+        }
+        return md5($secret_text);
+    }
+
+    public static function get_payment_link($EM_Booking) {
+        $link = '';
+    	$booking_summary_page_id = get_option('dbem_booking_summary_page');
+		if ($booking_summary_page_id != 0) {
+			$link = get_post_permalink($booking_summary_page_id) . '&booking_id=' . $EM_Booking->booking_id . '&secret=' . self::get_secret($EM_Booking);
+		}
+        return $link;
     }
 
     public static function the_title($data, $id = null) {
@@ -42,6 +60,24 @@ class EM_Limmud_Booking {
         return $data;
     }
 
+    public static function wp_head() {
+        global $post;
+        $payment_redirect_page_id = get_option('dbem_payment_redirect_page');
+        if (($post->ID == $payment_redirect_page_id) && ($payment_redirect_page_id != 0)) {
+            ?>
+            <style>
+                #header, #footer, .bottom-footer {
+                    display: none;
+                }
+                #congrats {
+                    background-color: honeydew;
+                    padding: 20px;
+                }
+            </style>
+            <?php
+        }
+    }
+
     public static function the_content($page_content) {
         global $post;
         if (empty($post)) return $page_content; //fix for any other plugins calling the_content outside the loop
@@ -67,9 +103,9 @@ class EM_Limmud_Booking {
                 if (preg_match('/#_BOOKINGID/', $page_content)) {
                     if (!empty( $_REQUEST['booking_id']) && !empty( $_REQUEST['secret'])) {
                         $EM_Booking = em_get_booking($_REQUEST['booking_id']);
-                        if (($EM_Booking->booking_status == 1) && (EM_Limmud_Paypal::get_secret($EM_Booking, 'payment_success') == $_REQUEST['secret'])) {
+                        if (($EM_Booking->booking_status == 1) && (self::get_secret($EM_Booking, 'payment_success') == $_REQUEST['secret'])) {
                             $content = str_replace('#_BOOKINGID', $_REQUEST['booking_id'], $page_content);
-                            $content = str_replace('#_BOOKINGSUMMARYURL', EM_Limmud_Paypal::get_payment_link($EM_Booking), $content);
+                            $content = str_replace('#_BOOKINGSUMMARYURL', self::get_payment_link($EM_Booking), $content);
                             $event_year = date("Y", date("U", $EM_Booking->get_event()->start()->getTimestamp()));
                             $content = str_replace('#_EVENTYEAR', $event_year, $content);
                             $content = str_replace('#_EVENTNAME', "[:ru]Лимуд FSU Израиль [:he]לימוד FSU ישראל[:] " . $event_year, $content);
@@ -87,9 +123,9 @@ class EM_Limmud_Booking {
                 if (preg_match('/#_BOOKINGID/', $page_content)) {
                     if (!empty( $_REQUEST['booking_id']) && !empty( $_REQUEST['secret'])) {
                         $EM_Booking = em_get_booking($_REQUEST['booking_id']);
-                        if ((($EM_Booking->booking_status == 5) || ($EM_Booking->booking_status == 1)) && (EM_Limmud_Paypal::get_secret($EM_Booking, 'partial_payment_success') == $_REQUEST['secret'])) {
+                        if ((($EM_Booking->booking_status == 5) || ($EM_Booking->booking_status == 1)) && (self::get_secret($EM_Booking, 'partial_payment_success') == $_REQUEST['secret'])) {
                             $content = str_replace('#_BOOKINGID', $_REQUEST['booking_id'], $page_content);
-                            $content = str_replace('#_BOOKINGSUMMARYURL', EM_Limmud_Paypal::get_payment_link($EM_Booking), $content);
+                            $content = str_replace('#_BOOKINGSUMMARYURL', self::get_payment_link($EM_Booking), $content);
                             $event_year = date("Y", date("U", $EM_Booking->get_event()->start()->getTimestamp()));
                             $content = str_replace('#_EVENTYEAR', $event_year, $content);
                             $content = str_replace('#_EVENTNAME', "[:ru]Лимуд FSU Израиль [:he]לימוד FSU ישראל[:] " . $event_year, $content);
@@ -98,6 +134,30 @@ class EM_Limmud_Booking {
                 }
             }
             return apply_filters('em_content', '<div id="em-wrapper">'.$content.'</div>');
+        }
+
+        $payment_redirect_page_id = get_option('dbem_payment_redirect_page');
+        if (!post_password_required() && ($post->ID == $payment_redirect_page_id) && ($payment_redirect_page_id != 0)) {
+            $content = apply_filters('em_content_pre', '', $page_content);
+            if (empty($content) && (preg_match('/#_BOOKINGID/', $page_content) || preg_match('/#_PAYMENTSUMMARY/', $page_content))) {
+                if (!empty( $_REQUEST['booking_id']) && !empty( $_REQUEST['secret'])) {
+                    $EM_Booking = em_get_booking($_REQUEST['booking_id']);
+                    if (self::get_secret($EM_Booking, 'payment_redirect') == $_REQUEST['secret']) {
+                        $content = str_replace('#_BOOKINGID', $_REQUEST['booking_id'], $page_content);
+                        $content = str_replace('#_BOOKINGSUMMARYURL', self::get_payment_link($EM_Booking), $content);
+                        $event_year = date("Y", date("U", $EM_Booking->get_event()->start()->getTimestamp()));
+                        $content = str_replace('#_EVENTYEAR', $event_year, $content);
+                        $content = str_replace('#_EVENTNAME', "[:ru]Лимуд FSU Израиль [:he]לימוד FSU ישראל[:] " . $event_year, $content);
+                        if (!empty( $_REQUEST['payment_type']) && ($_REQUEST['payment_type'] == 'full')) {
+                            $content = str_replace('#_PAYMENTSUMMARY', "[:ru]Вы успешно зарегистрировались на фестиваль.[:he]נרשמתם/ן בהצלחה לפסטיבל.[:]", $content);
+                        }
+                        if (!empty( $_REQUEST['payment_type']) && ($_REQUEST['payment_type'] == 'partial')) {
+                            $content = str_replace('#_PAYMENTSUMMARY', "[:ru]Вы успешно оплатили часть вашего заказа.[:he]תשלום חלקי התקבל בהצלחה.[:]", $content);
+                        }
+                    }
+                }
+            }
+            return apply_filters('em_content', '<div id="congrats">'.$content.'</div>');
         }
 
         return $page_content;
@@ -124,7 +184,7 @@ class EM_Limmud_Booking {
             	}
             }
 
-            if (($_REQUEST['secret'] != EM_Limmud_Paypal::get_secret($EM_Booking)) && ($_REQUEST['secret'] != $admin_secret)) {
+            if (($_REQUEST['secret'] != self::get_secret($EM_Booking)) && ($_REQUEST['secret'] != $admin_secret)) {
                 return;
             }
 
@@ -174,7 +234,7 @@ class EM_Limmud_Booking {
             <tr><th>[:en]Name[:ru]Имя[:he]שם[:]</th><td><?php echo $user_name ?></td></tr>
             <tr><th>[:en]E-mail[:ru]E-mail[:he]דוא"ל[:]</th><td><?php echo $user_email ?></td></tr>
             <tr><th>[:en]Booking #[:ru]Номер заказа[:he]הזמנה מס'[:]</th><td><?php echo $_REQUEST['booking_id'] ?></td></tr>
-            <tr><th>[:en]Status[:ru]Статус[:he]סטטוס[:]</th><td><?php
+            <tr id="booking-status"><th>[:en]Status[:ru]Статус[:he]סטטוס[:]</th><td><?php
             switch ($EM_Booking->booking_status) {
                 case 0:
                     echo '[:en]Pending[:ru]Проверяется[:he]בבדיקה[:]';
@@ -371,17 +431,30 @@ class EM_Limmud_Booking {
             if (self::$partial_payment) {
         ?>
                 <p>[:ru]Для вашего удобства, имеется возможность частичной оплаты заказа. Например, каждый участник может оплатить свою часть стоимости заказа.[:he]לנוחיותכם/ן, ניתנת האפשרות לביצוע תשלום חלקי. למשל כל משתתף/ת יכול/ה לשלם את חלקו/ה בהזמנה.[:]</p>
-                <p>[:ru]Для частичной оплаты заказа измените сумму оплаты, прежде чем нажать на одну из следующих кнопок. По окончании оплаты перешлите <a href="<?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking) ?>">линк на эту страницу</a> другим участникам - чтобы они оплатили свою часть заказа. Обратите внимание, что полную оплату заказа необходимо произвести в течение 48 часов.[:he]לביצוע תשלום חלקי, יש לשנות את סכום התשלום לפני לחיצה על כפתור התשלום. לאחר התשלום יש להעביר את <a href="<?php echo EM_Limmud_Paypal::get_payment_link($EM_Booking) ?>">הקישור לדף זה</a> לשער המשתתפים/ות – על מנת שיסדירו את התשלום עבור חלקם/ן בהזמנה. שימו לב כי התשלום המלא עבור ההזמנה חייב להתבצע תוך 48 שעות.[:]</p>
+                <p>[:ru]Для частичной оплаты заказа измените сумму оплаты, прежде чем нажать на одну из следующих кнопок. По окончании оплаты перешлите <a href="<?php echo self::get_payment_link($EM_Booking) ?>">линк на эту страницу</a> другим участникам - чтобы они оплатили свою часть заказа. Обратите внимание, что полную оплату заказа необходимо произвести в течение 48 часов.[:he]לביצוע תשלום חלקי, יש לשנות את סכום התשלום לפני לחיצה על כפתור התשלום. לאחר התשלום יש להעביר את <a href="<?php echo self::get_payment_link($EM_Booking) ?>">הקישור לדף זה</a> לשער המשתתפים/ות – על מנת שיסדירו את התשלום עבור חלקם/ן בהזמנה. שימו לב כי התשלום המלא עבור ההזמנה חייב להתבצע תוך 48 שעות.[:]</p>
         <?php
-                EM_Limmud_Paypal::show_buttons($EM_Booking, true, !empty($_REQUEST['scroll']));
+                if (get_option('dbem_payment_provider') == "paypal") {
+                    EM_Limmud_Paypal::show_buttons($EM_Booking, true, !empty($_REQUEST['scroll']));
+                }
+                if (get_option('dbem_payment_provider') == "paid") {
+                    EM_Limmud_Paid::show_buttons($EM_Booking, true, !empty($_REQUEST['scroll']));
+                }
             } else {
         ?>
                 <p>[:ru]Для оплаты регистрации нажмите на одну из следующих кнопок[:he]לתשלום עבור הזמנה לחצו על אחד מכפתורים הבאים[:]:</p>
         <?php
-                EM_Limmud_Paypal::show_buttons($EM_Booking, false, !empty($_REQUEST['scroll']));
+                if (get_option('dbem_payment_provider') == "paypal") {
+                    EM_Limmud_Paypal::show_buttons($EM_Booking, false, !empty($_REQUEST['scroll']));
+                }
+                if (get_option('dbem_payment_provider') == "paid") {
+                    EM_Limmud_Paid::show_buttons($EM_Booking, false, !empty($_REQUEST['scroll']));
+                }
             }
         ?>
             </div>
+        <?php
+            if (get_option('dbem_payment_provider') == "paypal") {
+        ?>
             <div id="payment-authorize-container" style="display: none">
                 <p>[:ru]Авторизация платежа[:he]מקבל אסמכתא לתשלום[:]</p>
                 <div id="paypal-spinner-container" class="spinner"></div>
@@ -411,6 +484,7 @@ class EM_Limmud_Booking {
                 <p>[:ru]Платеж подтвержден[:he]תשלום בוצע[:]</p>
             </div>
         <?php
+            }
         }
     }
 
@@ -735,6 +809,14 @@ class EM_Limmud_Booking {
             $donation = preg_replace('/[^0-9]+/', '', $donation);
             if (!empty($donation)) {
                 self::add_ticket($EM_Booking, 323, intval($donation) / 50);
+            }
+        }
+
+        if ($EM_Booking->event_id == 26) {
+            // 2024 one day registration
+            $tickets_num = self::$adult_num + self::$child_num;
+            if ($tickets_num > 0) {
+                self::add_ticket($EM_Booking, 326, $tickets_num);
             }
         }
 

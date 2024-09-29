@@ -29,23 +29,6 @@ class EM_Limmud_Paypal {
         return (int)$total;
     }
 
-    public static function get_secret($EM_Booking, $seed = false) {
-        $secret_text = $EM_Booking->person->user_email;
-        if (!empty($seed)) {
-            $secret_text .= $seed;
-        }
-        return md5($secret_text);
-    }
-
-    public static function get_payment_link($EM_Booking) {
-        $link = '';
-    	$my_booking_summary_page_id = get_option('dbem_booking_summary_page');
-		if ($my_booking_summary_page_id != 0) {
-			$link = get_post_permalink($my_booking_summary_page_id) . '&booking_id=' . $EM_Booking->booking_id . '&secret=' . self::get_secret($EM_Booking);
-		}
-        return $link;
-    }
-
     public static function create_transaction($booking_id, $transaction_sum)
     {
         $EM_Booking = em_get_booking($booking_id);
@@ -335,7 +318,7 @@ class EM_Limmud_Paypal {
         } 
     ?>
         <script src="https://www.paypal.com/sdk/js?client-id=<?php 
-            if (get_option('dbem_paypal_status') == "live") { 
+            if (get_option('dbem_payment_mode') == "live") { 
                 echo get_option('dbem_paypal_live_client_id'); 
             } else { 
                 echo get_option('dbem_paypal_sandbox_client_id'); 
@@ -345,7 +328,10 @@ class EM_Limmud_Paypal {
             window.onload = function() { 
                 document.getElementById('paypal-button-container').style.display = 'block'; 
     <?php if ($scroll) { ?>
-                document.getElementById('payment-link').scrollIntoView();
+                let paymentLink = document.getElementById('payment-link');
+                if (paymentLink !== null) {
+                    paymentLink.scrollIntoView();
+                }
     <?php } ?>
             };
             paypal.Buttons({
@@ -373,9 +359,11 @@ class EM_Limmud_Paypal {
                         return res.json();
                     }).then(function(data) {
                         if (!data.order_id) {
-                            var elem = document.getElementById('payment-impossible-container');
-                            elem.style.display = 'block';
-                            elem.scrollIntoView();
+                            let elem = document.getElementById('payment-impossible-container');
+                            if (elem !== null) {
+                                elem.style.display = 'block';
+                                elem.scrollIntoView();
+                            }
                             setTimeout(5000, window.location.reload());
                         }
                         document.getElementById('paypal-transaction-sum').readOnly = true;
@@ -398,20 +386,26 @@ class EM_Limmud_Paypal {
                     }).then(function(data) {
                         document.getElementById('payment-authorize-container').style.display = 'none';
                         if (data.result == 'completed') {
-                            var elem = document.getElementById('payment-success-container');
-                            elem.style.display = 'block';
-                            elem.scrollIntoView();
-                            window.location.href = '<?php echo get_post_permalink(get_option('dbem_booking_success_page')) ?>&booking_id=<?php echo $EM_Booking->booking_id ?>&secret=<?php echo self::get_secret($EM_Booking, 'payment_success') ?>';
+                            let elem = document.getElementById('payment-success-container');
+                            if (elem !== null) {
+                                elem.style.display = 'block';
+                                elem.scrollIntoView();
+                            }
+                            window.location.href = '<?php echo get_post_permalink(get_option('dbem_booking_success_page')) ?>&booking_id=<?php echo $EM_Booking->booking_id ?>&secret=<?php echo EM_Limmud_Booking::get_secret($EM_Booking, 'payment_success') ?>';
                         } else {
                             if (data.result == 'partially completed') {
-                                var elem = document.getElementById('payment-success-container');
-                                elem.style.display = 'block';
-                                elem.scrollIntoView();
-                                window.location.href = '<?php echo get_post_permalink(get_option('dbem_partial_payment_success_page')) ?>&booking_id=<?php echo $EM_Booking->booking_id ?>&secret=<?php echo self::get_secret($EM_Booking, 'partial_payment_success') ?>';
+                                let elem = document.getElementById('payment-success-container');
+                                if (elem !== null) {
+                                    elem.style.display = 'block';
+                                    elem.scrollIntoView();
+                                }
+                                window.location.href = '<?php echo get_post_permalink(get_option('dbem_partial_payment_success_page')) ?>&booking_id=<?php echo $EM_Booking->booking_id ?>&secret=<?php echo EM_Limmud_Booking::get_secret($EM_Booking, 'partial_payment_success') ?>';
                             } else {
-                                var elem = document.getElementById('payment-failed-container');
-                                elem.style.display = 'block';
-                                elem.scrollIntoView();
+                                let elem = document.getElementById('payment-failed-container');
+                                if (elem !== null) {
+                                    elem.style.display = 'block';
+                                    elem.scrollIntoView();
+                                }
                                 setTimeout(5000, window.location.reload());
                             }
                         }                    

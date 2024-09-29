@@ -3,7 +3,7 @@
 class EM_Limmud_Options {
     public static function init() {
         add_action('em_options_page_footer_emails', array(__CLASS__, 'email_options'));
-        add_action('em_options_page_footer', array(__CLASS__, 'paypal_options'));
+        add_action('em_options_page_footer', array(__CLASS__, 'payment_options'));
         add_action('em_options_page_footer', array(__CLASS__, 'misc_options'));
     }
 
@@ -116,19 +116,18 @@ class EM_Limmud_Options {
         <?php
     }
 
-    public static function paypal_options() {
+    public static function payment_options() {
         global $save_button;
         ?>
-        <div  class="postbox " id="em-opt-paypal-options" >
-        <div class="handlediv" title="Click to toggle"><br /></div><h3>Limmud Paypal Options</h3>
+        <div  class="postbox " id="em-opt-payment-options" >
+        <div class="handlediv" title="Click to toggle"><br /></div><h3>Limmud Payment Options</h3>
         <div class="inside">
             <table class='form-table'>
                 <?php
-                    em_options_input_text ( __( 'Live Client ID', 'em-limmud' ), 'dbem_paypal_live_client_id', '' );
-                    em_options_input_text ( __( 'Live Secret', 'em-limmud' ), 'dbem_paypal_live_secret', '' );
-                    em_options_input_text ( __( 'Sandbox Client ID', 'em-limmud' ), 'dbem_paypal_sandbox_client_id', '' );
-                    em_options_input_text ( __( 'Sandbox Secret', 'em-limmud' ), 'dbem_paypal_sandbox_secret', '' );
-                    em_options_select ( __( 'PayPal Mode', 'em-limmud' ), 'dbem_paypal_status', array ('live' => 'Live Site', 'test' => 'Test Mode (Sandbox)'), '' );                                      
+                    em_options_select ( __( 'Payment Provider', 'em-limmud' ), 'dbem_payment_provider', array ('paypal' => 'PayPal', 'paid' => 'Paid'), '' );
+                    em_options_select ( __( 'Payment Mode', 'em-limmud' ), 'dbem_payment_mode', array ('live' => 'Live Site', 'test' => 'Test Mode (Sandbox)'), '' );
+                    em_options_select ( __( 'Automatic Payment', 'em-limmud' ), 'dbem_automatic_payment', array ('disable' => 'Disable', 'enable' => 'Enable'), '' );
+                    em_options_select ( __( 'Days For Payment', 'em-limmud' ), 'dbem_days_for_payment', array ('0' => 'Unlimited', '1' => '1 Day', '2' => '2 Days', '3' => '3 Days', '4' => '4 Days'), '' );                                      
                 ?>
                 <tr><th>
                 <?php
@@ -136,9 +135,19 @@ class EM_Limmud_Options {
 				?></th><td><?php
 					wp_dropdown_pages(array('name'=>'dbem_booking_summary_page', 'selected'=>get_option('dbem_booking_summary_page'), 'show_option_none'=>'['.__('None', 'events-manager').']' ));
                 ?></td></tr>
+            </table>
+        </div> <!-- . inside -->
+        </div> <!-- .postbox -->
+        <div  class="postbox " id="em-opt-paypal-options" >
+        <div class="handlediv" title="Click to toggle"><br /></div><h3>Limmud PayPal Options</h3>
+        <div class="inside">
+            <table class='form-table'>
                 <?php
-                    em_options_select ( __( 'Automatic Payment', 'em-limmud' ), 'dbem_automatic_payment', array ('disable' => 'Disable', 'enable' => 'Enable'), '' );
-				?>                                      
+                    em_options_input_text ( __( 'PayPal Live Client ID', 'em-limmud' ), 'dbem_paypal_live_client_id', '' );
+                    em_options_input_text ( __( 'PayPal Live Secret', 'em-limmud' ), 'dbem_paypal_live_secret', '' );
+                    em_options_input_text ( __( 'PayPal Sandbox Client ID', 'em-limmud' ), 'dbem_paypal_sandbox_client_id', '' );
+                    em_options_input_text ( __( 'PayPal Sandbox Secret', 'em-limmud' ), 'dbem_paypal_sandbox_secret', '' );
+                ?>
                 <tr><th>
                 <?php
 				echo sprintf(__( '%s page', 'events-manager'),__('Booking Success','events-manager'))
@@ -150,6 +159,25 @@ class EM_Limmud_Options {
 				echo sprintf(__( '%s page', 'events-manager'),__('Partial Payment Success','events-manager'))
 				?></th><td><?php
 					wp_dropdown_pages(array('name'=>'dbem_partial_payment_success_page', 'selected'=>get_option('dbem_partial_payment_success_page'), 'show_option_none'=>'['.__('None', 'events-manager').']' ));
+                ?></td></tr>
+            </table>
+        </div> <!-- . inside -->
+        </div> <!-- .postbox -->
+        <div  class="postbox " id="em-opt-paid-options" >
+        <div class="handlediv" title="Click to toggle"><br /></div><h3>Limmud Paid Options</h3>
+        <div class="inside">
+            <table class='form-table'>
+                <?php
+                    em_options_input_text ( __( 'Paid Live API Key', 'em-limmud' ), 'dbem_paid_live_api_key', '' );
+                    em_options_input_text ( __( 'Paid Sandbox API Key', 'em-limmud' ), 'dbem_paid_sandbox_api_key', '' );
+                    em_options_select ( __( 'Paid 3D Secure', 'em-limmud' ), 'dbem_paid_3d_secure', array ('disable' => 'Disable', 'enable' => 'Enable'), '' );
+                    em_options_select ( __( 'Paid Installments', 'em-limmud' ), 'dbem_paid_installments', array ('1' => 'One', '103' => 'Up To Three', '106' => 'Up To Six'), '' );
+                ?>
+                <tr><th>
+                <?php
+				echo sprintf(__( '%s page', 'events-manager'),__('Payment Redirect','events-manager'))
+				?></th><td><?php
+					wp_dropdown_pages(array('name'=>'dbem_payment_redirect_page', 'selected'=>get_option('dbem_payment_redirect_page'), 'show_option_none'=>'['.__('None', 'events-manager').']' ));
                 ?></td></tr>
             </table>
         </div> <!-- . inside -->
@@ -167,7 +195,6 @@ class EM_Limmud_Options {
                 <?php
                     em_options_select ( __( 'Show Event Details', 'em-limmud' ), 'dbem_show_event_details', array ('show' => 'Show', 'hide' => 'Hide'), '' );                                      
                     em_options_select ( __( 'Admin Actions', 'em-limmud' ), 'dbem_admin_actions', array ('all' => 'Show All', 'edit' => 'Edit/View Only'), '' );                                      
-                    em_options_select ( __( 'Days For Payment', 'em-limmud' ), 'dbem_days_for_payment', array ('0' => 'Unlimited', '1' => '1 Day', '2' => '2 Days', '3' => '3 Days', '4' => '4 Days'), '' );                                      
                 ?>
             </table>
         </div> <!-- . inside -->

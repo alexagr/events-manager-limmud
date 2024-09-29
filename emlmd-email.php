@@ -204,7 +204,7 @@ class EM_Limmud_Emails {
     public static function placeholders($replace, $EM_Booking, $full_result){
         if (empty($replace) || $replace == $full_result) {
             if ($full_result == '#_BOOKINGSUMMARYURL') {
-                $replace = EM_Limmud_Paypal::get_payment_link($EM_Booking);
+                $replace = EM_Limmud_Booking::get_payment_link($EM_Booking);
             }
             
             if ($full_result == '#_BOOKINGDETAILSRU') {

@@ -19,7 +19,7 @@ class PayPalClient
 {
     public static function client() 
     {
-        if (get_option('dbem_paypal_status') == "live") {
+        if (get_option('dbem_payment_mode') == "live") {
             $clientId = get_option('dbem_paypal_live_client_id');
             $clientSecret = get_option('dbem_paypal_live_secret');
             $env = new ProductionEnvironment($clientId, $clientSecret);
