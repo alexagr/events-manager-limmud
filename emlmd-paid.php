@@ -39,12 +39,6 @@ class EM_Limmud_Paid {
         self::log('record_transaction booking_id=' . $booking_id, 'debug');
         
         global $wpdb;
-        if( EM_MS_GLOBAL ){
-            $prefix = $wpdb->base_prefix;
-        }else{
-            $prefix = $wpdb->prefix;
-        }
-        $table_transaction = $prefix.'em_transactions';
         
         $data = array();
         $data['booking_id'] = $booking_id;
@@ -58,7 +52,7 @@ class EM_Limmud_Paid {
         self::log('record_transaction ' . print_r($data, true), 'info');
         
         if( !empty($gateway_id) ) {
-            $existing = $wpdb->get_row( $wpdb->prepare( "SELECT transaction_id, transaction_status, transaction_gateway_id, transaction_total_amount FROM ".$table_transaction." WHERE transaction_gateway = %s AND transaction_gateway_id = %s", 'paid', $gateway_id ) );
+            $existing = $wpdb->get_row( $wpdb->prepare( "SELECT transaction_id, transaction_status, transaction_gateway_id, transaction_total_amount FROM ".EM_TRANSACTIONS_TABLE." WHERE transaction_gateway = %s AND transaction_gateway_id = %s", 'paid', $gateway_id ) );
         }
         
         if( !empty($existing->transaction_gateway_id) && ($gateway_id == $existing->transaction_gateway_id) && ($amount == $existing->transaction_total_amount) && ($status == $existing->transaction_status)) {
@@ -68,9 +62,11 @@ class EM_Limmud_Paid {
         }
 
         self::log('insert', 'debug');
-        $wpdb->insert( $table_transaction, $data );
+        $wpdb->insert( EM_TRANSACTIONS_TABLE, $data );
     }
 
+    // this is replaced by EM_Booking->get_total_paid() filter in emlmd-options.php
+    /*
     public static function get_total_paid($EM_Booking) {
         global $wpdb;
         if( EM_MS_GLOBAL ){
@@ -85,6 +81,7 @@ class EM_Limmud_Paid {
 
         return (int)$total - (int)$reversed;
     }
+    */
 
     public static function generate_url($booking_id, $payment_type, $language, $transaction_sum)
     {
@@ -94,7 +91,7 @@ class EM_Limmud_Paid {
             return;        
         }        
 
-        $total_paid = self::get_total_paid($EM_Booking);
+        $total_paid = (int)$EM_Booking->get_total_paid();
 
         $full_payment = false;
         if (empty($transaction_sum) || (floor($EM_Booking->get_price()) == $transaction_sum)) {
@@ -272,7 +269,7 @@ class EM_Limmud_Paid {
 
             if ($notify_type == 'sale-complete') {
                 $price = floor($EM_Booking->get_price());
-                $total_paid = self::get_total_paid($EM_Booking);
+                $total_paid = (int)$EM_Booking->get_total_paid();
                 self::log('price=' . strval($price) . '    total_paid=' . strval($total_paid), 'debug');
                 if ($total_paid >= $price) {
                     $result = "completed";                            
@@ -329,7 +326,7 @@ class EM_Limmud_Paid {
 	?>
         <p class="input-group input-text">
           <label for="paid-transaction-sum"><?php echo "[:ru]Сумма оплаты[:he]סכום לתשלום[:]" ?></label>
-          <input type="text" id="paid-transaction-sum" value="<?php echo floor($EM_Booking->get_price() - self::get_total_paid($EM_Booking)) ?>">
+          <input type="text" id="paid-transaction-sum" value="<?php echo floor($EM_Booking->get_price() - (int)$EM_Booking->get_total_paid()) ?>">
         </p>
     <?php
         }

@@ -23,6 +23,7 @@ class EM_Limmud_Misc {
         add_filter('em_booking_validate', array(__CLASS__, 'em_booking_validate'), 13, 2);
         add_action('em_bookings_single_metabox_footer',array(__CLASS__, 'em_bookings_single_metabox_footer'), 10, 1);
         add_action('em_booking_email_after_send',array(__CLASS__, 'em_booking_email_after_send'), 10, 1);
+        add_filter('em_booking_get_total_paid',array(__CLASS__, 'get_total_paid'), 11, 2);
     }
 
     public static function show_edit_columns($columns) { 
@@ -142,7 +143,7 @@ class EM_Limmud_Misc {
                     }
 
                     if (($diff->d >= $diffdays) && !$discount) {
-                        if (EM_Limmud_Paypal::get_total_paid($EM_Booking) > 0) {
+                        if ((int)$EM_Booking->get_total_paid() > 0) {
                             $EM_Booking->set_status(7);
                             EM_Pro::log('move to Partially Paid #'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, 'general', true);
                         } else {
@@ -677,6 +678,13 @@ class EM_Limmud_Misc {
             }
         }
     }
+
+	public static function get_total_paid( $total, $EM_Booking ){
+		global $wpdb;
+        $total = $wpdb->get_var('SELECT SUM(transaction_total_amount) FROM '.EM_TRANSACTIONS_TABLE." WHERE booking_id={$EM_Booking->booking_id} AND (transaction_status='sale-complete' OR transaction_status='COMPLETED')");
+        $reversed = $wpdb->get_var('SELECT SUM(transaction_total_amount) FROM '.EM_TRANSACTIONS_TABLE." WHERE booking_id={$EM_Booking->booking_id} AND (transaction_status='sale-chargeback' OR transaction_status='refund')");
+        return strval((int)$total - (int)$reversed);
+	}
 }
 
 EM_Limmud_Misc::init();

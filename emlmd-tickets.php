@@ -65,7 +65,7 @@ class EM_Limmud_Tickets {
                 switch ($EM_Booking->booking_status) {
                     case 0:
                     case 5:
-                        if (EM_Limmud_Paypal::get_total_paid($EM_Booking) > 0) {
+                        if ((int)$EM_Booking->get_total_paid() > 0) {
                             $summary[$key]['partial'] += $count;
                         } else {
                             $summary[$key]['pending'] += $count;

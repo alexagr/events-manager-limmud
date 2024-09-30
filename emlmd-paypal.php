@@ -16,6 +16,8 @@ class EM_Limmud_Paypal {
         }
     }
 
+    // this is replaced by EM_Booking->get_total_paid() filter in emlmd-options.php
+    /*
     public static function get_total_paid($EM_Booking) {
         global $wpdb;
         if( EM_MS_GLOBAL ){
@@ -28,6 +30,7 @@ class EM_Limmud_Paypal {
         $total = $wpdb->get_var('SELECT SUM(transaction_total_amount) FROM '.EM_TRANSACTIONS_TABLE." WHERE booking_id={$EM_Booking->booking_id}");
         return (int)$total;
     }
+    */
 
     public static function create_transaction($booking_id, $transaction_sum)
     {
@@ -41,7 +44,7 @@ class EM_Limmud_Paypal {
         if (empty($transaction_sum) || (floor($EM_Booking->get_price()) == $transaction_sum)) {
             $full_payment = true;
         }
-        if (self::get_total_paid($EM_Booking) > 0) {
+        if ((int)$EM_Booking->get_total_paid() > 0) {
             $full_payment = false;
             if (empty($transaction_sum)) {
                 $transaction_sum = floor($EM_Booking->get_price());
@@ -78,7 +81,7 @@ class EM_Limmud_Paypal {
 			
         } else {
             $tickets = array();
-            $price = min($transaction_sum, floor($EM_Booking->get_price()) - self::get_total_paid($EM_Booking));
+            $price = min($transaction_sum, floor($EM_Booking->get_price()) - (int)$EM_Booking->get_total_paid());
             $discount = 0;
 
             global $wpdb;
@@ -218,7 +221,7 @@ class EM_Limmud_Paypal {
                         if (!empty($EM_Booking->booking_id)) {
                             EM_Limmud_Paypal::record_transaction($EM_Booking, $amount, $currency, $timestamp, $id, $status);
                             $price = floor($EM_Booking->get_price());
-                            $total_paid = self::get_total_paid($EM_Booking);
+                            $total_paid = (int)$EM_Booking->get_total_paid();
                             if ($total_paid >= $price) {
                                 $result = "completed";                            
                                 $EM_Booking->approve();
@@ -312,7 +315,7 @@ class EM_Limmud_Paypal {
 	?>
         <p class="input-group input-text">
           <label for="paypal-transaction-sum"><?php echo "[:ru]Сумма оплаты[:he]סכום לתשלום[:]" ?></label>
-          <input type="text" id="paypal-transaction-sum" value="<?php echo floor($EM_Booking->get_price() - self::get_total_paid($EM_Booking)) ?>">
+          <input type="text" id="paypal-transaction-sum" value="<?php echo floor($EM_Booking->get_price() - (int)$EM_Booking->get_total_paid()) ?>">
         </p>
     <?php
         } 
