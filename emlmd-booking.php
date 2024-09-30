@@ -149,7 +149,7 @@ class EM_Limmud_Booking {
                         $content = str_replace('#_EVENTYEAR', $event_year, $content);
                         $content = str_replace('#_EVENTNAME', "[:ru]Лимуд FSU Израиль [:he]לימוד FSU ישראל[:] " . $event_year, $content);
                         if (!empty( $_REQUEST['payment_type']) && ($_REQUEST['payment_type'] == 'full')) {
-                            $content = str_replace('#_PAYMENTSUMMARY', "[:ru]Вы успешно зарегистрировались на фестиваль.[:he]נרשמתם/ן בהצלחה לפסטיבל.[:]", $content);
+                            $content = str_replace('#_PAYMENTSUMMARY', "[:ru]Вы успешно оплатили ваш заказ.[:he]תשלום התקבל בהצלחה.[:]", $content);
                         }
                         if (!empty( $_REQUEST['payment_type']) && ($_REQUEST['payment_type'] == 'partial')) {
                             $content = str_replace('#_PAYMENTSUMMARY', "[:ru]Вы успешно оплатили часть вашего заказа.[:he]תשלום חלקי התקבל בהצלחה.[:]", $content);
@@ -196,7 +196,9 @@ class EM_Limmud_Booking {
             if (array_key_exists('additional_emails', $EM_Booking->booking_meta['booking'])) {
                 $additional_emails = trim($EM_Booking->booking_meta['booking']['additional_emails']);
                 $additional_emails = preg_replace('/[\s,]+/', ', ', $additional_emails);
-                $user_email .= ', ' . $additional_emails;
+                if (!empty($additional_emails)) {
+                    $user_email .= ', ' . $additional_emails;
+                }
 
                 foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
                     if (($EM_Ticket_Booking->get_price() >= 0) && ($EM_Ticket_Booking->get_price() < 1)) {

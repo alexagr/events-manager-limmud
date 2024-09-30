@@ -2,33 +2,42 @@
 
 class EM_Limmud_Paid {
     public static function init() {
-        add_action('parse_request',array(__CLASS__,'handle_request'), 10);
+        add_action('init',array(__CLASS__,'init_actions'), 10);
     }
     
-    public static function handle_request() {
+    public static function init_actions() {
         if (!empty($_REQUEST['action']) && ($_REQUEST['action']  == 'paid-generate-url') && !empty($_REQUEST['booking_id'])) {
+            self::log('paid-generate-url ' . print_r($_REQUEST, true), 'debug');
             self::generate_url($_REQUEST['booking_id'], $_REQUEST['payment_type'], $_REQUEST['language'], $_REQUEST['transaction_sum']);
             die(); 
         }
 
-        global $wp;
-        if (str_starts_with($wp->request, 'paid-callback-status') && !empty($_REQUEST['notify_type']) && !empty($_REQUEST['transaction_id'])) {
+        if (!empty($_REQUEST['action']) && ($_REQUEST['action']  == 'paid-callback-status') && !empty($_REQUEST['transaction_id'])) {
             $transaction_id = $_REQUEST['transaction_id'];
+            self::log('paid-callback-status ' . print_r($_REQUEST, true), 'info');
             $transaction_id_values = explode('#', $transaction_id);
             if (substr($transaction_id_values[0], 0, 6) == 'LIMMUD') {
                 $booking_id = $transaction_id_values[1];
-                self::sale_callback($booking_id, $_REQUEST['notify_type'], $_REQUEST['payme_sale_id'], $_REQUEST['payme_transaction_id'], $_REQUEST['price'], $_REQUEST['currency'], $_REQUEST['sale_created']);
+                self::sale_callback($booking_id, $_REQUEST['notify_type'], $_REQUEST['transaction_id'], $_REQUEST['payme_sale_code'], $_REQUEST['price'], $_REQUEST['currency'], $_REQUEST['sale_created']);
                 die(); 
             }
         }
     }
 
+    public static function log($message, $level) {
+        if ($level != 'debug') {
+            EM_Pro::log($message, 'paid', true);
+        }
+    }
+
     // record transaction in Event Manager Pro table
-    public static function record_transaction($EM_Booking, $amount, $currency, $timestamp, $id, $status) {
+    public static function record_transaction($booking_id, $amount, $currency, $timestamp, $gateway_id, $status, $note) {
         if (!defined('EMP_VERSION')) {
             return;
         }
 
+        self::log('record_transaction booking_id=' . $booking_id, 'debug');
+        
         global $wpdb;
         if( EM_MS_GLOBAL ){
             $prefix = $wpdb->base_prefix;
@@ -38,24 +47,27 @@ class EM_Limmud_Paid {
         $table_transaction = $prefix.'em_transactions';
         
         $data = array();
-        $data['booking_id'] = $EM_Booking->booking_id;
-        $data['transaction_gateway_id'] = $id;
+        $data['booking_id'] = $booking_id;
+        $data['transaction_gateway_id'] = $gateway_id;
         $data['transaction_timestamp'] = $timestamp;
         $data['transaction_currency'] = $currency;
         $data['transaction_status'] = $status;
-        $data['transaction_total_amount'] = $amount;
-        $data['transaction_note'] = $EM_Booking->booking_id;
+        $data['transaction_total_amount'] = $amount / 100;
+        $data['transaction_note'] = $note;
         $data['transaction_gateway'] = 'paid';
+        self::log('record_transaction ' . print_r($data, true), 'info');
         
-        if( !empty($id) ) {
-            $existing = $wpdb->get_row( $wpdb->prepare( "SELECT transaction_id, transaction_status, transaction_gateway_id, transaction_total_amount FROM ".$table_transaction." WHERE transaction_gateway = %s AND transaction_gateway_id = %s", 'paid', $id ) );
+        if( !empty($gateway_id) ) {
+            $existing = $wpdb->get_row( $wpdb->prepare( "SELECT transaction_id, transaction_status, transaction_gateway_id, transaction_total_amount FROM ".$table_transaction." WHERE transaction_gateway = %s AND transaction_gateway_id = %s", 'paid', $gateway_id ) );
         }
         
-        if( !empty($existing->transaction_gateway_id) && ($id == $existing->transaction_gateway_id) && ($amount == $existing->transaction_total_amount) && ($status == $existing->transaction_status)) {
+        if( !empty($existing->transaction_gateway_id) && ($gateway_id == $existing->transaction_gateway_id) && ($amount == $existing->transaction_total_amount) && ($status == $existing->transaction_status)) {
             // do not record duplicate transactions
+            self::log('record_transaction duplicate', 'info');
             return;
         }
 
+        self::log('insert', 'debug');
         $wpdb->insert( $table_transaction, $data );
     }
 
@@ -69,20 +81,9 @@ class EM_Limmud_Paid {
         $table_transaction = $prefix.'em_transactions';
 
         $total = $wpdb->get_var('SELECT SUM(transaction_total_amount) FROM '.EM_TRANSACTIONS_TABLE." WHERE booking_id={$EM_Booking->booking_id} AND transaction_status='sale-complete'");
-        return (int)$total;
-    }
+        $reversed = $wpdb->get_var('SELECT SUM(transaction_total_amount) FROM '.EM_TRANSACTIONS_TABLE." WHERE booking_id={$EM_Booking->booking_id} AND (transaction_status='sale-chargeback' OR transaction_status='refund')");
 
-    public static function get_total_reversed($EM_Booking) {
-        global $wpdb;
-        if( EM_MS_GLOBAL ){
-            $prefix = $wpdb->base_prefix;
-        }else{
-            $prefix = $wpdb->prefix;
-        }
-        $table_transaction = $prefix.'em_transactions';
-
-        $total = $wpdb->get_var('SELECT SUM(transaction_total_amount) FROM '.EM_TRANSACTIONS_TABLE." WHERE booking_id={$EM_Booking->booking_id} AND transaction_status='sale-chargeback'");
-        return (int)$total;
+        return (int)$total - (int)$reversed;
     }
 
     public static function generate_url($booking_id, $payment_type, $language, $transaction_sum)
@@ -93,22 +94,35 @@ class EM_Limmud_Paid {
             return;        
         }        
 
+        $total_paid = self::get_total_paid($EM_Booking);
+
         $full_payment = false;
         if (empty($transaction_sum) || (floor($EM_Booking->get_price()) == $transaction_sum)) {
             $full_payment = true;
         }
-        if (self::get_total_paid($EM_Booking) > 0) {
+        if ($total_paid > 0) {
             $full_payment = false;
             if (empty($transaction_sum)) {
                 $transaction_sum = floor($EM_Booking->get_price());
             }
         }         
 
-        $payment_reversed = self::get_total_reversed($EM_Booking);
-
         $event_year = date("Y", date("U", $EM_Booking->get_event()->start()->getTimestamp()));
+        $order_number = strval((int)$event_year * 1000000 + (int)$EM_Booking->booking_id);
+
         $transaction_id = 'LIMMUD-' . $event_year . '#' . $EM_Booking->booking_id;;
-        $order_number = strval(intval($event_year) * 1000000 + intval($EM_Booking->booking_id));
+        global $wpdb;
+        if( EM_MS_GLOBAL ){
+            $prefix = $wpdb->base_prefix;
+        }else{
+            $prefix = $wpdb->prefix;
+        }
+        $table_transaction = $prefix.'em_transactions';
+        $count = $wpdb->get_var('SELECT COUNT(*) FROM '.EM_TRANSACTIONS_TABLE." WHERE booking_id={$EM_Booking->booking_id} AND transaction_status='sale-complete'");
+        $count = (int)$count;
+        if ($count > 0) {
+            $transaction_id = $transaction_id . '#' . strval($count);
+        }
 
         $tickets = array();
         if ($full_payment) {
@@ -130,27 +144,9 @@ class EM_Limmud_Paid {
             }
     
             $price = floor($EM_Booking->get_price());
-			
-            if ($payment_reversed > 0) {
-                $transaction_id = $transaction_id . '#' . strval($payment_reversed);
-            }
-			
         } else {
             $tickets = array();
-            $price = min($transaction_sum, floor($EM_Booking->get_price()) - self::get_total_paid($EM_Booking));
-            $discount = 0;
-
-            global $wpdb;
-            if( EM_MS_GLOBAL ){
-                $prefix = $wpdb->base_prefix;
-            }else{
-                $prefix = $wpdb->prefix;
-            }
-            $table_transaction = $prefix.'em_transactions';
-    		$count = $wpdb->get_var('SELECT COUNT(*) FROM '.EM_TRANSACTIONS_TABLE." WHERE booking_id={$EM_Booking->booking_id}");
-            $count = intval($count) + $payment_reversed;
-
-            $transaction_id = $transaction_id . '#' . strval($count);
+            $price = min($transaction_sum, floor($EM_Booking->get_price()) - $total_paid);
         }
 
         if (get_option('dbem_payment_mode') == "live") { 
@@ -174,10 +170,10 @@ class EM_Limmud_Paid {
         }
 
         $redirect_url = get_post_permalink(get_option('dbem_payment_redirect_page')) . '&booking_id=' . $EM_Booking->booking_id . '&secret=' . EM_Limmud_Booking::get_secret($EM_Booking, 'payment_redirect');
-        if ($full_payment) {
-            $redirect_url = $redirect_url . '&payment_type=full';
-        } else {
+        if ($price + $total_paid < floor($EM_Booking->get_price())) {
             $redirect_url = $redirect_url . '&payment_type=partial';
+        } else {
+            $redirect_url = $redirect_url . '&payment_type=full';
         }
 
         $body = array(
@@ -192,7 +188,7 @@ class EM_Limmud_Paid {
             'transaction_id' => $transaction_id,
             'sale_return_url' => $redirect_url,
             'seller_payme_id' => $api_key,
-            'sale_callback_url' => get_site_url() . '/paid-callback-status',
+            'sale_callback_url' => get_site_url() . '/events-manager-limmud?action=paid-callback-status',
             'sale_payment_method' => $payment_method,
             'sale_send_notification' => false,
             'order_number' => $order_number,
@@ -203,12 +199,12 @@ class EM_Limmud_Paid {
 
         if (get_option('dbem_paid_3d_secure', 'disable') == 'enable') {
             $body['services'] = array(
-                array(
-                    'name' => '3DSecure',
+                # array(
+                    'name' => '3D Secure',
                     'settings' => array(
                         'active' => true
                     )
-                )
+                # )
             );
         }
 
@@ -235,6 +231,8 @@ class EM_Limmud_Paid {
 
         $json_body = json_encode($body);
 
+        self::log('generate_url ' . $json_body, 'debug');
+
         $args = array(
             'body' => $json_body,
             'headers' => array(
@@ -253,18 +251,29 @@ class EM_Limmud_Paid {
         }
     }
 
-    public static function callback_status($booking_id, $notify_type, $payme_sale_id, $payme_transaction_id, $amount, $currency, $timestamp)
+    public static function sale_callback($booking_id, $notify_type, $transaction_id, $payme_sale_code, $amount, $currency, $timestamp)
     {
         $result = "failed";        
+
+        self::log('sale_callback booking_id=' . $booking_id, 'debug');
+        self::log('    notify_type=' . $transaction_id, 'debug');
+        self::log('    notify_type=' . $notify_type, 'debug');
+        self::log('    transaction_id=' . $transaction_id, 'debug');
+        self::log('    payme_sale_code=' . $payme_sale_code, 'debug');
+        self::log('    amount=' . strval($amount), 'debug');
+        self::log('    currency=' . $currency, 'debug');
+        self::log('    timestamp=' . $timestamp, 'debug');
 
         $EM_Booking = em_get_booking($booking_id);
         if (!empty($EM_Booking->booking_id)) {
 
-            self::record_transaction($EM_Booking, $amount, $currency, $timestamp, $payme_sale_id, $notify_type);
+            $gateway_id = $payme_sale_id;
+            self::record_transaction($EM_Booking->booking_id, $amount, $currency, $timestamp, $payme_sale_code, $notify_type, $transaction_id);
 
             if ($notify_type == 'sale-complete') {
                 $price = floor($EM_Booking->get_price());
                 $total_paid = self::get_total_paid($EM_Booking);
+                self::log('price=' . strval($price) . '    total_paid=' . strval($total_paid), 'debug');
                 if ($total_paid >= $price) {
                     $result = "completed";                            
                     $EM_Booking->approve();
@@ -325,7 +334,7 @@ class EM_Limmud_Paid {
     <?php
         }
     ?>
-        <a class="button" id="pay-by-card">[:ru]Оплатить кредитной картой[:he]תשלום עם כרטיס אשראי[:]</a> &nbsp; &nbsp; 
+        <a class="button" id="pay-by-card">[:ru]Оплатить кредитной картой[:he]תשלום בכרטיס אשראי[:]</a> &nbsp; &nbsp; 
         <a class="button" id="pay-by-bit">[:ru]Оплатить через Bit[:he]תשלום דרף Bit[:]</a>
         <div id="payment-error" style="display: none; color: firebrick;"></div>
         </div>
@@ -378,7 +387,7 @@ class EM_Limmud_Paid {
                         body += "&transaction_sum=" + transactionSum.value;
                     }
                 <?php } ?>
-                fetch('paid.json', {
+                fetch('events-manager-limmud', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
