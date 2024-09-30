@@ -206,6 +206,15 @@ class EM_Limmud_Emails {
             if ($full_result == '#_BOOKINGSUMMARYURL') {
                 $replace = EM_Limmud_Booking::get_payment_link($EM_Booking);
             }
+
+            if ($full_result == '#_BOOKINGPAYMENTHOURS') {
+                $payment_days = (int)get_option('dbem_days_for_payment', '0');
+                if ($payment_days > 1) {
+                    $replace = strval(($payment_days - 1) * 24);
+                } else {
+                    $replace = '72';
+                }
+            }
             
             if ($full_result == '#_BOOKINGDETAILSRU') {
                 $replace = EM_Limmud_Emails::booking_details($EM_Booking, $full_result, 'ru');

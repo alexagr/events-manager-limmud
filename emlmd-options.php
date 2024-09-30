@@ -127,7 +127,7 @@ class EM_Limmud_Options {
                     em_options_select ( __( 'Payment Provider', 'em-limmud' ), 'dbem_payment_provider', array ('paypal' => 'PayPal', 'paid' => 'Paid'), '' );
                     em_options_select ( __( 'Payment Mode', 'em-limmud' ), 'dbem_payment_mode', array ('live' => 'Live Site', 'test' => 'Test Mode (Sandbox)'), '' );
                     em_options_select ( __( 'Automatic Payment', 'em-limmud' ), 'dbem_automatic_payment', array ('disable' => 'Disable', 'enable' => 'Enable'), '' );
-                    em_options_select ( __( 'Days For Payment', 'em-limmud' ), 'dbem_days_for_payment', array ('0' => 'Unlimited', '1' => '1 Day', '2' => '2 Days', '3' => '3 Days', '4' => '4 Days'), '' );                                      
+                    em_options_select ( __( 'Days For Payment', 'em-limmud' ), 'dbem_days_for_payment', array ('0' => 'Unlimited', '1' => '1 Day', '2' => '2 Days', '3' => '3 Days', '4' => '4 Days'), '' );
                 ?>
                 <tr><th>
                 <?php
