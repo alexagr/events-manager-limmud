@@ -139,20 +139,35 @@ class EM_Limmud_Booking {
         $payment_redirect_page_id = get_option('dbem_payment_redirect_page');
         if (!post_password_required() && ($post->ID == $payment_redirect_page_id) && ($payment_redirect_page_id != 0)) {
             $content = apply_filters('em_content_pre', '', $page_content);
-            if (empty($content) && (preg_match('/#_BOOKINGID/', $page_content) || preg_match('/#_PAYMENTSUMMARY/', $page_content))) {
-                if (!empty( $_REQUEST['booking_id']) && !empty( $_REQUEST['secret'])) {
-                    $EM_Booking = em_get_booking($_REQUEST['booking_id']);
-                    if (self::get_secret($EM_Booking, 'payment_redirect') == $_REQUEST['secret']) {
-                        $content = str_replace('#_BOOKINGID', $_REQUEST['booking_id'], $page_content);
-                        $content = str_replace('#_BOOKINGSUMMARYURL', self::get_payment_link($EM_Booking), $content);
-                        $event_year = date("Y", date("U", $EM_Booking->get_event()->start()->getTimestamp()));
-                        $content = str_replace('#_EVENTYEAR', $event_year, $content);
-                        $content = str_replace('#_EVENTNAME', "[:ru]Лимуд FSU Израиль [:he]לימוד FSU ישראל[:] " . $event_year, $content);
-                        if (!empty( $_REQUEST['payment_type']) && ($_REQUEST['payment_type'] == 'full')) {
-                            $content = str_replace('#_PAYMENTSUMMARY', "[:ru]Вы успешно оплатили ваш заказ.[:he]תשלום התקבל בהצלחה.[:]", $content);
+            if (empty($content)) {
+                if (!empty( $_REQUEST['payme_status'])) {
+                    if ($_REQUEST['payme_status'] == 'success') {
+                        if ((preg_match('/#_BOOKINGID/', $page_content) || preg_match('/#_PAYMENTSUMMARY/', $page_content))) {
+                            if (!empty( $_REQUEST['booking_id']) && !empty( $_REQUEST['secret'])) {
+                                $EM_Booking = em_get_booking($_REQUEST['booking_id']);
+                                if (self::get_secret($EM_Booking, 'payment_redirect') == $_REQUEST['secret']) {
+                                    $content = str_replace('#_BOOKINGID', $_REQUEST['booking_id'], $page_content);
+                                    $content = str_replace('#_BOOKINGSUMMARYURL', self::get_payment_link($EM_Booking), $content);
+                                    $event_year = date("Y", date("U", $EM_Booking->get_event()->start()->getTimestamp()));
+                                    $content = str_replace('#_EVENTYEAR', $event_year, $content);
+                                    $content = str_replace('#_EVENTNAME', "[:ru]Лимуд FSU Израиль [:he]לימוד FSU ישראל[:] " . $event_year, $content);
+                                    if (!empty( $_REQUEST['price'])) {
+                                        $content = str_replace('#_PRICE', strval((int)$_REQUEST['price'] / 10), $content);
+                                    }
+                                    if (!empty( $_REQUEST['payment_type']) && ($_REQUEST['payment_type'] == 'full')) {
+                                        $content = str_replace('#_PAYMENTSUMMARY', "[:ru]Вы успешно оплатили ваш заказ.[:he]תשלום התקבל בהצלחה.[:]", $content);
+                                    }
+                                    if (!empty( $_REQUEST['payment_type']) && ($_REQUEST['payment_type'] == 'partial')) {
+                                        $content = str_replace('#_PAYMENTSUMMARY', "[:ru]Вы успешно оплатили часть вашего заказа.[:he]תשלום חלקי התקבל בהצלחה.[:]", $content);
+                                    }
+                                }
+                            }
                         }
-                        if (!empty( $_REQUEST['payment_type']) && ($_REQUEST['payment_type'] == 'partial')) {
-                            $content = str_replace('#_PAYMENTSUMMARY', "[:ru]Вы успешно оплатили часть вашего заказа.[:he]תשלום חלקי התקבל בהצלחה.[:]", $content);
+                    } else {
+                        if (!empty( $_REQUEST['status_error_details'])) {
+                            $content = '<p>' . $_REQUEST['status_error_details'] . '</p>';
+                        } else {
+                            $content = '<p>Unknown error - payme_status=' . $_REQUEST['payme_status'] . '</p>';
                         }
                     }
                 }

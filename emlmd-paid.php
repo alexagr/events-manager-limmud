@@ -18,7 +18,9 @@ class EM_Limmud_Paid {
             $transaction_id_values = explode('#', $transaction_id);
             if (substr($transaction_id_values[0], 0, 6) == 'LIMMUD') {
                 $booking_id = $transaction_id_values[1];
-                self::sale_callback($booking_id, $_REQUEST['notify_type'], $_REQUEST['transaction_id'], $_REQUEST['payme_sale_code'], $_REQUEST['price'], $_REQUEST['currency'], $_REQUEST['sale_created']);
+                $transaction_id_short = array_slice($transaction_id_values, 1);
+                $transaction_note = implode("#", $transaction_id_short);
+                self::sale_callback($booking_id, $_REQUEST['notify_type'], $transaction_note, $_REQUEST['payme_sale_code'], $_REQUEST['price'], $_REQUEST['currency'], $_REQUEST['sale_created']);
                 die(); 
             }
         }
@@ -49,7 +51,7 @@ class EM_Limmud_Paid {
         $data['transaction_total_amount'] = $amount / 100;
         $data['transaction_note'] = $note;
         $data['transaction_gateway'] = 'paid';
-        self::log('record_transaction ' . print_r($data, true), 'info');
+        self::log('record_transaction ' . print_r($data, true), 'debug');
         
         if( !empty($gateway_id) ) {
             $existing = $wpdb->get_row( $wpdb->prepare( "SELECT transaction_id, transaction_status, transaction_gateway_id, transaction_total_amount FROM ".EM_TRANSACTIONS_TABLE." WHERE transaction_gateway = %s AND transaction_gateway_id = %s", 'paid', $gateway_id ) );
@@ -62,7 +64,10 @@ class EM_Limmud_Paid {
         }
 
         self::log('insert', 'debug');
-        $wpdb->insert( EM_TRANSACTIONS_TABLE, $data );
+        $result = $wpdb->insert( EM_TRANSACTIONS_TABLE, $data );
+        if (!$result) {
+            self::log('record_transaction failed', 'error');
+        }
     }
 
     // this is replaced by EM_Booking->get_total_paid() filter in emlmd-options.php
@@ -180,7 +185,7 @@ class EM_Limmud_Paid {
             'sale_type' => 'sale',
             'sale_price' => $price * 100,
             'installments' => get_option('dbem_paid_installments', '1'),
-            'product_name' => 'Limmud FSU Israel ' . $event_year,
+            'product_name' => 'Limmud FSU Israel ' . $event_year . ', booking #' . $booking_id,
             'capture_buyes' => false,
             'transaction_id' => $transaction_id,
             'sale_return_url' => $redirect_url,
@@ -196,12 +201,12 @@ class EM_Limmud_Paid {
 
         if (get_option('dbem_paid_3d_secure', 'disable') == 'enable') {
             $body['services'] = array(
-                # array(
-                    'name' => '3D Secure',
+                array(
+                    'name' => '3DSecure',
                     'settings' => array(
-                        'active' => true
+                        'active' => false
                     )
-                # )
+                )
             );
         }
 
@@ -284,8 +289,8 @@ class EM_Limmud_Paid {
                     $msg['admin']['subject'] = get_option('dbem_bookings_contact_email_partial_payment_subject');
                     $msg['admin']['body'] = get_option('dbem_bookings_contact_email_partial_payment_body');
 
-                    $msg['user']['body'] = str_replace('#_AMOUNT', $EM_Booking->format_price($amount), $msg['user']['body']);
-                    $msg['admin']['body'] = str_replace('#_AMOUNT', $EM_Booking->format_price($amount), $msg['admin']['body']);
+                    $msg['user']['body'] = str_replace('#_AMOUNT', $EM_Booking->format_price($amount / 100), $msg['user']['body']);
+                    $msg['admin']['body'] = str_replace('#_AMOUNT', $EM_Booking->format_price($amount / 100), $msg['admin']['body']);
 
                     $msg['user']['body'] = str_replace('#_BOOKINGTOTALPAID', $EM_Booking->format_price($total_paid), $msg['user']['body']);
                     $msg['admin']['body'] = str_replace('#_BOOKINGTOTALPAID', $EM_Booking->format_price($total_paid), $msg['admin']['body']);
