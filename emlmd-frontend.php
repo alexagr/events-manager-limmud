@@ -140,7 +140,7 @@ class EM_Limmud_Frontend {
             var registration = "";
             var participation_type = ""; 
 
-            var d1 = new Date("2023-12-21");
+            var d1 = new Date("2024-12-29");
             var els = document.getElementsByClassName("em-attendee-fieldset");
             for (var i = 0; i < els.length; i++) {
                 var inputs = els[i].querySelectorAll(".input-date-string");
@@ -182,7 +182,7 @@ class EM_Limmud_Frontend {
                     registration = "no-accomodation";
                     participation_type = "no-accomodation";
                 } else {
-                    els = document.getElementsByName("em_tickets[298][spaces]");
+                    els = document.getElementsByName("em_tickets[327][spaces]");
                     if (els.length > 0) {
                         registration = "volunteers";
                     } else {

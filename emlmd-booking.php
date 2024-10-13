@@ -179,184 +179,205 @@ class EM_Limmud_Booking {
     }
 
     public static function booking_summary() {
-    ?>
+        ?>
         <div class='em-bookings-summary'>
         <?php
-        if (!empty($_REQUEST['booking_id'])) {
-            $EM_Booking = em_get_booking($_REQUEST['booking_id']);
+        if (empty($_REQUEST['booking_id']) || empty($_REQUEST['secret'])) {
+            return;
+        }
+            
+        $EM_Booking = em_get_booking($_REQUEST['booking_id']);
 
-            if (empty($_REQUEST['secret'])) {
-                return;
+        $admin_secret = false;
+        $file = @fopen(WP_PLUGIN_DIR.'/events-manager-secrets/admin.txt', 'r');
+        if ($file) {
+            $admin_secret = fgets($file, 1024);
+            if ($admin_secret !== false) {
+                $admin_secret = str_replace("\n", '', $admin_secret);
+                $admin_secret = str_replace("\r", '', $admin_secret);
+            }
+        }
+
+        if (($_REQUEST['secret'] != self::get_secret($EM_Booking)) && ($_REQUEST['secret'] != $admin_secret)) {
+            return;
+        }
+
+        self::update_booking($EM_Booking);
+
+        $user_email = $EM_Booking->person->user_email;
+        $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
+        $names = array();
+        if (array_key_exists('additional_emails', $EM_Booking->booking_meta['booking'])) {
+            $additional_emails = trim($EM_Booking->booking_meta['booking']['additional_emails']);
+            $additional_emails = preg_replace('/[\s,]+/', ', ', $additional_emails);
+            if (!empty($additional_emails)) {
+                $user_email .= ', ' . $additional_emails;
             }
 
-            $admin_secret = false;
-            $file = @fopen(WP_PLUGIN_DIR.'/events-manager-secrets/admin.txt', 'r');
-            if ($file) {
-                $admin_secret = fgets($file, 1024);
-            	if ($admin_secret !== false) {
-            		$admin_secret = str_replace("\n", '', $admin_secret);
-            		$admin_secret = str_replace("\r", '', $admin_secret);
-            	}
-            }
-
-            if (($_REQUEST['secret'] != self::get_secret($EM_Booking)) && ($_REQUEST['secret'] != $admin_secret)) {
-                return;
-            }
-
-            self::update_booking($EM_Booking);
-
-            $user_email = $EM_Booking->person->user_email;
-            $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
-            $names = array();
-            if (array_key_exists('additional_emails', $EM_Booking->booking_meta['booking'])) {
-                $additional_emails = trim($EM_Booking->booking_meta['booking']['additional_emails']);
-                $additional_emails = preg_replace('/[\s,]+/', ', ', $additional_emails);
-                if (!empty($additional_emails)) {
-                    $user_email .= ', ' . $additional_emails;
-                }
-
-                foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
-                    if (($EM_Ticket_Booking->get_price() >= 0) && ($EM_Ticket_Booking->get_price() < 1)) {
-                        if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
-                            foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
-                                $first_name = '';
-                                $last_name = '';
-                                foreach( $attendee_data as $attendee_label => $attendee_value) {
-                                    $label = apply_filters('translate_text', $attendee_label, 'ru');
-                                    if (str_contains($label, 'Имя')) {
-                                        $first_name = trim($attendee_value);
-                                    }
-                                    if (str_contains($label, 'Фамилия')) {
-                                        $last_name = trim($attendee_value);
-                                    }
+            foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
+                if (($EM_Ticket_Booking->get_price() >= 0) && ($EM_Ticket_Booking->get_price() < 1)) {
+                    if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
+                        foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
+                            $first_name = '';
+                            $last_name = '';
+                            foreach( $attendee_data as $attendee_label => $attendee_value) {
+                                $label = apply_filters('translate_text', $attendee_label, 'ru');
+                                if (str_contains($label, 'Имя')) {
+                                    $first_name = trim($attendee_value);
                                 }
-                                if (!empty($first_name) && !empty($last_name)) {
-                                    $names[] = $first_name . ' ' . $last_name;
+                                if (str_contains($label, 'Фамилия')) {
+                                    $last_name = trim($attendee_value);
                                 }
+                            }
+                            if (!empty($first_name) && !empty($last_name)) {
+                                $names[] = $first_name . ' ' . $last_name;
                             }
                         }
                     }
                 }
             }
+        }
 
-            if (empty($names)) {
-                $user_name = $EM_Booking->get_person()->get_name();
-            } else {
-                $user_name = implode(', ', $names);
-            }
+        if (empty($names)) {
+            $user_name = $EM_Booking->get_person()->get_name();
+        } else {
+            $user_name = implode(', ', $names);
+        }
 
-            ?>
-            <h3>[:en]Booking #[:ru]СТАТУС РЕГИСТРАЦИИ[:he]פרטי ההזמנה[:]</h3>
-            <table id="booking-table">
-            <tr><th>[:en]Name[:ru]Имя[:he]שם[:]</th><td><?php echo $user_name ?></td></tr>
-            <tr><th>[:en]E-mail[:ru]E-mail[:he]דוא"ל[:]</th><td><?php echo $user_email ?></td></tr>
-            <tr><th>[:en]Booking #[:ru]Номер заказа[:he]הזמנה מס'[:]</th><td><?php echo $_REQUEST['booking_id'] ?></td></tr>
-            <tr id="booking-status"><th>[:en]Status[:ru]Статус[:he]סטטוס[:]</th><td><?php
-            switch ($EM_Booking->booking_status) {
-                case 0:
-                    echo '[:en]Pending[:ru]Проверяется[:he]בבדיקה[:]';
-                    break;
-                case 1:
-                    echo '[:en]Approved[:ru]Оплачена[:he]שולמה[:]';
-                    break;
-                case 5:
-                    $total_paid = (int)$EM_Booking->get_total_paid();
-                    if ($total_paid > 0) {
-                        echo '[:en]Awaiting Payment Completion[:ru]Ожидает завершения оплаты[:he]מחכה להשלמת התשלום[:]';
-                        echo '<br>([:ru]оплачено[:he]שולמו[:] ' . $total_paid . ' [:ru]из[:he]מתוך[:] ' . $EM_Booking->get_price() . ' &#8362;)';
-                    } else {
-                        echo '[:en]Awaiting Payment[:ru]Ожидает оплаты[:he]מחכה לתשלום[:]';
-                    }
-                    break;
-                case 6:
-                    echo '[:en]No Payment[:ru]Не оплачена[:he]לא שולמה[:]';
-                    break;
-                case 7:
-                   echo '[:en]Not Fully Paid[:ru]Не полностью оплачена[:he]לא שולמה במלואה[:]';
-                    $total_paid = (int)$EM_Booking->get_total_paid();
-                    if ($total_paid > 0) {
-                       echo '<br>([:ru]оплачено[:he]שולמו[:] ' . $total_paid . ' [:ru]из[:he]מתוך[:] ' . $EM_Booking->get_price() . ' &#8362;)';
-                    }
-                    break;
-                case 8:
-                    echo '[:en]Waiting List[:ru]Лист ожидания[:he]רשימת המתנה[:]';
-                    break;
-                default:
-                    echo '[:en]Cancelled[:ru]Отменена[:he]מבוטלת[:]';
-            }
-            ?></td></tr>
-            <?php
-            $tickets = array();
-            $discounts = array();
-            $i = 0;
-            foreach($EM_Booking->get_tickets_bookings() as $EM_Ticket_Booking) {
-                $i += 1;
-                if ($EM_Ticket_Booking->get_price() >= 1) {
-                    $tickets[$EM_Ticket_Booking->get_price() * 1000 + $i] = $EM_Ticket_Booking;
-                } else if ($EM_Ticket_Booking->get_price() < 0) {
-                    $discounts[-$EM_Ticket_Booking->get_price() * 1000 + $i] = $EM_Ticket_Booking;
-                }
-            }
-            $admin_discount = floor($EM_Booking->get_price_discounts_amount('post'));
-            krsort($tickets);
-            krsort($discounts);
-
-            self::calculate_participants($EM_Booking);
-            if ((self::$adult_num > 0) || (self::$child_num > 0)) {
-                ?>
-                <tr><th colspan="2"><h4>[:en]Number of participants[:ru]Количество участников[:he]כמות משתתפים[:]</h4></th></tr>
-                <tr>
-                    <th>[:en]Adults and teenagers (12 years and older)[:ru]Взрослые и подростки (от 12 лет и старше)[:he]מבוגרים וילדים בני 12 ומעלה[:]</th>
-                    <td><?php echo strval(self::$adult_num) ?></td>
-                </tr>
-                <tr>
-                    <th>[:en]Children (from 2 to 11 years)[:ru]Дети от 2 до 11 лет[:he]ילדים מגיל 2 עד 11 (כולל)[:]</th>
-                    <td><?php echo strval(self::$child_num) ?></td>
-                </tr>
-                <?php
-                if (self::$toddler_num > 0) {
-                    ?>
-                    <tr>
-                        <th>[:en]Toddlers (up to 2 years)[:ru]Младенцы до 2 лет[:he]תינוקות עד גיל 2[:]</th>
-                        <td><?php echo strval(self::$toddler_num) ?></td>
-                    </tr>
-                    <?php
-                }
-            }
-
-            /*
-            if (array_key_exists('room_type', $EM_Booking->booking_meta['booking'])) {            
-                ?>
-                    <tr><th colspan="2"><h4>[:en]Registration Type[:ru]Вид регистрации[:he]סוג הרשמה[:]</h4></th></tr>
-                <?php
-                $room_type = $EM_Booking->booking_meta['booking']['room_type'];
-                if ($room_type != 'N/A') {
-                ?>
-                    <tr>
-                        <th>[:en]Registration[:ru]Регистрация[:he]הרשמה[:]</th>
-                        <td>[:en]with accomodation[:ru]с проживанием[:he]עם לינה[:]</td>
-                    </tr>
-                    <tr>
-                        <th>[:en]Room type[:ru]Тип номера[:he]סוג חדר[:]</th>
-                        <td><?php echo $room_type; ?></td>
-                    </tr>
-                <?php
+        ?>
+        <h3>[:en]Booking #[:ru]СТАТУС РЕГИСТРАЦИИ[:he]פרטי ההזמנה[:]</h3>
+        <table id="booking-table">
+        <tr><th>[:en]Name[:ru]Имя[:he]שם[:]</th><td><?php echo $user_name ?></td></tr>
+        <tr><th>[:en]E-mail[:ru]E-mail[:he]דוא"ל[:]</th><td><?php echo $user_email ?></td></tr>
+        <tr><th>[:en]Booking #[:ru]Номер заказа[:he]הזמנה מס'[:]</th><td><?php echo $_REQUEST['booking_id'] ?></td></tr>
+        <tr id="booking-status"><th>[:en]Status[:ru]Статус[:he]סטטוס[:]</th><td><?php
+        switch ($EM_Booking->booking_status) {
+            case 0:
+                echo '[:en]Pending[:ru]Проверяется[:he]בבדיקה[:]';
+                break;
+            case 1:
+                echo '[:en]Approved[:ru]Оплачена[:he]שולמה[:]';
+                break;
+            case 5:
+                $total_paid = (int)$EM_Booking->get_total_paid();
+                if ($total_paid > 0) {
+                    echo '[:en]Awaiting Payment Completion[:ru]Ожидает завершения оплаты[:he]מחכה להשלמת התשלום[:]';
+                    echo '<br>([:ru]оплачено[:he]שולמו[:] ' . $total_paid . ' [:ru]из[:he]מתוך[:] ' . $EM_Booking->get_price() . ' &#8362;)';
                 } else {
-                ?>
-                    <tr>
-                        <th>[:en]Registration[:ru]Регистрация[:he]הרשמה[:]</th>
-                        <td>[:en]without accomodation[:ru]без проживания[:he]ללא לינה[:]</td>
-                    </tr>
-                <?php
+                    echo '[:en]Awaiting Payment[:ru]Ожидает оплаты[:he]מחכה לתשלום[:]';
                 }
+                break;
+            case 6:
+                echo '[:en]No Payment[:ru]Не оплачена[:he]לא שולמה[:]';
+                break;
+            case 7:
+                echo '[:en]Not Fully Paid[:ru]Не полностью оплачена[:he]לא שולמה במלואה[:]';
+                $total_paid = (int)$EM_Booking->get_total_paid();
+                if ($total_paid > 0) {
+                    echo '<br>([:ru]оплачено[:he]שולמו[:] ' . $total_paid . ' [:ru]из[:he]מתוך[:] ' . $EM_Booking->get_price() . ' &#8362;)';
+                }
+                break;
+            case 8:
+                echo '[:en]Waiting List[:ru]Лист ожидания[:he]רשימת המתנה[:]';
+                break;
+            default:
+                echo '[:en]Cancelled[:ru]Отменена[:he]מבוטלת[:]';
+        }
+        ?></td></tr>
+        <?php
+        $tickets = array();
+        $discounts = array();
+        $i = 0;
+        foreach($EM_Booking->get_tickets_bookings() as $EM_Ticket_Booking) {
+            $i += 1;
+            if ($EM_Ticket_Booking->get_price() >= 1) {
+                $tickets[$EM_Ticket_Booking->get_price() * 1000 + $i] = $EM_Ticket_Booking;
+            } else if ($EM_Ticket_Booking->get_price() < 0) {
+                $discounts[-$EM_Ticket_Booking->get_price() * 1000 + $i] = $EM_Ticket_Booking;
             }
-            */
+        }
+        $admin_discount = floor($EM_Booking->get_price_discounts_amount('post'));
+        krsort($tickets);
+        krsort($discounts);
 
-            if (!empty($tickets)) {
+        self::calculate_participants($EM_Booking);
+        if ((self::$adult_num > 0) || (self::$child_num > 0)) {
             ?>
-                <tr><th colspan="2"><h4>[:en]Participation Fee[:ru]Стоимость участия[:he]מחיר השתתפות[:]</h4></th></tr>
+            <tr><th colspan="2"><h4>[:en]Number of participants[:ru]Количество участников[:he]כמות משתתפים[:]</h4></th></tr>
+            <tr>
+                <th>[:en]Adults and teenagers (12 years and older)[:ru]Взрослые и подростки (от 12 лет и старше)[:he]מבוגרים וילדים בני 12 ומעלה[:]</th>
+                <td><?php echo strval(self::$adult_num) ?></td>
+            </tr>
+            <tr>
+                <th>[:en]Children (from 2 to 11 years)[:ru]Дети от 2 до 11 лет[:he]ילדים מגיל 2 עד 11 (כולל)[:]</th>
+                <td><?php echo strval(self::$child_num) ?></td>
+            </tr>
             <?php
-                foreach ($tickets as $idx => $ticket) {
+            if (self::$toddler_num > 0) {
+                ?>
+                <tr>
+                    <th>[:en]Toddlers (up to 2 years)[:ru]Младенцы до 2 лет[:he]תינוקות עד גיל 2[:]</th>
+                    <td><?php echo strval(self::$toddler_num) ?></td>
+                </tr>
+                <?php
+            }
+        }
+
+        /*
+        if (array_key_exists('room_type', $EM_Booking->booking_meta['booking'])) {            
+            ?>
+                <tr><th colspan="2"><h4>[:en]Registration Type[:ru]Вид регистрации[:he]סוג הרשמה[:]</h4></th></tr>
+            <?php
+            $room_type = $EM_Booking->booking_meta['booking']['room_type'];
+            if ($room_type != 'N/A') {
+            ?>
+                <tr>
+                    <th>[:en]Registration[:ru]Регистрация[:he]הרשמה[:]</th>
+                    <td>[:en]with accomodation[:ru]с проживанием[:he]עם לינה[:]</td>
+                </tr>
+                <tr>
+                    <th>[:en]Room type[:ru]Тип номера[:he]סוג חדר[:]</th>
+                    <td><?php echo $room_type; ?></td>
+                </tr>
+            <?php
+            } else {
+            ?>
+                <tr>
+                    <th>[:en]Registration[:ru]Регистрация[:he]הרשמה[:]</th>
+                    <td>[:en]without accomodation[:ru]без проживания[:he]ללא לינה[:]</td>
+                </tr>
+            <?php
+            }
+        }
+        */
+
+        if (!empty($tickets)) {
+        ?>
+            <tr><th colspan="2"><h4>[:en]Participation Fee[:ru]Стоимость участия[:he]מחיר השתתפות[:]</h4></th></tr>
+        <?php
+            foreach ($tickets as $idx => $ticket) {
+                ?>
+                <tr>
+                    <th><?php if (!empty($ticket->get_ticket()->ticket_description)) { echo $ticket->get_ticket()->ticket_description; } else { echo $ticket->get_ticket()->name; } ?></th>
+                    <td>
+                    <?php
+                    $price = $ticket->get_price();
+                    $price = floor($price);
+                    if ($ticket->get_spaces() == 1) {
+                        echo $price . ' &#8362;';
+                    } else {
+                        // $space_price = floor($ticket->get_ticket()->get_price_without_tax());
+                        $space_price = $price / $ticket->get_spaces();
+                        echo $ticket->get_spaces() . ' * ' . $space_price . ' = ' . $price . ' &#8362;';
+                    }
+                    ?>
+                    </td>
+                </tr>
+                <?php
+            }
+
+            if (!empty($discounts)) {
+                foreach ($discounts as $idx => $ticket) {
                     ?>
                     <tr>
                         <th><?php if (!empty($ticket->get_ticket()->ticket_description)) { echo $ticket->get_ticket()->ticket_description; } else { echo $ticket->get_ticket()->name; } ?></th>
@@ -376,50 +397,27 @@ class EM_Limmud_Booking {
                     </tr>
                     <?php
                 }
-
-                if (!empty($discounts)) {
-                    foreach ($discounts as $idx => $ticket) {
-                        ?>
-                        <tr>
-                            <th><?php if (!empty($ticket->get_ticket()->ticket_description)) { echo $ticket->get_ticket()->ticket_description; } else { echo $ticket->get_ticket()->name; } ?></th>
-                            <td>
-                            <?php
-                            $price = $ticket->get_price();
-                            $price = floor($price);
-                            if ($ticket->get_spaces() == 1) {
-                                echo $price . ' &#8362;';
-                            } else {
-                                // $space_price = floor($ticket->get_ticket()->get_price_without_tax());
-                                $space_price = $price / $ticket->get_spaces();
-                                echo $ticket->get_spaces() . ' * ' . $space_price . ' = ' . $price . ' &#8362;';
-                            }
-                            ?>
-                            </td>
-                        </tr>
-                        <?php
-                    }
-                }
-
-                if ($admin_discount > 0) {
-                ?>
-                    <tr><th>[:en]Admin discount[:ru]Дополнительная скидка[:he]הנחה מיוחדת[:]</th><td> -<?php echo $admin_discount . ' &#8362;' ?></td></tr>
-                <?php
-                }
-
-                $price = $EM_Booking->get_price();
-                $price = floor($price);
-                if ((count($tickets) > 1) || !empty($discounts)) {
-                ?>
-                    <tr><th>[:en]Total[:ru]Итого[:he]סה&quot;כ[:]</th><td> <?php echo $price . ' &#8362;' ?></td></tr>
-                <?php
-                }
             }
+
+            if ($admin_discount > 0) {
             ?>
-            </table>
-            &nbsp;<br>
+                <tr><th>[:en]Admin discount[:ru]Дополнительная скидка[:he]הנחה מיוחדת[:]</th><td> -<?php echo $admin_discount . ' &#8362;' ?></td></tr>
+            <?php
+            }
+
+            $price = $EM_Booking->get_price();
+            $price = floor($price);
+            if ((count($tickets) > 1) || !empty($discounts)) {
+            ?>
+                <tr><th>[:en]Total[:ru]Итого[:he]סה&quot;כ[:]</th><td> <?php echo $price . ' &#8362;' ?></td></tr>
+            <?php
+            }
+        }
+        ?>
+        </table>
+        &nbsp;<br>
         </div>
         <?php
-        }
 
         if ($EM_Booking->booking_status == 0) {
         ?>
@@ -834,6 +832,19 @@ class EM_Limmud_Booking {
             $tickets_num = self::$adult_num + self::$child_num;
             if ($tickets_num > 0) {
                 self::add_ticket($EM_Booking, 326, $tickets_num);
+            }
+        }
+
+        if ($EM_Booking->event_id == 27) {
+            // 2024 registration for volunteers
+            $tickets_num = self::$adult_num + self::$child_num;
+            if ($tickets_num > 0) {
+                self::add_ticket($EM_Booking, 328, $tickets_num);
+            }
+
+            $discount_num = self::$volunteer_num + self::$presenter_num;
+            if ($discount_num > 0) {
+                self::add_ticket($EM_Booking, 329, $discount_num);
             }
         }
 
