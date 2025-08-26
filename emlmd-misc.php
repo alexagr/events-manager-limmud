@@ -26,7 +26,7 @@ class EM_Limmud_Misc {
         add_filter('em_booking_get_total_paid',array(__CLASS__, 'get_total_paid'), 11, 2);
     }
 
-    public static function show_edit_columns($columns) { 
+    public static function show_edit_columns($columns) {
         if (get_option('dbem_show_event_details') == 'hide') {
             unset($columns['place']);
             unset($columns['description']);
@@ -34,7 +34,7 @@ class EM_Limmud_Misc {
         }
         return $columns;
     }
-    
+
     public static function em_bookings_table_cols_col_action($booking_actions, $EM_Booking) {
         if (($EM_Booking->booking_status == 6) || ($EM_Booking->booking_status == 7) || ($EM_Booking->booking_status == 8)) {
             $booking_actions = array(
@@ -49,16 +49,16 @@ class EM_Limmud_Misc {
             unset($booking_actions['reject']);
             unset($booking_actions['unapprove']);
         }
-        return $booking_actions; 
-    } 
+        return $booking_actions;
+    }
 
     public static function em_booking($EM_Booking, $booking_data) {
         unset($EM_Booking->status_array[4]); // remove Online Payment option
-        $EM_Booking->status_array[6] = 'No Payment';         
-        $EM_Booking->status_array[7] = 'Partially Paid';         
+        $EM_Booking->status_array[6] = 'No Payment';
+        $EM_Booking->status_array[7] = 'Partially Paid';
         $EM_Booking->status_array[8] = 'Waiting List';
     }
-    
+
     public static function em_booking_set_status($result, $EM_Booking) {
         if ($EM_Booking->booking_status == 5) {
             $EM_Booking->add_note('Awaiting Payment');
@@ -90,7 +90,7 @@ class EM_Limmud_Misc {
         $EM_Bookings_Table->statuses['needs-attention']['search'] = array(0,5,7);
         $EM_Bookings_Table->status = ( !empty($_REQUEST['status']) && array_key_exists($_REQUEST['status'], $EM_Bookings_Table->statuses) ) ? $_REQUEST['status']:get_option('dbem_default_bookings_search','needs-attention');
     }
-    
+
     public static function emlmd_hourly_hook() {
         // EM_Pro::log('emlmd_hourly_hook', 'general', true);
         $diffdays = intval(get_option('dbem_days_for_payment', '0'));
@@ -104,34 +104,50 @@ class EM_Limmud_Misc {
             foreach ($EM_Bookings->bookings as $EM_Booking) {
                 if ($EM_Booking->booking_status == 5) {
                     // EM_Pro::log('#'.$EM_Booking->booking_id.' email='.$EM_Booking->get_person()->user_email, 'general', true);
-                    $date1 = date_create();
-                    $date2 = date_create();
+                    $date_now = date_create();
+                    $date_await_payment = $date_now;
+
                     $no_expiration = false;
-                    $payment_reminder = false;
                     foreach ($EM_Booking->get_notes() as $note) {
                         if ($note['note'] == 'Awaiting Payment') {
-                            date_timestamp_set($date1, $note['timestamp']);
-                            $payment_reminder = false;
-                            // EM_Pro::log('timestamp '. date(DATE_ATOM, $note['timestamp']), 'general', true);                    
+                            $date_note = date_create();
+                            date_timestamp_set($date_note, $note['timestamp']);
+
+                            if (($date_await_payment == $date_now) || ($date_note > $date_await_payment)) {
+                                $date_await_payment = $date_note;
+                            }
                         }
                         if ($note['note'] == 'No Expiration') {
                             $no_expiration = true;
-                        }
-                        if ($note['note'] == 'Payment Reminder') {
-                            $payment_reminder = true;
+                            break;
                         }
                     }
+
                     if ($no_expiration) {
                         continue;
                     }
+
+                    $payment_reminder = false;
+                    foreach ($EM_Booking->get_notes() as $note) {
+                        if ($note['note'] == 'Payment Reminder') {
+                            $date_note = date_create();
+                            date_timestamp_set($date_note, $note['timestamp']);
+
+                            if ($date_note > $date_await_payment) {
+                                $payment_reminder = true;
+                                break;
+                            }
+                        }
+                    }
+
                     $diffdays = intval(get_option('dbem_days_for_payment', '0'));
                     /*
-                    $weekday = intval(date_format($date1, "w"));
+                    $weekday = intval(date_format($date_await_payment, "w"));
                     if ($weekday > (4 - $diffdays)) {
                         $diffdays += 2;
                     }
-                    */ 
-                    $diff = date_diff($date1, $date2);
+                    */
+                    $diff = date_diff($date_await_payment, $date_now);
 
                     // EM_Pro::log('d='.$diff->d.' diffdays='.$diffdays.' payment_reminder='.$payment_reminder, 'general', true);
 
@@ -177,12 +193,12 @@ class EM_Limmud_Misc {
         $currencies->true_symbols['ILS'] = '₪';
         return $currencies;
     }
-    
+
     public static function em_booking_calculate_price($price, $booking) {
         // round the price after calculation (we use prices less that $1 for tickets that collect information about participants)
         return floor($price);
     }
-    
+
     public static function em_ticket_is_displayable($result, $ticket, $ignore_guest_restrictions = false, $ignore_member_restrictions = false) {
         // display only tickets that collect information about participants (i.e. have price less than $1)
         if (($ticket->ticket_price < 0) || ($ticket->ticket_price >= 1)) {
@@ -191,10 +207,10 @@ class EM_Limmud_Misc {
         return $result;
     }
 
-    public static function em_booking_form_tickets_cols($columns, $EM_Event) { 
+    public static function em_booking_form_tickets_cols($columns, $EM_Event) {
         // hide price - 'cause we are displaying tickets that collect information about participants
         unset($columns['price']);
-        
+
         // change ticket type and spaces titles
         // $columns['type'] = "<h5>[:ru]Количество участников[:he]כמות משתתפים/ות[:]</h5>";
         // $columns['spaces'] = "<h5>#</h5>";
@@ -202,7 +218,7 @@ class EM_Limmud_Misc {
         $columns['spaces'] = "";
         return $columns;
     }
-    
+
 
     public static function em_booking_get_spaces($spaces, $obj) {
         // count only tickets that collect information about participants (i.e. have price less than $1)
@@ -249,13 +265,13 @@ class EM_Limmud_Misc {
         }
         return $EM_Person;
     }
-    
+
     public static function em_get_booking($EM_Booking) {
-        // allow non-admin users to manage bookings - so that we can add notes and update them from custom hooks 
+        // allow non-admin users to manage bookings - so that we can add notes and update them from custom hooks
         $EM_Booking->manage_override = true;
         return $EM_Booking;
     }
-    
+
     public static function em_action_booking_add($return, $EM_Booking) {
         // redirect user to booking details page upon successful Booking submission
         if ($return['result'] && (get_option('dbem_automatic_payment') == 'enable')) {
@@ -271,6 +287,7 @@ class EM_Limmud_Misc {
         global $EM_Event;
         $waiting_list = get_post_meta($EM_Event->post_id, '_waiting_list', true);
         $room_limit = get_post_meta($EM_Event->post_id, '_room_limit', true);
+        $event_label = get_post_meta($EM_Event->post_id, '_event_label', true);
 		?>
         <p>
             <label>Waiting List</label>
@@ -281,6 +298,11 @@ class EM_Limmud_Misc {
             <label>Room Limit</label>
             <input type="text" name="room_limit" size="30" value="<?php echo $room_limit; ?>" /><br />
             <em>Defines limit for specific room types. Syntax: comma-separated list of adults_num+children_num=limit - e.g. &quot;3+0=15,2+3=8&quot;. Leave blank for no limit.</em>
+        </p>
+        <p>
+            <label>Event Label</label>
+            <input type="text" name="event_label" size="80" value="<?php echo $event_label; ?>" /><br />
+            <em>Event label in three languages: Russian|Hebrew|English. Do not include year.</em>
         </p>
 		<?php
 	}
@@ -298,6 +320,12 @@ class EM_Limmud_Misc {
         }
         else {
             update_post_meta($EM_Event->post_id, '_room_limit', '');
+        }
+        if( !empty($_REQUEST['event_label']) && (strlen($_REQUEST['event_label']) > 3)) {
+            update_post_meta($EM_Event->post_id, '_event_label', $_REQUEST['event_label']);
+        }
+        else {
+            update_post_meta($EM_Event->post_id, '_event_label', '');
         }
 	}
 
@@ -398,7 +426,7 @@ class EM_Limmud_Misc {
         if (empty($booking_hotel_name)) {
             return array(2, $waiting_list_limits);
         }
-            
+
         $booking_hotel_rooms_available = true;
         foreach ($waiting_list_limits as $key => $value) {
             if (str_contains($booking_hotel_name, $key) && ($value <= 0)) {
@@ -625,7 +653,7 @@ class EM_Limmud_Misc {
             }
             $result = false;
         }
-        return $result;    
+        return $result;
     }
 
     public static function em_bookings_get_pending_spaces($count, $EM_Bookings) {
@@ -685,6 +713,116 @@ class EM_Limmud_Misc {
         $reversed = $wpdb->get_var('SELECT SUM(transaction_total_amount) FROM '.EM_TRANSACTIONS_TABLE." WHERE booking_id={$EM_Booking->booking_id} AND (transaction_status='sale-chargeback' OR transaction_status='refund')");
         return strval((int)$total - (int)$reversed);
 	}
+
+    public static function email_send($EM_Booking, $user_subject, $user_body, $admin_subject, $admin_body, $amount, $total_paid) {
+        $user_body = str_replace('#_AMOUNT', $EM_Booking->format_price($amount), $user_body);
+        $admin_body = str_replace('#_AMOUNT', $EM_Booking->format_price($amount), $admin_body);
+
+        $user_body = str_replace('#_BOOKINGTOTALPAID', $EM_Booking->format_price($total_paid), $user_body);
+        $admin_body = str_replace('#_BOOKINGTOTALPAID', $EM_Booking->format_price($total_paid), $admin_body);
+
+        $output_type = get_option('dbem_smtp_html') ? 'html':'email';
+        if (!empty($user_subject)) {
+            $user_subject = $EM_Booking->output($user_subject, 'raw');
+            $user_body = $EM_Booking->output($user_body, $output_type);
+            $EM_Booking->email_send( $user_subject, $user_body, $EM_Booking->get_person()->user_email);
+        }
+        if (!empty($admin_subject)) {
+            $admin_emails = str_replace(' ','',get_option('dbem_bookings_notify_admin'));
+            $admin_emails = apply_filters('em_booking_admin_emails', explode(',', $admin_emails), $EM_Booking); //supply emails as array
+            $EM_Event = $EM_Booking->get_event();
+            if (get_option('dbem_bookings_contact_email') == 1 && !empty($EM_Event->get_contact()->user_email)) {
+                //add event owner contact email to list of admin emails
+                $admin_emails[] = $EM_Event->get_contact()->user_email;
+            }
+            foreach($admin_emails as $key => $email){ if( !is_email($email) ) unset($admin_emails[$key]); } //remove bad emails
+            if (!empty($admin_emails)) {
+                $admin_subject = $EM_Booking->output($admin_subject, 'raw');
+                $admin_body = $EM_Booking->output($admin_body, $output_type);
+                $EM_Booking->email_send( $admin_subject, $admin_body, $admin_emails);
+            }
+        }
+    }
+
+    public static function payment_callback($EM_Booking, $amount) {
+        $price = floor($EM_Booking->get_price());
+        $total_paid = (int)$EM_Booking->get_total_paid();
+        # EM_Pro::log('price=' . strval($price) . '    total_paid=' . strval($total_paid), 'payment_callback', true);
+
+        self::email_send(
+            $EM_Booking,
+            get_option('dbem_bookings_email_payment_confirmation_subject'),
+            get_option('dbem_bookings_email_payment_confirmation_body'),
+            get_option('dbem_bookings_contact_email_payment_confirmation_subject'),
+            get_option('dbem_bookings_contact_email_payment_confirmation_body'),
+            $amount,
+            $total_paid
+        );
+
+        if ($total_paid >= $price) {
+            $result = "completed";
+            $EM_Booking->approve();
+        } else {
+            $result = "partially completed";
+
+            self::email_send(
+                $EM_Booking,
+                get_option('dbem_bookings_email_partial_payment_subject'),
+                get_option('dbem_bookings_email_partial_payment_body'),
+                get_option('dbem_bookings_contact_email_partial_payment_subject'),
+                get_option('dbem_bookings_contact_email_partial_payment_body'),
+                $amount,
+                $total_paid
+            );
+        }
+        return $result;
+    }
+
+    public static function record_transaction($booking_id, $gateway, $amount, $currency, $timestamp, $gateway_id, $status, $note) {
+        if (!defined('EMP_VERSION')) {
+            return false;
+        }
+
+        global $wpdb;
+
+        // transaction_gateway_id in EM_TRANSACTIONS_TABLE is up to 30 characters
+        $transaction_gateway_id = $gateway_id;
+        if (strlen($transaction_gateway_id) > 30) {
+            $transaction_gateway_id = substr($transaction_gateway_id, 0, 30);
+        }
+
+        $data = array();
+        $data['booking_id'] = $booking_id;
+        $data['transaction_gateway_id'] = $transaction_gateway_id;
+        $data['transaction_timestamp'] = $timestamp;
+        $data['transaction_currency'] = $currency;
+        $data['transaction_status'] = $status;
+        $data['transaction_total_amount'] = $amount;
+        $data['transaction_note'] = $note;
+        $data['transaction_gateway'] = $gateway;
+
+        # EM_Pro::log('record_transaction ' . print_r($data, true), $gateway, true);
+
+        if( !empty($gateway_id) ) {
+            $existing = $wpdb->get_row( $wpdb->prepare( "SELECT transaction_id, transaction_status, transaction_gateway_id, transaction_total_amount FROM ".EM_TRANSACTIONS_TABLE." WHERE transaction_gateway = %s AND transaction_gateway_id = %s", 'payplus', $gateway_id ) );
+        }
+
+        if( !empty($existing->transaction_gateway_id) && ($gateway_id == $existing->transaction_gateway_id) && ($amount == $existing->transaction_total_amount) && ($status == $existing->transaction_status)) {
+            // do not record duplicate transactions
+            EM_Pro::log('record_transaction duplicate', $gateway, true);
+            return false;
+        }
+
+        $result = $wpdb->insert( EM_TRANSACTIONS_TABLE, $data );
+        if (!$result) {
+            $error_message = $wpdb->last_error;
+            EM_Pro::log('record_transaction failed: ' . $error_message, $gateway, true);
+            return false;
+        }
+
+        return true;
+    }
+
 }
 
 EM_Limmud_Misc::init();

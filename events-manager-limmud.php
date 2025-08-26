@@ -24,12 +24,14 @@ class EM_Limmud {
             return false;
         }
 
+        /*
         //check that PayPal IPN for WordPress is installed
         if (!defined('PIW_PLUGIN_URL')) {
             add_action('admin_notices', array(__CLASS__, 'ipn_install_warning'));
             add_action('network_admin_notices', array(__CLASS__, 'ipn_install_warning'));
             return false;
         }
+        */
 
         if (is_admin()) {
             include('emlmd-options.php');
@@ -42,10 +44,11 @@ class EM_Limmud {
         include('emlmd-frontend.php');
         include('emlmd-secret.php');
         include('emlmd-paypal.php');
-        include('emlmd-paid.php');
+        # include('emlmd-paid.php');
+        include('emlmd-payplus.php');
         include('emlmd-booking.php');
     }
-        
+
 
     public static function em_install_warning() {
         ?>

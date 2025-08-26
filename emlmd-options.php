@@ -15,40 +15,48 @@ class EM_Limmud_Options {
         <div class="inside">
             <table class='form-table'>
                 <?php
-                $email_subject_tip = __('You can disable this email by leaving the subject blank.','dbem'); 
+                $email_subject_tip = __('You can disable this email by leaving the subject blank.','dbem');
                 ?>
                 <tr class="em-header"><td colspan='2'><h4><?php _e('Event Admin/Owner Emails', 'dbem'); ?></h4></td></tr>
                     <tbody class="em-subsection">
                     <tr class="em-subheader"><td colspan='2'>
-                        <h5><?php _e('Awaiting payment email','dbem') ?></h5> 
+                        <h5><?php _e('Awaiting payment email','dbem') ?></h5>
                         <em><?php echo __('This is sent when a person\'s booking is ready for payment.','dbem') ?></em>
                     </td></tr>
                     <?php
-                        em_options_input_text ( __( 'Awaiting payment email subject', 'em-paypal' ), 'dbem_bookings_contact_email_awaiting_payment_subject', $email_subject_tip );                 
+                        em_options_input_text ( __( 'Awaiting payment email subject', 'em-paypal' ), 'dbem_bookings_contact_email_awaiting_payment_subject', $email_subject_tip );
                         em_options_textarea ( __( 'Awaiting payment email', 'em-paypal' ), 'dbem_bookings_contact_email_awaiting_payment_body', '' );
                     ?>
                     <tr class="em-subheader"><td colspan='2'>
-                        <h5><?php _e('Partial payment email','dbem') ?></h5> 
+                        <h5><?php _e('Payment confirmation email','dbem') ?></h5>
+                        <em><?php echo __('This is sent when a any payment (full or partial) is received for person\'s booking.','dbem') ?></em>
+                    </td></tr>
+                    <?php
+                        em_options_input_text ( __( 'Payment confirmation email subject', 'em-paypal' ), 'dbem_bookings_contact_email_payment_confirmation_subject', $email_subject_tip );
+                        em_options_textarea ( __( 'Payment confirmation email', 'em-paypal' ), 'dbem_bookings_contact_email_payment_confirmation_body', '' );
+                    ?>
+                    <tr class="em-subheader"><td colspan='2'>
+                        <h5><?php _e('Partial payment email','dbem') ?></h5>
                         <em><?php echo __('This is sent when a partial payment is received for person\'s booking.','dbem') ?></em>
                     </td></tr>
                     <?php
-                        em_options_input_text ( __( 'Partial payment email subject', 'em-paypal' ), 'dbem_bookings_contact_email_partial_payment_subject', $email_subject_tip );                 
+                        em_options_input_text ( __( 'Partial payment email subject', 'em-paypal' ), 'dbem_bookings_contact_email_partial_payment_subject', $email_subject_tip );
                         em_options_textarea ( __( 'Partial payment email', 'em-paypal' ), 'dbem_bookings_contact_email_partial_payment_body', '' );
                     ?>
                     <tr class="em-subheader"><td colspan='2'>
-                        <h5><?php _e('No payment email','dbem') ?></h5> 
+                        <h5><?php _e('No payment email','dbem') ?></h5>
                         <em><?php echo __('This is sent when a person\'s booking payment time expires.','dbem') ?></em>
                     </td></tr>
                     <?php
-                        em_options_input_text ( __( 'No payment email subject', 'em-paypal' ), 'dbem_bookings_contact_email_no_payment_subject', $email_subject_tip );                 
+                        em_options_input_text ( __( 'No payment email subject', 'em-paypal' ), 'dbem_bookings_contact_email_no_payment_subject', $email_subject_tip );
                         em_options_textarea ( __( 'No payment email', 'em-paypal' ), 'dbem_bookings_contact_email_no_payment_body', '' );
                     ?>
                     <tr class="em-subheader"><td colspan='2'>
-                        <h5><?php _e('Partially paid email','dbem') ?></h5> 
+                        <h5><?php _e('Partially paid email','dbem') ?></h5>
                         <em><?php echo __('This is sent when a person\'s partially paid booking expires.','dbem') ?></em>
                     </td></tr>
                     <?php
-                        em_options_input_text ( __( 'Partially paid email subject', 'em-paypal' ), 'dbem_bookings_contact_email_partially_paid_subject', $email_subject_tip );                 
+                        em_options_input_text ( __( 'Partially paid email subject', 'em-paypal' ), 'dbem_bookings_contact_email_partially_paid_subject', $email_subject_tip );
                         em_options_textarea ( __( 'Partially paid email', 'em-paypal' ), 'dbem_bookings_contact_email_partially_paid_body', '' );
                     ?>
                     <tr class="em-subheader"><td colspan='2'>
@@ -62,43 +70,51 @@ class EM_Limmud_Options {
                 <tr class="em-header"><td colspan='2'><h4><?php _e('Booked User Emails', 'dbem'); ?></h4></td></tr>
                     <tbody class="em-subsection">
                     <tr class="em-subheader"><td colspan='2'>
-                        <h5><?php _e('Awaiting payment email','dbem') ?></h5> 
+                        <h5><?php _e('Awaiting payment email','dbem') ?></h5>
                         <em><?php echo __('This will be sent to the person when their booking ready for payment.','dbem') ?></em>
                     </td></tr>
                     <?php
-                        em_options_input_text ( __( 'Awaiting payment email subject', 'em-paypal' ), 'dbem_bookings_email_awaiting_payment_subject', $email_subject_tip );                 
+                        em_options_input_text ( __( 'Awaiting payment email subject', 'em-paypal' ), 'dbem_bookings_email_awaiting_payment_subject', $email_subject_tip );
                         em_options_textarea ( __( 'Awaiting payment email', 'em-paypal' ), 'dbem_bookings_email_awaiting_payment_body', '' );
                     ?>
                     <tr class="em-subheader"><td colspan='2'>
-                        <h5><?php _e('Partial payment email','dbem') ?></h5> 
+                        <h5><?php _e('Payment confirmation email','dbem') ?></h5>
+                        <em><?php echo __('This will be sent to the person when any payment (full or partial) is received for their booking.','dbem') ?></em>
+                    </td></tr>
+                    <?php
+                        em_options_input_text ( __( 'Payment confirmation email subject', 'em-paypal' ), 'dbem_bookings_email_payment_confirmation_subject', $email_subject_tip );
+                        em_options_textarea ( __( 'Payment confirmation email', 'em-paypal' ), 'dbem_bookings_email_payment_confirmation_body', '' );
+                    ?>
+                    <tr class="em-subheader"><td colspan='2'>
+                        <h5><?php _e('Partial payment email','dbem') ?></h5>
                         <em><?php echo __('This will be sent to the person when partial payment is received for their booking.','dbem') ?></em>
                     </td></tr>
                     <?php
-                        em_options_input_text ( __( 'Partial payment email subject', 'em-paypal' ), 'dbem_bookings_email_partial_payment_subject', $email_subject_tip );                 
+                        em_options_input_text ( __( 'Partial payment email subject', 'em-paypal' ), 'dbem_bookings_email_partial_payment_subject', $email_subject_tip );
                         em_options_textarea ( __( 'Partial payment email', 'em-paypal' ), 'dbem_bookings_email_partial_payment_body', '' );
                     ?>
                     <tr class="em-subheader"><td colspan='2'>
-                        <h5><?php _e('Payment reminder email','dbem') ?></h5> 
+                        <h5><?php _e('Payment reminder email','dbem') ?></h5>
                         <em><?php echo __('This will be sent to the person 24 hours before their booking expires.','dbem') ?></em>
                     </td></tr>
                     <?php
-                        em_options_input_text ( __( 'Payment reminder email subject', 'em-paypal' ), 'dbem_bookings_email_payment_reminder_subject', $email_subject_tip );                 
+                        em_options_input_text ( __( 'Payment reminder email subject', 'em-paypal' ), 'dbem_bookings_email_payment_reminder_subject', $email_subject_tip );
                         em_options_textarea ( __( 'Payment reminder email', 'em-paypal' ), 'dbem_bookings_email_payment_reminder_body', '' );
                     ?>
                     <tr class="em-subheader"><td colspan='2'>
-                        <h5><?php _e('No payment email','dbem') ?></h5> 
+                        <h5><?php _e('No payment email','dbem') ?></h5>
                         <em><?php echo __('This will be sent to the person when their booking payment time expires.','dbem') ?></em>
                     </td></tr>
                     <?php
-                        em_options_input_text ( __( 'No payment email subject', 'em-paypal' ), 'dbem_bookings_email_no_payment_subject', $email_subject_tip );                 
+                        em_options_input_text ( __( 'No payment email subject', 'em-paypal' ), 'dbem_bookings_email_no_payment_subject', $email_subject_tip );
                         em_options_textarea ( __( 'No payment email', 'em-paypal' ), 'dbem_bookings_email_no_payment_body', '' );
                     ?>
                     <tr class="em-subheader"><td colspan='2'>
-                        <h5><?php _e('Partially paid email','dbem') ?></h5> 
+                        <h5><?php _e('Partially paid email','dbem') ?></h5>
                         <em><?php echo __('This will be sent to the person when their partially paid booking expires.','dbem') ?></em>
                     </td></tr>
                     <?php
-                        em_options_input_text ( __( 'Partially paid email subject', 'em-paypal' ), 'dbem_bookings_email_partially_paid_subject', $email_subject_tip );                 
+                        em_options_input_text ( __( 'Partially paid email subject', 'em-paypal' ), 'dbem_bookings_email_partially_paid_subject', $email_subject_tip );
                         em_options_textarea ( __( 'Partially paid email', 'em-paypal' ), 'dbem_bookings_email_partially_paid_body', '' );
                     ?>
                     <tr class="em-subheader"><td colspan='2'>
@@ -124,7 +140,7 @@ class EM_Limmud_Options {
         <div class="inside">
             <table class='form-table'>
                 <?php
-                    em_options_select ( __( 'Payment Provider', 'em-limmud' ), 'dbem_payment_provider', array ('paypal' => 'PayPal', 'paid' => 'Paid'), '' );
+                    em_options_select ( __( 'Payment Provider', 'em-limmud' ), 'dbem_payment_provider', array ('paypal' => 'PayPal', 'payplus' => 'PayPlus' /*, 'paid' => 'Paid'*/), '' );
                     em_options_select ( __( 'Payment Mode', 'em-limmud' ), 'dbem_payment_mode', array ('live' => 'Live Site', 'test' => 'Test Mode (Sandbox)'), '' );
                     em_options_select ( __( 'Automatic Payment', 'em-limmud' ), 'dbem_automatic_payment', array ('disable' => 'Disable', 'enable' => 'Enable'), '' );
                     em_options_select ( __( 'Days For Payment', 'em-limmud' ), 'dbem_days_for_payment', array ('0' => 'Unlimited', '1' => '1 Day', '2' => '2 Days', '3' => '3 Days', '4' => '4 Days'), '' );
@@ -164,6 +180,30 @@ class EM_Limmud_Options {
         </div> <!-- . inside -->
         </div> <!-- .postbox -->
         <div  class="postbox " id="em-opt-paid-options" >
+        <div class="handlediv" title="Click to toggle"><br /></div><h3>Limmud PayPlus Options</h3>
+        <div class="inside">
+            <table class='form-table'>
+                <?php
+                    em_options_input_text ( __( 'PayPlus API Key', 'em-limmud' ), 'dbem_payplus_api_key', '' );
+                    em_options_input_text ( __( 'PayPlus Secret Key', 'em-limmud' ), 'dbem_payplus_secret_key', '' );
+                    em_options_input_text ( __( 'PayPlus Payment Page UID', 'em-limmud' ), 'dbem_payplus_payment_page_uid', '' );
+                    em_options_input_text ( __( 'PayPlus Sandbox API Key', 'em-limmud' ), 'dbem_payplus_dev_api_key', '' );
+                    em_options_input_text ( __( 'PayPlus Sandbox Secret Key', 'em-limmud' ), 'dbem_payplus_dev_secret_key', '' );
+                    em_options_input_text ( __( 'PayPlus Sandbox Payment Page UID', 'em-limmud' ), 'dbem_payplus_dev_payment_page_uid', '' );
+                    em_options_select ( __( 'PayPlus 3D Secure', 'em-limmud' ), 'dbem_payplus_3d_secure', array ('disable' => 'Disable', 'enable' => 'Enable'), '' );
+                    em_options_select ( __( 'PayPlus Payments', 'em-limmud' ), 'dbem_payplus_payments', array ('1' => 'One', '2' => 'Up To Two', '3' => 'Up to Three', '6' => 'Up To Six'), '' );
+                ?>
+                <tr><th>
+                <?php
+				echo sprintf(__( '%s page', 'events-manager'),__('Payment Redirect','events-manager'))
+				?></th><td><?php
+					wp_dropdown_pages(array('name'=>'dbem_payplus_redirect_page', 'selected'=>get_option('dbem_payplus_redirect_page'), 'show_option_none'=>'['.__('None', 'events-manager').']' ));
+                ?></td></tr>
+            </table>
+        </div> <!-- . inside -->
+        </div> <!-- .postbox -->
+        <!--
+        <div  class="postbox " id="em-opt-paid-options" >
         <div class="handlediv" title="Click to toggle"><br /></div><h3>Limmud Paid Options</h3>
         <div class="inside">
             <table class='form-table'>
@@ -177,11 +217,12 @@ class EM_Limmud_Options {
                 <?php
 				echo sprintf(__( '%s page', 'events-manager'),__('Payment Redirect','events-manager'))
 				?></th><td><?php
-					wp_dropdown_pages(array('name'=>'dbem_payment_redirect_page', 'selected'=>get_option('dbem_payment_redirect_page'), 'show_option_none'=>'['.__('None', 'events-manager').']' ));
+					wp_dropdown_pages(array('name'=>'dbem_paid_redirect_page', 'selected'=>get_option('dbem_paid_redirect_page'), 'show_option_none'=>'['.__('None', 'events-manager').']' ));
                 ?></td></tr>
             </table>
-        </div> <!-- . inside -->
-        </div> <!-- .postbox -->
+        </div>
+        </div>
+        -->
         <?php
     }
 
@@ -193,8 +234,8 @@ class EM_Limmud_Options {
         <div class="inside">
             <table class='form-table'>
                 <?php
-                    em_options_select ( __( 'Show Event Details', 'em-limmud' ), 'dbem_show_event_details', array ('show' => 'Show', 'hide' => 'Hide'), '' );                                      
-                    em_options_select ( __( 'Admin Actions', 'em-limmud' ), 'dbem_admin_actions', array ('all' => 'Show All', 'edit' => 'Edit/View Only'), '' );                                      
+                    em_options_select ( __( 'Show Event Details', 'em-limmud' ), 'dbem_show_event_details', array ('show' => 'Show', 'hide' => 'Hide'), '' );
+                    em_options_select ( __( 'Admin Actions', 'em-limmud' ), 'dbem_admin_actions', array ('all' => 'Show All', 'edit' => 'Edit/View Only'), '' );
                 ?>
             </table>
         </div> <!-- . inside -->

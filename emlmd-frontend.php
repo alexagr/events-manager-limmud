@@ -63,15 +63,15 @@ class EM_Limmud_Frontend {
                 TICKET_INVALID = ticketDays[0].options[2].text;
             }
         }
-        
+
         function updateComboBox(name, types) {
             var els = document.getElementsByName(name);
             if (els.length > 0 ) {
                 var curType = els[0];
                 var i;
-    
+
                 if (types.length == curType.options.length) {
-                    var updateNeeded = false; 
+                    var updateNeeded = false;
                     for (i = curType.options.length - 1 ; i >= 0 ; i--) {
                         if (curType.options[i].text != types[i]) {
                             updateNeeded = true;
@@ -80,11 +80,11 @@ class EM_Limmud_Frontend {
                     if (!updateNeeded)
                         return;
                 }
-                    
+
                 for (i = curType.options.length - 1 ; i >= 0 ; i--) {
                     curType.remove(i);
-                } 
-    
+                }
+
                 for (i = 0 ; i < types.length ; i++) {
                     curType.options[curType.options.length] = new Option(types[i]);
                 }
@@ -97,7 +97,7 @@ class EM_Limmud_Frontend {
             var display = "none";
             if (status) {
                 display = "block";
-            } 
+            }
             var els = document.getElementsByClassName(name);
             if (els.length > 0) {
                 els[0].style.display = display;
@@ -109,15 +109,14 @@ class EM_Limmud_Frontend {
         }
 
         function displaySubmit(status) {
-            displayElement("em-booking-submit", status);
-
-            var els = document.getElementsByClassName("em-booking-submit");
+            els = document.getElementsByClassName("em-booking-submit");
             if (els.length > 0) {
                 if (status) {
-                    els[0].setAttribute("type", "submit");
+                    els[0].style.removeProperty("background-color");
                 } else {
-                    els[0].setAttribute("type", "");
+                    els[0].style.backgroundColor = "#bebebe";
                 }
+                els[0].disabled = !status;
             }
         }
 
@@ -125,7 +124,7 @@ class EM_Limmud_Frontend {
             var display = "none";
             if (status) {
                 display = "block";
-            } 
+            }
             var els = document.getElementsByName(name);
             if (els.length > 0) {
                 els[0].style.display = display;
@@ -133,14 +132,14 @@ class EM_Limmud_Frontend {
         }
 
         function updateForm() {
-            var adults = 0; 
+            var adults = 0;
             var kids = 0;
             var child_program = false;
             var toddlers = 0;
             var registration = "";
-            var participation_type = ""; 
+            var participation_type = "";
 
-            var d1 = new Date("2024-12-29");
+            var d1 = new Date("2025-10-10");
             var els = document.getElementsByClassName("em-attendee-fieldset");
             for (var i = 0; i < els.length; i++) {
                 var inputs = els[i].querySelectorAll(".input-date-string");
@@ -171,7 +170,7 @@ class EM_Limmud_Frontend {
                     }
                 }
             }
-            
+
             var els = document.getElementsByName("em_tickets[284][spaces]");
             if (els.length > 0) {
                 registration = "regular";
@@ -195,6 +194,12 @@ class EM_Limmud_Frontend {
             }
 
 			if (!registration) {
+                var personal_data = document.getElementsByName("personal_data");
+                var photo_use = document.getElementsByName("photo_use");
+                if ((personal_data.length > 0) && (photo_use.length > 0)) {
+                    var display_submit = personal_data[0].checked && photo_use[0].checked;
+                    displaySubmit(display_submit);
+                }
 				return;
 			}
 
@@ -287,7 +292,7 @@ class EM_Limmud_Frontend {
                     participation_type = "no-accomodation";
                 }
             }
-            
+
             initGlobals();
 
             var display_room_label = false;
@@ -351,11 +356,11 @@ class EM_Limmud_Frontend {
                 displayField("ticket_days", true);
                 updateComboBox("ticket_days", [TICKET_3_DAYS, TICKET_1_DAY]);
             }
-            
+
             displayElementByName("room_label", display_room_label);
             displayElementByName("too_many_adults_label", display_too_many_adults_label);
             displayElementByName("too_little_adults_label", display_too_little_adults_label);
-            
+
             var child_program_label_div = document.getElementById("child_program_label_div");
             if (child_program_label_div) {
                 if (child_program) {
@@ -379,7 +384,7 @@ class EM_Limmud_Frontend {
 
             displaySubmit(display_submit);
         }
-        
+
         $("select").change(updateForm);
         $(".em-tickets tbody").on("change", ".input-date-select", updateForm);
         $(".em-tickets tbody").on("change", ".input-field-participation_type", updateForm);
@@ -388,7 +393,7 @@ class EM_Limmud_Frontend {
         updateForm();
 
     <?php
-	}     
+	}
 }
 
 EM_Limmud_Frontend::init();

@@ -12,7 +12,7 @@ Software components
     this is custom integration plugin that tweaks Events Manager to operate
     in a slightly different mode ("participants" and "real" tickets - as described 
 	below); it also provides integration with PayPal
-  * Events Manager Hacks (https://github.com/alexagr/events-manager-limmud)
+  * Events Manager Hacks (https://github.com/alexagr/events-manager-hacks)
     some minor tweaks inside Events Manager / Pro plugins (due to their existence
 	we DO NOT upgrade either of them)
 

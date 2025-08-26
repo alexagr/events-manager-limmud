@@ -13,16 +13,16 @@ class EM_Limmud_CSV {
     public static function em_bookings_table_export_options() {
         ?>
         <hr />
-        <h4>Limmud 2023 reports</h4>
+        <h4>Limmud 2024 reports</h4>
         <p>There reports collect data from all relevant events and use pre-defined formats. Generic split and columns to export settings are irrelevant.</p>
         <p>Full bookings report <input type="checkbox" name="limmud_full" value="1" />
         <a href="#" title="Complete information about all bookings (including cancelled)">?</a></p>
-        <p>Accomodation report <input type="checkbox" name="limmud_approved" value="1" />
+        <!-- <p>Accomodation report <input type="checkbox" name="limmud_approved" value="1" />
         <a href="#" title="Approved and pending bookings">?</a></p>
         <p>Hotel report <input type="checkbox" name="limmud_hotel" value="1" />
         <a href="#" title="Report for hotel (only approved bookings with accomodation)">?</a></p>
         <p>Transport report <input type="checkbox" name="limmud_transport" value="1" />
-        <a href="#" title="Transport report (only approved and pending bookings)">?</a></p>
+        <a href="#" title="Transport report (only approved and pending bookings)">?</a></p> -->
         <hr />
         <?php
     }
@@ -41,7 +41,7 @@ class EM_Limmud_CSV {
 	}
 
     public static function intercept_csv_export() {
-        if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && !empty($_REQUEST['limmud_full']) && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')) {
+        if( !empty($_REQUEST['action']) && $_REQUEST['action'] == 'export_bookings_csv' && (!empty($_REQUEST['limmud_full']) || !empty($_REQUEST['limmud_regular']) || !empty($_REQUEST['limmud_volunteers'])) && wp_verify_nonce($_REQUEST['_wpnonce'], 'export_bookings_csv')) {
             /*
             Full export - all bookings and all tickets
             */
@@ -55,14 +55,22 @@ class EM_Limmud_CSV {
             $delimiter = !defined('EM_CSV_DELIMITER') ? ',' : EM_CSV_DELIMITER;
             $delimiter = apply_filters('em_csv_delimiter', $delimiter);
 
-            $headers = array('id', 'name', 'email', 'status', 'event_id', 'ticket_name', 'ticket_price', 'phone', 'city', 'past_participation', 'ticket_days', 'ticket_type', 'room_type', 'bus_needed', 'special_needs', 'comment', 'first_name', 'last_name', 'birthday', 'age', 'passport', 'role', 'secret');
+            $headers = array('id', 'name', 'email', 'status', 'event_id', /* 'ticket_name', 'ticket_price', */ 'phone', 'city', 'past_participation', /* 'ticket_days', 'ticket_type', 'room_type', 'bus_needed', */ 'special_needs', 'comment', 'first_name', 'last_name', 'birthday', 'age', 'passport', 'role', 'secret');
             fputcsv($handle, $headers, $delimiter);
 
             $events = EM_Events::get(array('scope'=>'all'));
             foreach ($events as $EM_Event) {
-                if (($EM_Event->event_id != 22) && ($EM_Event->event_id != 23) && ($EM_Event->event_id != 24) && ($EM_Event->event_id != 25)) {
+                if (($EM_Event->event_id != 26) && ($EM_Event->event_id != 27)) {
                     continue;
                 }
+                /*
+                if (!empty($_REQUEST['limmud_regular']) && ($EM_Event->event_id != 26)) {
+                    continue;
+                }
+                if (!empty($_REQUEST['limmud_volunteers']) && ($EM_Event->event_id != 27)) {
+                    continue;
+                }
+                */
                 $event_date = date("U", $EM_Event->start()->getTimestamp());
                 foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {
                     $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
@@ -74,16 +82,23 @@ class EM_Limmud_CSV {
                         $row[] = $EM_Booking->get_person()->user_email;
                         $row[] = $EM_Booking->get_status(true);
                         $row[] = $EM_Booking->get_event()->event_id;
+                        /*
                         $row[] = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->ticket_name, 'ru');
                         $row[] = $EM_Ticket_Booking->get_ticket()->get_price(true);
+                        */
+                        if (apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->ticket_name, 'ru') != "Количество участников") {
+                            continue;
+                        }
                         $row[] = '"' . $EM_Booking->get_person()->phone . '"';
                         $row[] = $EM_Booking->booking_meta['registration']['dbem_city'];
 						$row[] = self::booking_field('past_participation', $EM_Form, $EM_Booking);
 
+                        /*
 						$row[] = self::booking_field('ticket_days', $EM_Form, $EM_Booking);
 						$row[] = self::booking_field('ticket_type', $EM_Form, $EM_Booking);
 						$row[] = self::booking_field('room_type', $EM_Form, $EM_Booking);
 						$row[] = self::booking_field('bus_needed', $EM_Form, $EM_Booking);
+                        */
 
 						$row[] = self::booking_field('special_needs', $EM_Form, $EM_Booking, false);
 						$row[] = self::booking_field('dbem_comment', $EM_Form, $EM_Booking, false);

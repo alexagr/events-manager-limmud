@@ -56,7 +56,7 @@ class EM_Limmud_Emails {
 
     public static function booking_details($EM_Booking, $full_result, $lang) {
         $replace = '';
-        
+
         $tickets = array();
         foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
             if (($EM_Ticket_Booking->get_price() >= 0) && ($EM_Ticket_Booking->get_price() < 1)) {
@@ -118,16 +118,16 @@ class EM_Limmud_Emails {
             foreach ($EM_Form->form_fields as $fieldid => $field) {
                 if (($field['type'] != 'html') && ($field['type'] != 'checkbox') && isset($EM_Booking->booking_meta['booking'][$fieldid]) && ($EM_Booking->booking_meta['booking'][$fieldid] != 'n/a') && ($EM_Booking->booking_meta['booking'][$fieldid] != 'N/A')) {
                     $replace = $replace . apply_filters('translate_text', $field['label'], $lang) . " : " . apply_filters('translate_text', $EM_Booking->booking_meta['booking'][$fieldid], $lang) . "\n";
-                }                        
+                }
                 if (($field['type'] == 'checkbox') && isset($EM_Booking->booking_meta['booking'][$fieldid])) {
                     $value = ($EM_Booking->booking_meta['booking'][$fieldid]) ? '[:ru]да[:he]כן[:]' : '[:ru]нет[:he]לא[:]';
                     $replace = $replace . apply_filters('translate_text', $field['label'], $lang) . " : " . apply_filters('translate_text', $value, $lang) . "\n";
-                }                        
+                }
             }
         }
         return $replace;
     }
-    
+
     public static function payment_details($EM_Booking, $full_result, $lang) {
         $discount = $EM_Booking->get_price_discounts_amount('post');
 
@@ -138,7 +138,7 @@ class EM_Limmud_Emails {
             $i += 1;
 
             if (($EM_Ticket_Booking->get_price() >= 0) && ($EM_Ticket_Booking->get_price() < 1)) {
-                $participants[$EM_Ticket_Booking->get_price() * 1000 + $i] = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->name, $lang) . " : " . $EM_Ticket_Booking->get_spaces() . "\n"; 
+                $participants[$EM_Ticket_Booking->get_price() * 1000 + $i] = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->name, $lang) . " : " . $EM_Ticket_Booking->get_spaces() . "\n";
             }
             else if ($EM_Ticket_Booking->get_price() >= 1) {
                 $price = $EM_Ticket_Booking->get_price();
@@ -147,8 +147,8 @@ class EM_Limmud_Emails {
                     $ticket_price = $price;
                 } else {
                     $ticket_price = $EM_Ticket_Booking->get_spaces() . ' * ' . floor($EM_Ticket_Booking->get_ticket()->get_price_without_tax()) . ' = ' . $price;
-                } 
-                $tickets[$EM_Ticket_Booking->get_price() * 1000 + $i] = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->name, $lang) . " : " . $ticket_price . " &#8362;\n"; 
+                }
+                $tickets[$EM_Ticket_Booking->get_price() * 1000 + $i] = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->name, $lang) . " : " . $ticket_price . " &#8362;\n";
             } else if ($EM_Ticket_Booking->get_price() < 0) {
                 $discount += -$EM_Ticket_Booking->get_price();
             }
@@ -188,7 +188,7 @@ class EM_Limmud_Emails {
             }
             $price = $EM_Booking->get_price();
             $price = floor($price);
-            // $price = $EM_Booking->format_price($price);                
+            // $price = $EM_Booking->format_price($price);
 	        if( ($tickets_num > 1) || ($discount > 0) ) {
 	            $replace = $replace . "--------------\n";
 	            if ($lang == 'ru') {
@@ -200,7 +200,7 @@ class EM_Limmud_Emails {
         }
         return $replace;
     }
-    
+
     public static function placeholders($replace, $EM_Booking, $full_result){
         if (empty($replace) || $replace == $full_result) {
             if ($full_result == '#_BOOKINGSUMMARYURL') {
@@ -215,7 +215,7 @@ class EM_Limmud_Emails {
                     $replace = '72';
                 }
             }
-            
+
             if ($full_result == '#_BOOKINGDETAILSRU') {
                 $replace = EM_Limmud_Emails::booking_details($EM_Booking, $full_result, 'ru');
             }
@@ -223,13 +223,18 @@ class EM_Limmud_Emails {
             if ($full_result == '#_BOOKINGDETAILSHE') {
                 $replace = EM_Limmud_Emails::booking_details($EM_Booking, $full_result, 'he');
             }
-            
+
             if ($full_result == '#_BOOKINGPRICEROUNDED') {
                 $replace = '';
                 $price = $EM_Booking->get_price();
                 $price = floor($price);
                 $replace = $price;
-                # $replace = $EM_Booking->format_price($price);                
+                # $replace = $EM_Booking->format_price($price);
+            }
+
+            if ($full_result == '#_BOOKINGTOTALPAID') {
+                $total_paid = (int)$EM_Booking->get_total_paid();
+                $replace = $EM_Booking->format_price($total_paid);
             }
 
             if ($full_result == '#_BOOKINGSUMMARYPAYMENTRU') {
@@ -288,12 +293,34 @@ class EM_Limmud_Emails {
                 }
             }
 
-            if ($full_result == '#_EVENTNAMERU') {
-                $replace = apply_filters('translate_text', $EM_Booking->get_event()->event_name, 'ru');
+            if (($full_result == '#_EVENTLABELRU') || ($full_result == '#_EVENTLABELHE') || ($full_result == '#_EVENTLABELEN')) {
+                $event_label = "Лимуд FSU Израиль|לימוד FSU ישראל|Limmud FSU Israel";
+                $EM_Event = $EM_Booking->get_event();
+                $event_label_data = get_post_meta($EM_Event->post_id, '_event_label', true);
+                if (!empty($event_label_data) && (strlen($event_label_data) > 3)) {
+                    $event_label = $event_label_data;
+                }
+
+                $event_label_parts = explode('|', $event_label);
+                // Ensure $event_label_parts has at least 3 elements
+                for ($i = count($event_label_parts); $i < 3; $i++) {
+                    $event_label_parts[] = 'Limmud FSU Israel';
+                }
+
+                if ($full_result == '#_EVENTLABELRU') {
+                    $replace = $event_label_parts[0];
+                }
+                if ($full_result == '#_EVENTLABELHE') {
+                    $replace = $event_label_parts[1];
+                }
+                if ($full_result == '#_EVENTLABELEN') {
+                    $replace = $event_label_parts[2];
+                }
             }
+
         }
         return $replace;
-    }   
+    }
 }
 
 EM_Limmud_Emails::init();
