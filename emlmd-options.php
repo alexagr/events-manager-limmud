@@ -237,6 +237,12 @@ class EM_Limmud_Options {
                     em_options_select ( __( 'Show Event Details', 'em-limmud' ), 'dbem_show_event_details', array ('show' => 'Show', 'hide' => 'Hide'), '' );
                     em_options_select ( __( 'Admin Actions', 'em-limmud' ), 'dbem_admin_actions', array ('all' => 'Show All', 'edit' => 'Edit/View Only'), '' );
                 ?>
+                <tr><th>
+                <?php
+				echo sprintf(__( '%s page', 'events-manager'),__('Event Bookings Page','events-manager'))
+				?></th><td><?php
+					wp_dropdown_pages(array('name'=>'dbem_event_bookings_page', 'selected'=>get_option('dbem_event_bookings_page'), 'show_option_none'=>'['.__('None', 'events-manager').']' ));
+                ?></td></tr>
             </table>
         </div> <!-- . inside -->
         </div> <!-- .postbox -->

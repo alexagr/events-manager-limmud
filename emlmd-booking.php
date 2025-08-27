@@ -5,6 +5,7 @@ class EM_Limmud_Booking {
         add_filter('the_title', array(__CLASS__, 'the_title'));
         add_filter('the_content', array(__CLASS__, 'the_content'), 10, 2);
         add_action('wp_head', array(__CLASS__, 'wp_head'));
+        add_action('template_redirect', array(__CLASS__, 'template_redirect'));
     }
 
     public static function get_secret($EM_Booking, $seed = false) {
@@ -72,12 +73,40 @@ class EM_Limmud_Booking {
         }
     }
 
+    public static function expand_content($EM_Booking, $content) {
+        // Expand the content with additional information or formatting
+        $EM_Event = $EM_Booking->get_event();
+        $event_label_data = get_post_meta($EM_Event->post_id, '_event_label', true);
+        if (!empty($event_label_data) && (strlen($event_label_data) > 3)) {
+            $event_label = $event_label_data;
+        } else {
+            $event_label = "Лимуд FSU Израиль|לימוד FSU ישראל|Limmud FSU Israel";
+        }
+        $event_label_parts = explode('|', $event_label);
+        // Ensure $event_label_parts has at least 3 elements
+        for ($i = count($event_label_parts); $i < 3; $i++) {
+            $event_label_parts[] = 'Limmud FSU Israel';
+        }
+
+        $content = str_replace('#_BOOKINGID', $EM_Booking->booking_id, $content);
+        $content = str_replace('#_BOOKINGSUMMARYURL', self::get_payment_link($EM_Booking), $content);
+        $event_year = date("Y", date("U", $EM_Event->start()->getTimestamp()));
+        $content = str_replace('#_EVENTYEAR', $event_year, $content);
+        $content = str_replace('#_EVENTLABELRU', $event_label_parts[0], $content);
+        $content = str_replace('#_EVENTLABELHE', $event_label_parts[1], $content);
+        $content = str_replace('#_EVENTLABELEN', $event_label_parts[2], $content);
+
+        return $content;
+    }
+
     public static function the_content($page_content) {
         global $post;
-        if (empty($post)) return $page_content; //fix for any other plugins calling the_content outside the loop
+        if (empty($post) || post_password_required() || ($post->ID == 0)) {
+            return $page_content;
+        }
 
         $booking_summary_page_id = get_option('dbem_booking_summary_page');
-        if (!post_password_required() && ($post->ID == $booking_summary_page_id) && ($booking_summary_page_id != 0)) {
+        if ($post->ID == $booking_summary_page_id) {
             $content = apply_filters('em_content_pre', '', $page_content);
             if (empty($content)) {
                 ob_start();
@@ -90,36 +119,15 @@ class EM_Limmud_Booking {
             return apply_filters('em_content', '<div id="em-wrapper">'.$content.'</div>');
         }
 
-        $event_label = "Лимуд FSU Израиль|לימוד FSU ישראל|Limmud FSU Israel";
-        if (!empty( $_REQUEST['booking_id'])) {
-            $EM_Booking = em_get_booking($_REQUEST['booking_id']);
-            $EM_Event = $EM_Booking->get_event();
-            $event_label_data = get_post_meta($EM_Event->post_id, '_event_label', true);
-            if (!empty($event_label_data) && (strlen($event_label_data) > 3)) {
-                $event_label = $event_label_data;
-            }
-        }
-        $event_label_parts = explode('|', $event_label);
-        // Ensure $event_label_parts has at least 3 elements
-        for ($i = count($event_label_parts); $i < 3; $i++) {
-            $event_label_parts[] = 'Limmud FSU Israel';
-        }
-
         $booking_success_page_id = get_option('dbem_booking_success_page');
-        if (!post_password_required() && ($post->ID == $booking_success_page_id) && ($booking_success_page_id != 0)) {
+        if ($post->ID == $booking_success_page_id) {
             $content = apply_filters('em_content_pre', '', $page_content);
             if (empty($content)) {
                 if (preg_match('/#_BOOKINGID/', $page_content)) {
                     if (!empty( $_REQUEST['booking_id']) && !empty( $_REQUEST['secret'])) {
                         $EM_Booking = em_get_booking($_REQUEST['booking_id']);
                         if (($EM_Booking->booking_status == 1) && (self::get_secret($EM_Booking, 'payment_success') == $_REQUEST['secret'])) {
-                            $content = str_replace('#_BOOKINGID', $_REQUEST['booking_id'], $page_content);
-                            $content = str_replace('#_BOOKINGSUMMARYURL', self::get_payment_link($EM_Booking), $content);
-                            $event_year = date("Y", date("U", $EM_Booking->get_event()->start()->getTimestamp()));
-                            $content = str_replace('#_EVENTYEAR', $event_year, $content);
-                            $content = str_replace('#_EVENTLABELRU', $event_label_parts[0], $content);
-                            $content = str_replace('#_EVENTLABELHE', $event_label_parts[1], $content);
-                            $content = str_replace('#_EVENTLABELEN', $event_label_parts[2], $content);
+                            $content = self::expand_content($EM_Booking, $page_content);
                         }
                     }
                 }
@@ -128,20 +136,14 @@ class EM_Limmud_Booking {
         }
 
         $partial_payment_success_page_id = get_option('dbem_partial_payment_success_page');
-        if (!post_password_required() && ($post->ID == $partial_payment_success_page_id) && ($partial_payment_success_page_id != 0)) {
+        if ($post->ID == $partial_payment_success_page_id) {
             $content = apply_filters('em_content_pre', '', $page_content);
             if (empty($content)) {
                 if (preg_match('/#_BOOKINGID/', $page_content)) {
                     if (!empty( $_REQUEST['booking_id']) && !empty( $_REQUEST['secret'])) {
                         $EM_Booking = em_get_booking($_REQUEST['booking_id']);
                         if ((($EM_Booking->booking_status == 5) || ($EM_Booking->booking_status == 1)) && (self::get_secret($EM_Booking, 'partial_payment_success') == $_REQUEST['secret'])) {
-                            $content = str_replace('#_BOOKINGID', $_REQUEST['booking_id'], $page_content);
-                            $content = str_replace('#_BOOKINGSUMMARYURL', self::get_payment_link($EM_Booking), $content);
-                            $event_year = date("Y", date("U", $EM_Booking->get_event()->start()->getTimestamp()));
-                            $content = str_replace('#_EVENTYEAR', $event_year, $content);
-                            $content = str_replace('#_EVENTLABELEN', apply_filters('translate_text', $event_label, 'en'), $content);
-                            $content = str_replace('#_EVENTLABELHE', apply_filters('translate_text', $event_label, 'he'), $content);
-                            $content = str_replace('#_EVENTLABELRU', apply_filters('translate_text', $event_label, 'ru'), $content);
+                            $content = self::expand_content($EM_Booking, $page_content);
                         }
                     }
                 }
@@ -151,16 +153,28 @@ class EM_Limmud_Booking {
 
         $payplus_redirect_page_id = get_option('dbem_payplus_redirect_page');
         $paid_redirect_page_id = get_option('dbem_paid_redirect_page');
-        if (!post_password_required() && (($post->ID == $paid_redirect_page_id) || ($post->ID == $payplus_redirect_page_id)) && ($post->ID != 0)) {
+        if (($post->ID == $paid_redirect_page_id) || ($post->ID == $payplus_redirect_page_id)) {
             $content = apply_filters('em_content_pre', '', $page_content);
             if (empty($content)) {
                 // PayPlus transaction callback
                 $status = '';
                 if (!empty($_REQUEST['status'])) {
+                    # PayPlus
                     $status = $_REQUEST['status'];
                 }
                 if (!empty($_REQUEST['payme_status'])) {
+                    # Paid
                     $status = $_REQUEST['payme_status'];
+                }
+
+                $amount = 0;
+                if (!empty($_REQUEST['amount'])) {
+                    # PayPlus
+                    $amount = $_REQUEST['amount'];
+                }
+                if (!empty($_REQUEST['price'])) {
+                    # Paid
+                    $amount = (int)$_REQUEST['price'] / 100;
                 }
 
                 if (!empty($status)) {
@@ -169,19 +183,8 @@ class EM_Limmud_Booking {
                             if (!empty($_REQUEST['booking_id']) && !empty($_REQUEST['secret'])) {
                                 $EM_Booking = em_get_booking($_REQUEST['booking_id']);
                                 if (self::get_secret($EM_Booking, 'payment_redirect') == $_REQUEST['secret']) {
-                                    $content = str_replace('#_BOOKINGID', $_REQUEST['booking_id'], $page_content);
-                                    $content = str_replace('#_BOOKINGSUMMARYURL', self::get_payment_link($EM_Booking), $content);
-                                    $event_year = date("Y", date("U", $EM_Booking->get_event()->start()->getTimestamp()));
-                                    $content = str_replace('#_EVENTYEAR', $event_year, $content);
-                                    $content = str_replace('#_EVENTLABELEN', apply_filters('translate_text', $event_label, 'en'), $content);
-                                    $content = str_replace('#_EVENTLABELHE', apply_filters('translate_text', $event_label, 'he'), $content);
-                                    $content = str_replace('#_EVENTLABELRU', apply_filters('translate_text', $event_label, 'ru'), $content);
-                                    if (!empty($_REQUEST['price'])) {
-                                        $content = str_replace('#_PRICE', strval((int)$_REQUEST['price'] / 10), $content);
-                                    }
-                                    if (!empty($_REQUEST['amount'])) {
-                                        $content = str_replace('#_PRICE', $_REQUEST['amount'], $content);
-                                    }
+                                    $content = self::expand_content($EM_Booking, $page_content);
+                                    $content = str_replace('#_PRICE', $amount, $content);
                                     if (!empty($_REQUEST['payment_type']) && ($_REQUEST['payment_type'] == 'full')) {
                                         $content = str_replace('#_PAYMENTSUMMARY', "[:ru]Вы успешно оплатили вашу регистрацию[:he]תשלום התקבל בהצלחה.[:]", $content);
                                     }
@@ -204,6 +207,208 @@ class EM_Limmud_Booking {
         }
 
         return $page_content;
+    }
+
+    public static function template_redirect() {
+        $event_bookings_page_id = get_option('dbem_event_bookings_page');
+        if ($event_bookings_page_id != 0 && is_page($event_bookings_page_id)) {
+            $post = get_queried_object();
+            if (post_password_required($post)) {
+                echo get_the_password_form($post);
+                exit;
+            }
+
+            if (empty($_REQUEST['event_id'])) {
+                echo 'Invalid event';
+                exit;
+            }
+
+            $event_id = (int)$_REQUEST['event_id'] % 100;
+
+            $secret_base = 0;
+            $file = @fopen(WP_PLUGIN_DIR.'/events-manager-secrets/bookings.txt', 'r');
+            if ($file) {
+                $secret_base = fgets($file, 1024);
+                if ($secret_base !== false) {
+                    $secret_base = str_replace("\n", '', $secret_base);
+                    $secret_base = str_replace("\r", '', $secret_base);
+                    $secret_base = (int)$secret_base;
+                }
+            }
+            if ($secret_base == 0) {
+                echo 'Secret base is not set';
+                exit;
+            }
+            $secret_event_id = $secret_base + $event_id + 10000 * $event_id + 100000000 * ($event_id - 1);
+            if ($secret_event_id != $_REQUEST['event_id']) {
+                echo 'Invalid event';
+                exit;
+            }
+
+            $EM_Event = em_get_event($event_id);
+
+            if ($EM_Event->start()->getTimestamp() < time()) {
+                echo 'Event has already taken place';
+                exit;
+            }
+
+            $content = "<style>
+                h2 {
+                    font-size: 24px;
+                    font-family: Arial, sans-serif;
+                    margin-bottom: 18px;
+                }
+
+                .bookings-table-container {
+                    width: 100%;
+                    overflow-x: auto;
+                    margin: 20px 0;
+                }
+
+                .bookings-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-family: Arial, sans-serif;
+                    font-size: 14px;
+                    background-color: #fff;
+                }
+
+                .bookings-table th {
+                    background-color: #f5f5f5;
+                    color: #333;
+                    text-align: left;
+                    padding: 8px 12px;
+                    border-bottom: 2px solid #ddd;
+                }
+
+                .bookings-table td {
+                    padding: 8px 12px;
+                    border-bottom: 1px solid #eee;
+                }
+
+                .bookings-table tr:nth-child(even) {
+                    background-color: #fafafa;
+                }
+
+                .bookings-table tr:hover {
+                    background-color: #f1f1f1;
+                }
+
+                @media (max-width: 480px) {
+                    .myplugin-table {
+                        font-size: 12px;
+                    }
+                    .myplugin-table th,
+                    .myplugin-table td {
+                        padding: 6px 8px;
+                    }
+                }
+            </style>\n\n";
+
+            $event_date = date("U", $EM_Event->start()->getTimestamp());
+            $hidden_fields = array('user_email', 'dbem_phone', 'dbem_city', 'photo_use', 'personal_data', 'additional_emails');
+
+            $content .= "<h2>" . apply_filters('translate_text', $EM_Event->event_name, 'ru') . "</h2>\n";
+            $content .= "<div class=\"bookings-table-container\">\n";
+            $content .= "<table class=\"bookings-table\">\n<tr><th>ID</th><th>status</th><th>people</th><th>name</th><th>email</th><th>phone</th>";
+            $EM_Form = EM_Booking_Form::get_form($EM_Event);
+            foreach ($EM_Form->form_fields as $fieldid => $field) {
+                if (in_array($fieldid, $hidden_fields)) continue;
+                if ($field['type'] == 'html') { $hidden_fields[] = $fieldid; continue; }
+                $content .= "<th>" . $fieldid . "</th>";
+            }
+            $content .= "</tr>\n";
+            foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {
+                $content .= "<tr><td>" . $EM_Booking->booking_id . "</td>";
+                if (array_key_exists($EM_Booking->booking_status, $EM_Booking->status_array)) {
+                    $content .= "<td>" . $EM_Booking->status_array[$EM_Booking->booking_status] . "</td>";
+                } else {
+                    $content .= "<td>" . $EM_Booking->booking_status . "</td>";
+                }
+
+                $adults_num = 0;
+                $children_num = 0;
+                $names = array();
+                $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
+                foreach($EM_Booking->get_tickets_bookings()->tickets_bookings as $EM_Ticket_Booking) {
+                    $ticket_name = apply_filters('translate_text', $EM_Ticket_Booking->get_ticket()->ticket_name, 'ru');
+                    if ($ticket_name == 'Количество участников') {
+                        if (!empty($attendees_data[$EM_Ticket_Booking->ticket_id])) {
+                            $i = 0;
+                            foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
+                                $first_name = '';
+                                $last_name = '';
+                                foreach( $attendee_data as $field_label => $field_value) {
+                                    $label = apply_filters('translate_text', $field_label, 'ru');
+                                    if ($label == 'Имя (на английском)') {
+                                        $first_name = $field_value;
+                                    }
+                                    if ($label == 'Фамилия (на английском)') {
+                                        $last_name = $field_value;
+                                    }
+                                    if ($label == 'Дата рождения') {
+                                        $person['birthday'] = $field_value;
+                                        $birth_date = explode('/', $field_value);
+                                        if (count($birth_date) == 3) {
+                                            // get age from birthdate in DD/MM/YYYY format
+                                            $age = (date("md", date("U", mktime(0, 0, 0, $birth_date[1], $birth_date[0], $birth_date[2]))) > date("md", $event_date)
+                                                ? ((date("Y", $event_date) - $birth_date[2]) - 1)
+                                                : (date("Y", $event_date) - $birth_date[2]));
+
+                                            $person['age'] = $age;
+                                            if ($age >= 18) {
+                                                $adults_num++;
+                                            } else {
+                                                $children_num++;
+                                            }
+                                        }
+                                    }
+                                }
+                                $names[] = trim($first_name . ' ' . $last_name);
+                            }
+                        }
+                    }
+                }
+
+                if ($children_num > 0) {
+                    $content .= "<td>" . $adults_num . " + " . $children_num . "</td>";
+                } else {
+                    $content .= "<td>" . $adults_num . "</td>";
+                }
+
+                $EM_Person = $EM_Booking->get_person();
+                $content .= "<td>" . implode(', ', $names) . "</td>";
+
+                $emails = array($EM_Person->user_email);
+                if (array_key_exists('additional_emails', $EM_Booking->booking_meta['booking'])) {
+                    $additional_emails = preg_split('/[\s,]+/', $EM_Booking->booking_meta['booking']['additional_emails']);
+                    foreach ($additional_emails as $email) {
+                        if (!empty($email) && !in_array($email, $emails)) {
+                            $emails[] = $email;
+                        }
+                    }
+                }
+
+                $content .= "<td>" . implode(", ", $emails) . "</td>";
+                $content .= "<td>" . $EM_Person->phone . "</td>";
+                foreach ($EM_Form->form_fields as $fieldid => $field) {
+                    if (in_array($fieldid, $hidden_fields)) continue;
+                    $content .= "<td>";
+                    if (array_key_exists($fieldid, $EM_Booking->booking_meta['booking'])) {
+                        $value = $EM_Form->get_formatted_value($field, $EM_Booking->booking_meta['booking'][$fieldid]);
+                        if (is_string($value) && str_starts_with($value, '[:')) {
+                            $value = apply_filters('translate_text', $value, 'ru');
+                        }
+                        $content .= strval($value);
+                    }
+                    $content .= "</td>";
+                }
+                $content .= "</tr>\n";
+            }
+            $content .= "</table>\n</div>\n";
+            echo $content;
+            exit;
+        }
     }
 
     public static function booking_summary() {
@@ -567,7 +772,7 @@ class EM_Limmud_Booking {
     public static $vip_num;
     public static $promo_num;
     // calculate number of participants
-    public static function calculate_participants($EM_Booking) {
+    public static function calculate_participants($EM_Booking, $child_min_age=2, $adult_min_age=12) {
         self::$adult_num = 0;
         self::$child_num = 0;
         self::$toddler_num = 0;
@@ -616,10 +821,10 @@ class EM_Limmud_Booking {
                             continue;
                         }
 
-                        if ($age >= 12) {
+                        if ($age >= $adult_min_age) {
                             self::$adult_num++;
                         } else {
-                            if ($age >= 2) {
+                            if ($age >= $child_min_age) {
                                 self::$child_num++;
                             } else {
                                 self::$toddler_num++;
@@ -674,7 +879,15 @@ class EM_Limmud_Booking {
         }
 
         // calculate number of adult and child participants
-        self::calculate_participants($EM_Booking);
+        $adult_min_age = 12;
+        if ($EM_Booking->event_id == 28) {
+            // 2025 registration for Limmud Camp
+            $child_min_age = 5;
+        } else {
+            $child_min_age = 2;
+        }
+
+        self::calculate_participants($EM_Booking, $child_min_age, $adult_min_age);
 
         if (self::$adult_num + self::$child_num == 0) {
             return;
