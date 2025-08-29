@@ -212,9 +212,9 @@ class EM_Limmud_Booking {
     public static function template_redirect() {
         $event_bookings_page_id = get_option('dbem_event_bookings_page');
         if ($event_bookings_page_id != 0 && is_page($event_bookings_page_id)) {
-            $post = get_queried_object();
-            if (post_password_required($post)) {
-                echo get_the_password_form($post);
+            if (!is_user_logged_in()) {
+                $current_url = home_url( add_query_arg( null, null ) );
+                wp_redirect(wp_login_url($current_url));
                 exit;
             }
 
@@ -223,40 +223,20 @@ class EM_Limmud_Booking {
                 exit;
             }
 
-            $event_id = (int)$_REQUEST['event_id'] % 100;
-
-            $secret_base = 0;
-            $file = @fopen(WP_PLUGIN_DIR.'/events-manager-secrets/bookings.txt', 'r');
-            if ($file) {
-                $secret_base = fgets($file, 1024);
-                if ($secret_base !== false) {
-                    $secret_base = str_replace("\n", '', $secret_base);
-                    $secret_base = str_replace("\r", '', $secret_base);
-                    $secret_base = (int)$secret_base;
-                }
-            }
-            if ($secret_base == 0) {
-                echo 'Secret base is not set';
-                exit;
-            }
-            $secret_event_id = $secret_base + $event_id + 10000 * $event_id + 100000000 * ($event_id - 1);
-            if ($secret_event_id != $_REQUEST['event_id']) {
-                echo 'Invalid event';
-                exit;
-            }
-
+            $event_id = (int)$_REQUEST['event_id'];
             $EM_Event = em_get_event($event_id);
-
-            if ($EM_Event->start()->getTimestamp() < time()) {
-                echo 'Event has already taken place';
-                exit;
-            }
 
             $content = "<style>
                 h2 {
                     font-size: 24px;
                     font-family: Arial, sans-serif;
                     margin-bottom: 18px;
+                }
+
+                h3 {
+                    font-size: 18px;
+                    font-family: Arial, sans-serif;
+                    margin-bottom: 12px;
                 }
 
                 .bookings-table-container {
@@ -294,15 +274,39 @@ class EM_Limmud_Booking {
                     background-color: #f1f1f1;
                 }
 
-                @media (max-width: 480px) {
-                    .myplugin-table {
-                        font-size: 12px;
-                    }
-                    .myplugin-table th,
-                    .myplugin-table td {
-                        padding: 6px 8px;
-                    }
+                .summary-table {
+                    max-width: 60px;
+                    border-collapse: collapse;
+                    font-family: Arial, sans-serif;
+                    font-size: 14px;
+                    background-color: #fff;
                 }
+
+                .summary-table th {
+                    background-color: #f5f5f5;
+                    color: #333;
+                    text-align: left;
+                    padding: 8px 12px;
+                    border-bottom: 2px solid #ddd;
+                }
+
+                .summary-table td {
+                    padding: 8px 12px;
+                    border-bottom: 1px solid #eee;
+                }
+
+                .summary-table tr:first-child th:nth-child(2) {
+                    background-color: #eaeaea;
+                }
+
+                .summary-table tr:nth-child(2) th:nth-child(n+4) {
+                    background-color: #eaeaea;
+                }
+
+                .summary-table td:nth-child(n+4) {
+                    background-color: #f3f3f3;
+                }
+
             </style>\n\n";
 
             $event_date = date("U", $EM_Event->start()->getTimestamp());
@@ -318,12 +322,28 @@ class EM_Limmud_Booking {
                 $content .= "<th>" . $fieldid . "</th>";
             }
             $content .= "</tr>\n";
+
+            $bookings_total = 0;
+            $adults_total = 0;
+            $children_total = 0;
+            $bookings_approved_total = 0;
+            $adults_approved_total = 0;
+            $children_approved_total = 0;
+
             foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {
+                if ($EM_Booking->booking_status == 3) {  # Canceled
+                    continue;
+                }
                 $content .= "<tr><td>" . $EM_Booking->booking_id . "</td>";
                 if (array_key_exists($EM_Booking->booking_status, $EM_Booking->status_array)) {
                     $content .= "<td>" . $EM_Booking->status_array[$EM_Booking->booking_status] . "</td>";
                 } else {
                     $content .= "<td>" . $EM_Booking->booking_status . "</td>";
+                }
+
+                $bookings_total++;
+                if ($EM_Booking->booking_status == 1) {
+                    $bookings_approved_total++;
                 }
 
                 $adults_num = 0;
@@ -357,8 +377,16 @@ class EM_Limmud_Booking {
 
                                             $person['age'] = $age;
                                             if ($age >= 18) {
+                                                $adults_total++;
+                                                if ($EM_Booking->booking_status == 1) {
+                                                    $adults_approved_total++;
+                                                }
                                                 $adults_num++;
                                             } else {
+                                                $children_total++;
+                                                if ($EM_Booking->booking_status == 1) {
+                                                    $children_approved_total++;
+                                                }
                                                 $children_num++;
                                             }
                                         }
@@ -406,6 +434,14 @@ class EM_Limmud_Booking {
                 $content .= "</tr>\n";
             }
             $content .= "</table>\n</div>\n";
+
+            $content .= "<br><h3>Итого</h3>\n";
+            $content .= "<table class=\"summary-table\" style=\"max-width: 60em;\">\n";
+            $content .= "<tr><th colspan=\"3\">Заполнено</th><th colspan=\"3\">Оплачено</th></tr>\n";
+            $content .= "<tr><th>Регистрации</th><th>Взрослые</th><th>Дети</th><th>Регистрации</th><th>Взрослые</th><th>Дети</th></tr>\n";
+            $content .= "<tr><td>" . $bookings_total . "</td><td>" . $adults_total . "</td><td>" . $children_total . "</td><td>" . $bookings_approved_total . "</td><td>" . $adults_approved_total . "</td><td>" . $children_approved_total . "</td></tr>\n";
+            $content .= "</table>\n<br>";
+
             echo $content;
             exit;
         }
