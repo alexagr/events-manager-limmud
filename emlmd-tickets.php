@@ -17,10 +17,10 @@ class EM_Limmud_Tickets {
                 $waiting_list_data = explode("=", $waiting_list_str);
                 if ((count($waiting_list_data) != 2) || !is_numeric($waiting_list_data[1]))
                     continue;
-    
+
                 $key = $waiting_list_data[0];
                 $value = intval($waiting_list_data[1]);
-    
+
                 $waiting_list_limits[$key] = $value;
             }
         }
@@ -51,7 +51,7 @@ class EM_Limmud_Tickets {
                 }
             }
             array_push($keys, 'spaces');
-            
+
             foreach ($keys as $key) {
                 if (!array_key_exists($key, $summary))
                     $summary[$key] = array('limits'=>0, 'pending'=>0, 'partial'=>0, 'approved'=>0, 'not_fully_paid'=>0, 'waiting_list'=>0);
@@ -93,7 +93,7 @@ class EM_Limmud_Tickets {
                 }
             }
 
-            if (!$found) 
+            if (!$found)
                 $summary[$waiting_list_key] = array('limits'=>$waiting_list_value, 'pending'=>0, 'partial'=>0, 'approved'=>0, 'not_fully_paid'=>0, 'waiting_list'=>0);
         }
     }
@@ -113,7 +113,7 @@ class EM_Limmud_Tickets {
                         <th><?php esc_html_e('Booked Spaces','events-limmud'); ?></th>
                         <th><?php esc_html_e('Pending Spaces','events-limmud'); ?></th>
                     </tr>
-                </thead>    
+                </thead>
                 <?php
                     $col_count = 0;
                     foreach ($EM_Tickets->tickets as $EM_Ticket) {
@@ -164,7 +164,7 @@ class EM_Limmud_Tickets {
                         <th><?php esc_html_e('Limits','events-limmud'); ?></th>
                         <th>&nbsp;</th>
                     </tr>
-                </thead>    
+                </thead>
                 <?php
                     $col_count = 0;
                     foreach ($summary as $key => $value) {
@@ -201,6 +201,11 @@ class EM_Limmud_Tickets {
             </table>
             </div>
         </div>
+        <?php $event_bookings_url = get_permalink( get_option('dbem_event_bookings_page') ) . "?event_id=" . $EM_Event->event_id; ?>
+        <div class="wrap">
+            <h2><?php esc_html_e('Event Bookings','events-limmud'); ?></h2>
+            <a href="<?php echo $event_bookings_url; ?>"><?php echo esc_url($event_bookings_url); ?></a>
+        </div>
         <?php
         }
     }
@@ -226,9 +231,9 @@ class EM_Limmud_Tickets {
                 $events_summary[$EM_Event->event_id] = $summary;
             }
         ?>
-        <div class="wrap">            
+        <div class="wrap">
             <h2><?php esc_html_e('Summary','events-limmud'); ?></h2>
-            <div class="table-wrap">            
+            <div class="table-wrap">
             <table class="widefat">
                 <thead>
                     <tr valign="top">
@@ -242,7 +247,7 @@ class EM_Limmud_Tickets {
                         <th><?php esc_html_e('Limits','events-limmud'); ?></th>
                         <th>&nbsp;</th>
                     </tr>
-                </thead>    
+                </thead>
                 <?php
             $col_count = 0;
             foreach ($events as $EM_Event) {

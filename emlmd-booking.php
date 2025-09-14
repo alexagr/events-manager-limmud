@@ -225,6 +225,10 @@ class EM_Limmud_Booking {
 
             $event_id = (int)$_REQUEST['event_id'];
             $EM_Event = em_get_event($event_id);
+            if ($EM_Event->event_id != $event_id) {
+                echo 'Invalid event';
+                exit;
+            }
 
             $content = "<style>
                 h2 {
@@ -314,7 +318,7 @@ class EM_Limmud_Booking {
 
             $content .= "<h2>" . apply_filters('translate_text', $EM_Event->event_name, 'ru') . "</h2>\n";
             $content .= "<div class=\"bookings-table-container\">\n";
-            $content .= "<table class=\"bookings-table\">\n<tr><th>ID</th><th>status</th><th>people</th><th>name</th><th>email</th><th>phone</th>";
+            $content .= "<table class=\"bookings-table\">\n<tr><th>ID</th><th>status</th><th>people</th><th>name</th><th>email</th><th>phone</th><th>city</th>";
             $EM_Form = EM_Booking_Form::get_form($EM_Event);
             foreach ($EM_Form->form_fields as $fieldid => $field) {
                 if (in_array($fieldid, $hidden_fields)) continue;
@@ -358,6 +362,7 @@ class EM_Limmud_Booking {
                             foreach($attendees_data[$EM_Ticket_Booking->ticket_id] as $attendee_title => $attendee_data) {
                                 $first_name = '';
                                 $last_name = '';
+                                $age = 0;
                                 foreach( $attendee_data as $field_label => $field_value) {
                                     $label = apply_filters('translate_text', $field_label, 'ru');
                                     if ($label == 'Имя (на английском)') {
@@ -367,7 +372,6 @@ class EM_Limmud_Booking {
                                         $last_name = $field_value;
                                     }
                                     if ($label == 'Дата рождения') {
-                                        $person['birthday'] = $field_value;
                                         $birth_date = explode('/', $field_value);
                                         if (count($birth_date) == 3) {
                                             // get age from birthdate in DD/MM/YYYY format
@@ -375,7 +379,6 @@ class EM_Limmud_Booking {
                                                 ? ((date("Y", $event_date) - $birth_date[2]) - 1)
                                                 : (date("Y", $event_date) - $birth_date[2]));
 
-                                            $person['age'] = $age;
                                             if ($age >= 18) {
                                                 $adults_total++;
                                                 if ($EM_Booking->booking_status == 1) {
@@ -392,7 +395,11 @@ class EM_Limmud_Booking {
                                         }
                                     }
                                 }
-                                $names[] = trim($first_name . ' ' . $last_name);
+                                $full_name = trim($first_name . ' ' . $last_name);
+                                if ($age < 18) {
+                                    $full_name .= ' (' . strval($age) . ')';
+                                }
+                                $names[] = $full_name;
                             }
                         }
                     }
@@ -419,6 +426,7 @@ class EM_Limmud_Booking {
 
                 $content .= "<td>" . implode(", ", $emails) . "</td>";
                 $content .= "<td>" . $EM_Person->phone . "</td>";
+                $content .= "<td>" . $EM_Booking->booking_meta['registration']['dbem_city'] . "</td>";
                 foreach ($EM_Form->form_fields as $fieldid => $field) {
                     if (in_array($fieldid, $hidden_fields)) continue;
                     $content .= "<td>";
@@ -932,8 +940,8 @@ class EM_Limmud_Booking {
         self::$ticket_added = false;
         self::$ticket_error = false;
 
-        if ($EM_Booking->event_id == 22) {
-            // regular 2023 registration
+        if ($EM_Booking->event_id == 29) {
+            // regular 2025 registration
             /*
             $room_type = $EM_Booking->booking_meta['booking']['room_type'];
             if ($room_type == "N/A") {
@@ -943,31 +951,27 @@ class EM_Limmud_Booking {
 
             if (self::$child_num == 0) {
                 if (self::$adult_num == 1) {
-                    $room_ticket = 293;
+                    $room_ticket = 334;
                 } elseif (self::$adult_num == 2) {
-                    $room_ticket = 285;
+                    $room_ticket = 334;
                 } elseif (self::$adult_num == 3) {
-                    $room_ticket = 286;
+                    $room_ticket = 335;
                 } else {
                     return;
                 }
             } else if (self::$adult_num == 2) {
                 if (self::$child_num == 1) {
-                    $room_ticket = 287;
+                    $room_ticket = 337;
                 } elseif (self::$child_num == 2) {
-                    $room_ticket = 288;
-                } elseif (self::$child_num == 3) {
-                    $room_ticket = 289;
+                    $room_ticket = 339;
                 } else {
                     return;
                 }
             } else if (self::$adult_num == 1) {
                 if (self::$child_num == 1) {
-                    $room_ticket = 290;
+                    $room_ticket = 336;
                 } elseif (self::$child_num == 2) {
-                    $room_ticket = 291;
-                } elseif (self::$child_num == 3) {
-                    $room_ticket = 292;
+                    $room_ticket = 338;
                 } else {
                     return;
                 }
@@ -977,11 +981,20 @@ class EM_Limmud_Booking {
 
             self::add_ticket($EM_Booking, $room_ticket, 1);
 
+            /*
+            if (self::$toddler_num > 0) {
+                $toddler_ticket = 341;
+                self::add_ticket($EM_Booking, $toddler_ticket, self::$toddler_num);
+            }
+            */
+
+            /*
             $bus_needed = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['bus_needed'], 'ru');
             if (($bus_needed != 'не нужна') && ($bus_needed != 'N/A')) {
-                $bus_ticket = 294;
+                $bus_ticket = 343;
                 self::add_ticket($EM_Booking, $bus_ticket, self::$adult_num + self::$child_num);
             }
+            */
         }
 
         if ($EM_Booking->event_id == 23) {

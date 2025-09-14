@@ -296,8 +296,8 @@ class EM_Limmud_Misc {
         </p>
         <p>
             <label>Room Limit</label>
-            <input type="text" name="room_limit" size="30" value="<?php echo $room_limit; ?>" /><br />
-            <em>Defines limit for specific room types. Syntax: comma-separated list of adults_num+children_num=limit - e.g. &quot;3+0=15,2+3=8&quot;. Leave blank for no limit.</em>
+            <input type="text" name="room_limit" size="40" value="<?php echo $room_limit; ?>" /><br />
+            <em>Defines limit for specific room types. Syntax: comma-separated list of &quot;configuration1|configuration2|...=limit&quot;, where each &quot;configuration&quot; is &quot;adults_num+children_num&quot;. For example: &quot;3+0|2+1=15,2+3=8&quot;. Leave blank for no limit.</em>
         </p>
         <p>
             <label>Event Label</label>
@@ -451,17 +451,21 @@ class EM_Limmud_Misc {
             return true;
         }
 
-        // "room_limit" meta-data variable contains comma-separated list of <adult_num>+<child_num>=<limit>
-        // e.g. "3+0=15,3+2=8"
+        // "room_limit" meta-data variable contains comma-separated list of <configurations>=<limit>, where:
+        // <configurations> is <configuration1>|<configuration2>|...
+        // and each <configuration> is <adult_num>+<child_num>:
+        // e.g. "3+0|2+1=15,3+2=8"
         $room_limit_array = explode(",", $room_limit);
         foreach ($room_limit_array as $room_limit_str) {
             $room_limit_data = explode("=", $room_limit_str);
             if ((count($room_limit_data) != 2) || !is_numeric($room_limit_data[1]))
                 continue;
 
-            if ($room_limit_data[0] == $room_name) {
-                $value = intval($room_limit_data[1]);
+            $configurations_str = $room_limit_data[0];
+            $limit = intval($room_limit_data[1]);
 
+            $configurations = explode("|", $configurations_str);
+            if (in_array($room_name, $configurations)) {
                 $count = 0;
                 $EM_Bookings = $EM_Event->get_bookings();
                 foreach ($EM_Bookings->bookings as $EM_Booking) {
@@ -471,13 +475,14 @@ class EM_Limmud_Misc {
                         case 5:
                         case 7:
                             if (array_key_exists('room_type', $EM_Booking->booking_meta['booking'])) {
-                                $participation_type == 'с проживанием';
+                                $participation_type = 'с проживанием';
                                 if (array_key_exists('participation_type', $EM_Booking->booking_meta['booking'])) {
                                     $participation_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['participation_type'], 'ru');
                                 }
                                 if ($participation_type != 'без проживания') {
                                     EM_Limmud_Booking::calculate_participants($EM_Booking);
-                                    if (($adult_num == EM_Limmud_Booking::$adult_num) && ($child_num == EM_Limmud_Booking::$child_num)) {
+                                    $booking_room_name = strval(EM_Limmud_Booking::$adult_num) . '+' . strval(EM_Limmud_Booking::$child_num);
+                                    if (in_array($booking_room_name, $configurations)) {
                                         $count++;
                                     }
                                 }
@@ -486,7 +491,7 @@ class EM_Limmud_Misc {
                     }
                 }
 
-                return ($count < $value);
+                return ($count < $limit);
             }
         }
 
@@ -642,7 +647,8 @@ class EM_Limmud_Misc {
                 $EM_Booking->add_error(__('[:ru]Номера для ' . strval($adult_num) . ' взрослых и ' . strval($child_num) . ' детей закончились[:he]חדרים ל-' . strval($adult_num) . ' מבוגרים/ות ו-' . strval($child_num) . ' ילדים/ות נגמרו[:]'));
             } else {
                 if ($adult_num == 1) {
-                    $EM_Booking->add_error(__('[:ru]Одноместные номера закончились[:he]חדרים ליחידים נגמרו[:]'));
+                    # $EM_Booking->add_error(__('[:ru]Одноместные номера закончились[:he]חדרים ליחידים נגמרו[:]'));
+                    $EM_Booking->add_error(__('[:ru]Двухместные номера закончились[:he]חדרים זוגיים נגמרו[:]'));
                 } elseif ($adult_num == 2) {
                     $EM_Booking->add_error(__('[:ru]Двухместные номера закончились[:he]חדרים זוגיים נגמרו[:]'));
                 } elseif ($adult_num == 3) {
