@@ -287,6 +287,7 @@ class EM_Limmud_Misc {
         global $EM_Event;
         $waiting_list = get_post_meta($EM_Event->post_id, '_waiting_list', true);
         $room_limit = get_post_meta($EM_Event->post_id, '_room_limit', true);
+        $room_limit_behavior = get_post_meta($EM_Event->post_id, '_room_limit_behavior', true);
         $event_label = get_post_meta($EM_Event->post_id, '_event_label', true);
 		?>
         <p>
@@ -296,7 +297,7 @@ class EM_Limmud_Misc {
         </p>
         <p>
             <label>Room Limit</label>
-            <input type="text" name="room_limit" size="40" value="<?php echo $room_limit; ?>" /><br />
+            <input type="text" name="room_limit" size="40" value="<?php echo $room_limit; ?>" /> <select name="room_limit_behavior"><option value="decline" <?php if ($room_limit_behavior == 'decline') echo 'selected'; ?>>Decline submit</option><option value="waiting-list" <?php if ($room_limit_behavior != 'decline') echo 'selected'; ?>>Waiting list</option></select><br />
             <em>Defines limit for specific room types. Syntax: comma-separated list of &quot;configuration1|configuration2|...=limit&quot;, where each &quot;configuration&quot; is &quot;adults_num+children_num&quot;. For example: &quot;3+0|2+1=15,2+3=8&quot;. Leave blank for no limit.</em>
         </p>
         <p>
@@ -320,6 +321,12 @@ class EM_Limmud_Misc {
         }
         else {
             update_post_meta($EM_Event->post_id, '_room_limit', '');
+        }
+        if( !empty($_REQUEST['room_limit_behavior']) && (($_REQUEST['room_limit_behavior'] == 'decline') || ($_REQUEST['room_limit_behavior'] == 'waiting-list'))) {
+            update_post_meta($EM_Event->post_id, '_room_limit_behavior', $_REQUEST['room_limit_behavior']);
+        }
+        else {
+            update_post_meta($EM_Event->post_id, '_room_limit_behavior', 'decline');
         }
         if( !empty($_REQUEST['event_label']) && (strlen($_REQUEST['event_label']) > 3)) {
             update_post_meta($EM_Event->post_id, '_event_label', $_REQUEST['event_label']);
@@ -440,11 +447,14 @@ class EM_Limmud_Misc {
         }
     }
 
-    public static function check_room_limit($EM_Event, $adult_num, $child_num) {
+    public static function check_room_limit($EM_Booking) {
         // check that event has enough rooms of specific type available - as per "room_limit" meta-data variable
         // return status (bool)
 
-        $room_name = strval($adult_num) . '+' . strval($child_num);
+        $EM_Event = $EM_Booking->get_event();
+
+        EM_Limmud_Booking::calculate_participants($EM_Booking);
+        $room_name = strval(EM_Limmud_Booking::$adult_num) . '+' . strval(EM_Limmud_Booking::$child_num);
 
         $room_limit = get_post_meta($EM_Event->post_id, '_room_limit', true);
         if (empty($room_limit) || (strlen($room_limit) <= 3)) {
@@ -468,19 +478,22 @@ class EM_Limmud_Misc {
             if (in_array($room_name, $configurations)) {
                 $count = 0;
                 $EM_Bookings = $EM_Event->get_bookings();
-                foreach ($EM_Bookings->bookings as $EM_Booking) {
-                    switch ($EM_Booking->booking_status) {
+                foreach ($EM_Bookings->bookings as $EM_Other_Booking) {
+                    if ($EM_Other_Booking->booking_id == $EM_Booking->booking_id) {
+                        continue;
+                    }
+                    switch ($EM_Other_Booking->booking_status) {
                         case 0:
                         case 1:
                         case 5:
                         case 7:
-                            if (array_key_exists('room_type', $EM_Booking->booking_meta['booking'])) {
+                            if (array_key_exists('room_type', $EM_Other_Booking->booking_meta['booking'])) {
                                 $participation_type = 'с проживанием';
-                                if (array_key_exists('participation_type', $EM_Booking->booking_meta['booking'])) {
-                                    $participation_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['participation_type'], 'ru');
+                                if (array_key_exists('participation_type', $EM_Other_Booking->booking_meta['booking'])) {
+                                    $participation_type = apply_filters('translate_text', $EM_Other_Booking->booking_meta['booking']['participation_type'], 'ru');
                                 }
                                 if ($participation_type != 'без проживания') {
-                                    EM_Limmud_Booking::calculate_participants($EM_Booking);
+                                    EM_Limmud_Booking::calculate_participants($EM_Other_Booking);
                                     $booking_room_name = strval(EM_Limmud_Booking::$adult_num) . '+' . strval(EM_Limmud_Booking::$child_num);
                                     if (in_array($booking_room_name, $configurations)) {
                                         $count++;
@@ -639,25 +652,26 @@ class EM_Limmud_Misc {
             }
         }
 
-        EM_Limmud_Booking::calculate_participants($EM_Booking);
-        $adult_num = EM_Limmud_Booking::$adult_num;
-        $child_num = EM_Limmud_Booking::$child_num;
-        if (!self::check_room_limit($EM_Booking->get_event(), $adult_num, $child_num)) {
-            if ($child_num > 0) {
-                $EM_Booking->add_error(__('[:ru]Номера для ' . strval($adult_num) . ' взрослых и ' . strval($child_num) . ' детей закончились[:he]חדרים ל-' . strval($adult_num) . ' מבוגרים/ות ו-' . strval($child_num) . ' ילדים/ות נגמרו[:]'));
-            } else {
-                if ($adult_num == 1) {
-                    # $EM_Booking->add_error(__('[:ru]Одноместные номера закончились[:he]חדרים ליחידים נגמרו[:]'));
-                    $EM_Booking->add_error(__('[:ru]Двухместные номера закончились[:he]חדרים זוגיים נגמרו[:]'));
-                } elseif ($adult_num == 2) {
-                    $EM_Booking->add_error(__('[:ru]Двухместные номера закончились[:he]חדרים זוגיים נגמרו[:]'));
-                } elseif ($adult_num == 3) {
-                    $EM_Booking->add_error(__('[:ru]Трехместные номера закончились[:he]חדרים לשלוש/ה מבוגרים/ות נגמרו[:]'));
+        // check room limit is now done in emlmd-booking.php - and moves booking to waiting list
+        $room_limit_behavior = get_post_meta($EM_Booking->get_event()->post_id, '_room_limit_behavior', true);
+        if ($room_limit_behavior == 'decline') {
+            if (!self::check_room_limit($EM_Booking)) {
+                if (EM_Limmud_Booking::$child_num > 0) {
+                    $EM_Booking->add_error(__('[:ru]Номера для ' . strval(EM_Limmud_Booking::$adult_num) . ' взрослых и ' . strval(EM_Limmud_Booking::$child_num) . ' детей закончились[:he]חדרים ל-' . strval(EM_Limmud_Booking::$adult_num) . ' מבוגרים/ות ו-' . strval(EM_Limmud_Booking::$child_num) . ' ילדים/ות נגמרו[:]'));
                 } else {
-                    $EM_Booking->add_error(__('[:ru]Номера для ' . strval($adult_num) . ' взрослых закончились[:he]חדרים ל-' . strval($adult_num) . ' מבוגרים/ות נגמרו[:]'));
+                    if (EM_Limmud_Booking::$adult_num == 1) {
+                        # $EM_Booking->add_error(__('[:ru]Одноместные номера закончились[:he]חדרים ליחידים נגמרו[:]'));
+                        $EM_Booking->add_error(__('[:ru]Двухместные номера закончились[:he]חדרים זוגיים נגמרו[:]'));
+                    } elseif (EM_Limmud_Booking::$adult_num == 2) {
+                        $EM_Booking->add_error(__('[:ru]Двухместные номера закончились[:he]חדרים זוגיים נגמרו[:]'));
+                    } elseif (EM_Limmud_Booking::$adult_num == 3) {
+                        $EM_Booking->add_error(__('[:ru]Трехместные номера закончились[:he]חדרים לשלוש/ה מבוגרים/ות נגמרו[:]'));
+                    } else {
+                        $EM_Booking->add_error(__('[:ru]Номера для ' . strval(EM_Limmud_Booking::$adult_num) . ' взрослых закончились[:he]חדרים ל-' . strval(EM_Limmud_Booking::$adult_num) . ' מבוגרים/ות נגמרו[:]'));
+                    }
                 }
+                $result = false;
             }
-            $result = false;
         }
         return $result;
     }

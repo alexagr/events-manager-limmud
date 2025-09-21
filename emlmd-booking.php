@@ -1257,6 +1257,14 @@ class EM_Limmud_Booking {
             } else {
                 $EM_Event = $EM_Booking->get_event();
                 list($waiting_list_status, $waiting_list_limits) = EM_Limmud_Misc::check_waiting_list($EM_Event);
+
+                $room_limit_behavior = get_post_meta($EM_Event->post_id, '_room_limit_behavior', true);
+                if ($room_limit_behavior != 'decline') {
+                    if (!EM_Limmud_Misc::check_room_limit($EM_Booking)) {
+                        $waiting_list_status = 0;
+                    }
+                }
+
                 if ($waiting_list_status == 0) {
                     $EM_Booking->booking_status = 8;
                     $EM_Booking->add_note('Waiting List');
