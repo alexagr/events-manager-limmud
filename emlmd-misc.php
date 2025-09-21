@@ -630,6 +630,19 @@ class EM_Limmud_Misc {
             }
         }
 
+        // meal vouchers for no-accomodation in 2025
+        if (array_key_exists('meal_voucher', $EM_Booking->booking_meta['booking'])) {
+            $meal_voucher = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['meal_voucher'], 'ru');
+            if (preg_match('/(\d+)\s+ваучер/', $meal_voucher, $matches)) {
+                $voucher_count = intval($matches[1]);
+                EM_Limmud_Booking::calculate_participants($EM_Booking);
+                if ($voucher_count > 4 * (EM_Limmud_Booking::$adult_num + EM_Limmud_Booking::$child_num)) {
+                    $EM_Booking->add_error(__('[:ru]Максимальное количество ваучеров на питание - 4 на человека[:he]מספר הארוחות המקסימלי הוא 4 לכל משתתף/ת[:]'));
+                    $result = false;
+                }
+            }
+        }
+
         if (!array_key_exists('room_type', $EM_Booking->booking_meta['booking'])) {
             return $result;
         }
@@ -652,7 +665,7 @@ class EM_Limmud_Misc {
             }
         }
 
-        // check room limit is now done in emlmd-booking.php - and moves booking to waiting list
+        // check room limit is also done in emlmd-booking.php - and moves booking to waiting list
         $room_limit_behavior = get_post_meta($EM_Booking->get_event()->post_id, '_room_limit_behavior', true);
         if ($room_limit_behavior == 'decline') {
             if (!self::check_room_limit($EM_Booking)) {
@@ -673,6 +686,7 @@ class EM_Limmud_Misc {
                 $result = false;
             }
         }
+
         return $result;
     }
 
