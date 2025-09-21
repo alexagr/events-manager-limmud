@@ -1009,13 +1009,6 @@ class EM_Limmud_Booking {
 
         if ($EM_Booking->event_id == 29) {
             // regular 2025 registration
-            /*
-            $room_type = $EM_Booking->booking_meta['booking']['room_type'];
-            if ($room_type == "N/A") {
-                return;
-            }
-            */
-
             if (self::$child_num == 0) {
                 if (self::$adult_num == 1) {
                     $room_ticket = 334;
@@ -1031,6 +1024,8 @@ class EM_Limmud_Booking {
                     $room_ticket = 337;
                 } elseif (self::$child_num == 2) {
                     $room_ticket = 339;
+                } elseif (self::$child_num == 3) {
+                    $room_ticket = 340;
                 } else {
                     return;
                 }
@@ -1064,68 +1059,67 @@ class EM_Limmud_Booking {
             */
         }
 
-        if ($EM_Booking->event_id == 23) {
-            // no accomodation 2023 registration
+        if ($EM_Booking->event_id == 30) {
+            // no accomodation 2025 registration
             $ticket_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['ticket_type'], 'ru');
             $tickets_num = self::$adult_num + self::$child_num;
             if ($tickets_num > 0) {
-                if ($ticket_type == 'все дни') {
-                    self::add_ticket($EM_Booking, 296, $tickets_num);
+                if (str_contains($ticket_type, 'все дни')) {
+                    self::add_ticket($EM_Booking, 344, $tickets_num);
                 } else {
-                    self::add_ticket($EM_Booking, 297, $tickets_num);
+                    self::add_ticket($EM_Booking, 345, $tickets_num);
                 }
                 /*
                 // last day - ticket w/o meal
                 self::add_ticket($EM_Booking, 283, $tickets_num);
                 */
             }
+
+            $meal_voucher = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['meal_voucher'], 'ru');
+            if (preg_match('/(\d+)\s+ваучер/', $meal_voucher, $matches)) {
+                $voucher_count = intval($matches[1]);
+                if ($voucher_count > 0) {
+                    self::add_ticket($EM_Booking, 346, $voucher_count);
+                }
+            }
         }
 
-        if ($EM_Booking->event_id == 24) {
-            // 2023 registration for volunteers and presenters
+        if ($EM_Booking->event_id == 31) {
+            // 2025 registration for volunteers and presenters
             $participation_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['participation_type'], 'ru');
-            $discount_promo_ticket = 0;
             if ($participation_type == 'с проживанием') {
                 /*
                 $room_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['room_type'], 'ru');
                 */
-                $discount_ticket = 309;
-                $discount_organizer_ticket = 316;
-                $discount_vip_ticket = 0;
+                $discount_50_ticket = 355;
+                $discount_70_ticket = 357;
+                $discount_100_ticket = 363;
                 if (self::$child_num == 0) {
-                    if (self::$adult_num == 1) {
-                        $room_ticket = 307;
-                        $discount_ticket = 0;
-                        $discount_organizer_ticket = 0;
-                        $discount_vip_ticket = 320;
-                    } elseif (self::$adult_num == 2) {
-                        $room_ticket = 299;
-                        $discount_vip_ticket = 318;
+                    if (self::$adult_num <= 2) {
+                        $room_ticket = 348;
                     } elseif (self::$adult_num == 3) {
-                        $room_ticket = 300;
-                        $discount_ticket = 310;
-                        $discount_organizer_ticket = 317;
-                        $discount_vip_ticket = 319;
+                        $room_ticket = 349;
+                        $discount_50_ticket = 356;
+                        $discount_70_ticket = 358;
+                        $discount_100_ticket = 364;
                     } else {
                         return;
                     }
                 } else if (self::$adult_num == 2) {
                     if (self::$child_num == 1) {
-                        $room_ticket = 301;
+                        $room_ticket = 351;
                     } elseif (self::$child_num == 2) {
-                        $room_ticket = 302;
+                        $room_ticket = 353;
                     } elseif (self::$child_num == 3) {
-                        $room_ticket = 303;
+                        $room_ticket = 354;
                     } else {
                         return;
                     }
                 } else if (self::$adult_num == 1) {
                     if (self::$child_num == 1) {
-                        $room_ticket = 304;
+                        $room_ticket = 350;
                     } elseif (self::$child_num == 2) {
-                        $room_ticket = 305;
-                    } elseif (self::$child_num == 3) {
-                        $room_ticket = 306;
+                        $room_ticket = 352;
                     } else {
                         return;
                     }
@@ -1135,53 +1129,58 @@ class EM_Limmud_Booking {
 
                 self::add_ticket($EM_Booking, $room_ticket, 1);
 
+                /*
                 $bus_needed = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['bus_needed'], 'ru');
                 if (($bus_needed != 'не нужна') && ($bus_needed != 'N/A')) {
                     $bus_ticket = 308;
                     self::add_ticket($EM_Booking, $bus_ticket, self::$adult_num + self::$child_num);
                 }
+                */
             } else {
                 $ticket_days = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['ticket_days'], 'ru');
-                $no_accomodation_ticket = 312;
-                $discount_ticket = 314;
-                $discount_organizer_ticket = 0;
-                $discount_vip_ticket = 321;
+                if (str_contains($ticket_type, 'три дня')) {
+                    $no_accomodation_ticket = 359;
+                    $discount_50_ticket = 361;
+                    $discount_70_ticket = 365;
+                    $discount_100_ticket = 0;
+                } else {
+                    $no_accomodation_ticket = 360;
+                    $discount_50_ticket = 362;
+                    $discount_70_ticket = 0;
+                    $discount_100_ticket = 0;
+                }
+
                 $tickets_num = self::$adult_num + self::$child_num;
                 if ($tickets_num > 0) {
-                    if ($ticket_days != 'три дня') {
-                        $no_accomodation_ticket = 313;
-                        $discount_ticket = 315;
-                        $discount_organizer_ticket = 0;
-                        $discount_vip_ticket = 315;
-                    }
                     self::add_ticket($EM_Booking, $no_accomodation_ticket, $tickets_num);
                 }
             }
 
             $discount_num = self::$volunteer_num + self::$presenter_num;
-            if (($discount_num > 0) && ($discount_ticket > 0)) {
-                self::add_ticket($EM_Booking, $discount_ticket, $discount_num);
+            if (($discount_num > 0) && ($discount_50_ticket > 0)) {
+                self::add_ticket($EM_Booking, $discount_50_ticket, $discount_num);
             }
-            if ((self::$organizer_num > 0) && ($discount_organizer_ticket > 0)) {
-                self::add_ticket($EM_Booking, $discount_organizer_ticket, self::$organizer_num);
+            if ((self::$organizer_num > 0) && ($discount_70_ticket > 0)) {
+                self::add_ticket($EM_Booking, $discount_70_ticket, self::$organizer_num);
             }
-            if ((self::$vip_num > 0) && ($discount_vip_ticket > 0)) {
-                self::add_ticket($EM_Booking, $discount_vip_ticket, self::$vip_num);
+            if ((self::$vip_num > 0) && ($discount_100_ticket > 0)) {
+                self::add_ticket($EM_Booking, $discount_100_ticket, self::$vip_num);
             }
+            /*
             if ((self::$promo_num > 0) && ($discount_promo_ticket > 0)) {
                 self::add_ticket($EM_Booking, $discount_promo_ticket, self::$promo_num);
             }
+            */
 
+            /*
             $bus_needed = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['bus_needed'], 'ru');
             if (($bus_needed != 'не нужна') && ($bus_needed != 'N/A')) {
                 $bus_ticket = 308;
                 $discount_bus_ticket = 311;
-                /*
                 if (str_contains($bus_needed, 'Хайфа')) {
                     $bus_ticket = 266;
                     $discount_bus_ticket = 270;
                 }
-                */
 
                 self::add_ticket($EM_Booking, $bus_ticket, self::$adult_num + self::$child_num);
 
@@ -1190,6 +1189,7 @@ class EM_Limmud_Booking {
                     self::add_ticket($EM_Booking, $discount_bus_ticket, $discount_num);
                 }
             }
+            */
         }
 
         if ($EM_Booking->event_id == 25) {

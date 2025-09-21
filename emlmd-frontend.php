@@ -17,6 +17,7 @@ class EM_Limmud_Frontend {
         var ROOM_TRIPLE;
         var ROOM_FAMILY_2_1;
         var ROOM_FAMILY_2_2;
+        var ROOM_FAMILY_2_3;
         var ROOM_FAMILY_1_1;
         var ROOM_FAMILY_1_2;
         var ROOM_INVALID;
@@ -38,9 +39,10 @@ class EM_Limmud_Frontend {
                 ROOM_TRIPLE = roomType[0].options[1].text;
                 ROOM_FAMILY_2_1 = roomType[0].options[2].text;
                 ROOM_FAMILY_2_2 = roomType[0].options[3].text;
-                ROOM_FAMILY_1_1 = roomType[0].options[4].text;
-                ROOM_FAMILY_1_2 = roomType[0].options[5].text;
-                ROOM_INVALID = roomType[0].options[6].text;
+                ROOM_FAMILY_2_3 = roomType[0].options[4].text;
+                ROOM_FAMILY_1_1 = roomType[0].options[5].text;
+                ROOM_FAMILY_1_2 = roomType[0].options[6].text;
+                ROOM_INVALID = roomType[0].options[7].text;
             }
 
             var busNeeded = document.getElementsByName("bus_needed");
@@ -175,7 +177,7 @@ class EM_Limmud_Frontend {
                     registration = "no-accomodation";
                     participation_type = "no-accomodation";
                 } else {
-                    els = document.getElementsByName("em_tickets[327][spaces]");
+                    els = document.getElementsByName("em_tickets[347][spaces]");
                     if (els.length > 0) {
                         registration = "volunteers";
                     } else {
@@ -321,6 +323,8 @@ class EM_Limmud_Frontend {
                         updateComboBox("room_type", [ROOM_FAMILY_2_1]);
                     } else if ((adults == 2) && (kids == 2)) {
                         updateComboBox("room_type", [ROOM_FAMILY_2_2]);
+                    } else if ((adults == 2) && (kids == 3)) {
+                        updateComboBox("room_type", [ROOM_FAMILY_2_3]);
                     } else if ((adults == 1) && (kids == 1)) {
                         updateComboBox("room_type", [ROOM_FAMILY_1_1]);
                     } else if ((adults == 1) && (kids == 2)) {
@@ -357,15 +361,19 @@ class EM_Limmud_Frontend {
                 }
                 displayElementByName("room_info_label", display_room_info);
 
+                /*
                 displayField("bus_needed", true);
                 updateComboBox("bus_needed", [BUS_NO, BUS_TEL_AVIV]);
+                */
                 displayField("ticket_days", false);
                 updateComboBox("ticket_days", [TICKET_INVALID]);
             } else {
                 displayField("room_type", false);
                 updateComboBox("room_type", [ROOM_INVALID]);
+                /*
                 displayField("bus_needed", false);
                 updateComboBox("bus_needed", [BUS_INVALID]);
+                */
                 displayField("ticket_days", true);
                 updateComboBox("ticket_days", [TICKET_3_DAYS, TICKET_1_DAY]);
             }
