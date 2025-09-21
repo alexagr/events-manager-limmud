@@ -334,13 +334,22 @@ class EM_Limmud_Booking {
             $adults_approved_total = 0;
             $children_approved_total = 0;
 
+            $room_types = array();
+
             foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {
                 if ($EM_Booking->booking_status == 3) {  # Canceled
                     continue;
                 }
                 $content .= "<tr><td>" . $EM_Booking->booking_id . "</td>";
                 if (array_key_exists($EM_Booking->booking_status, $EM_Booking->status_array)) {
-                    $content .= "<td>" . $EM_Booking->status_array[$EM_Booking->booking_status] . "</td>";
+                    $booking_status = $EM_Booking->status_array[$EM_Booking->booking_status];
+                    if (($EM_Booking->booking_status == 5) || ($EM_Booking->booking_status == 7)) {
+                        $total_paid = (int)$EM_Booking->get_total_paid();
+                        if ($total_paid > 0) {
+                            $booking_status .= " (paid " . $total_paid . " of " . $EM_Booking->get_price() . ")";
+                        }
+                    }
+                    $content .= "<td>" . $booking_status . "</td>";
                 } else {
                     $content .= "<td>" . $EM_Booking->booking_status . "</td>";
                 }
@@ -396,9 +405,9 @@ class EM_Limmud_Booking {
                                     }
                                 }
                                 $full_name = trim($first_name . ' ' . $last_name);
-                                if ($age < 18) {
+                                // if ($age < 18) {
                                     $full_name .= ' (' . strval($age) . ')';
-                                }
+                                // }
                                 $names[] = $full_name;
                             }
                         }
@@ -409,6 +418,21 @@ class EM_Limmud_Booking {
                     $content .= "<td>" . $adults_num . " + " . $children_num . "</td>";
                 } else {
                     $content .= "<td>" . $adults_num . "</td>";
+                }
+
+                $room_type = $adults_num . '+' . $children_num;
+                if ($EM_Booking->booking_status == 1) {
+                    if (array_key_exists($room_type, $room_types)) {
+                        $room_types[$room_type]['approved'] += 1;
+                    } else {
+                        $room_types[$room_type] = ['approved' => 1, 'pending' => 0];
+                    }
+                } else {
+                    if (array_key_exists($room_type, $room_types)) {
+                        $room_types[$room_type]['pending'] += 1;
+                    } else {
+                        $room_types[$room_type] = ['approved' => 0, 'pending' => 1];
+                    }
                 }
 
                 $EM_Person = $EM_Booking->get_person();
@@ -449,6 +473,49 @@ class EM_Limmud_Booking {
             $content .= "<tr><th>Регистрации</th><th>Взрослые</th><th>Дети</th><th>Регистрации</th><th>Взрослые</th><th>Дети</th></tr>\n";
             $content .= "<tr><td>" . $bookings_total . "</td><td>" . $adults_total . "</td><td>" . $children_total . "</td><td>" . $bookings_approved_total . "</td><td>" . $adults_approved_total . "</td><td>" . $children_approved_total . "</td></tr>\n";
             $content .= "</table>\n<br>";
+
+            if (!empty($room_types)) {
+                ksort($room_types);
+                $content .= "<h3>Конфигурации заказов</h3>\n";
+                $content .= "<table class=\"summary-table\" style=\"max-width: 30em;\">\n";
+                $content .= "<tr><th>Конфигурация</th><th>Заполнено</th><th>Оплачено</th></tr>\n";
+                foreach ($room_types as $room_type => $counts) {
+                    $content .= "<tr><td>" . $room_type . "</td><td>" . ($counts['approved'] + $counts['pending']) . "</td><td>" . $counts['approved'] . "</td></tr>\n";
+                }
+                $content .= "</table>\n<br>";
+            }
+
+            $room_limit = get_post_meta($EM_Event->post_id, '_room_limit', true);
+            $room_limits = array();
+            if (!empty($room_limit) && (strlen($room_limit) > 3)) {
+                $room_limit_array = explode(",", $room_limit);
+                foreach ($room_limit_array as $room_limit_str) {
+                    $room_limit_data = explode("=", $room_limit_str);
+                    if ((count($room_limit_data) != 2) || !is_numeric($room_limit_data[1]))
+                        continue;
+
+                    $room_limit_type = $room_limit_data[0];
+                    $room_limits[$room_limit_type] = ['approved' => 0, 'pending' => 0, 'limit' => (int)$room_limit_data[1]];
+
+                    $value = 0;
+                    foreach ($room_types as $room_type => $counts) {
+                        if (strpos($room_limit_type, $room_type) !== false) {
+                            $room_limits[$room_limit_type]['approved'] += $counts['approved'];
+                            $room_limits[$room_limit_type]['pending'] += $counts['pending'];
+                        }
+                    }
+                }
+            }
+
+            if (!empty($room_limits)) {
+                $content .= "<h3>Ограничения по комнатам</h3>\n";
+                $content .= "<table class=\"summary-table\" style=\"max-width: 30em;\">\n";
+                $content .= "<tr><th>Тип комнаты</th><th>Заполнено</th><th>Оплачено</th><th>Лимит</th></tr>\n";
+                foreach ($room_limits as $room_type => $counts) {
+                    $content .= "<tr><td>" . $room_type . "</td><td>" . ($counts['approved'] + $counts['pending']) . "</td><td>" . $counts['approved'] . "</td><td>" . $counts['limit'] . "</td></tr>\n";
+                }
+                $content .= "</table>\n<br>";
+            }
 
             echo $content;
             exit;
