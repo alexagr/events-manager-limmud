@@ -372,6 +372,7 @@ class EM_Limmud_Booking {
                                 $first_name = '';
                                 $last_name = '';
                                 $age = 0;
+                                $role = '';
                                 foreach( $attendee_data as $field_label => $field_value) {
                                     $label = apply_filters('translate_text', $field_label, 'ru');
                                     if ($label == 'Имя (на английском)') {
@@ -403,8 +404,18 @@ class EM_Limmud_Booking {
                                             }
                                         }
                                     }
+                                    if ($label == 'Участвует в качестве') {
+                                        $role = apply_filters('translate_text', $field_value, 'ru');
+                                    }
                                 }
                                 $full_name = trim($first_name . ' ' . $last_name);
+                                if ($role == 'волонтер') {
+                                    $full_name .= ' [V]';
+                                } elseif ($role == 'презентер') {
+                                    $full_name .= ' [P]';
+                                } elseif ($role == 'организатор') {
+                                    $full_name .= ' [O]';
+                                }
                                 // if ($age < 18) {
                                     $full_name .= ' (' . strval($age) . ')';
                                 // }
@@ -1137,8 +1148,11 @@ class EM_Limmud_Booking {
                 }
                 */
             } else {
+                // we have meal vouchers in 2025 - so let's not fill up no-accomodation option
+                return;
+
                 $ticket_days = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['ticket_days'], 'ru');
-                if (str_contains($ticket_type, 'три дня')) {
+                if (str_contains($ticket_days, 'три дня')) {
                     $no_accomodation_ticket = 359;
                     $discount_50_ticket = 361;
                     $discount_70_ticket = 365;

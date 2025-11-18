@@ -633,11 +633,22 @@ class EM_Limmud_Misc {
         // meal vouchers for no-accomodation in 2025
         if (array_key_exists('meal_voucher', $EM_Booking->booking_meta['booking'])) {
             $meal_voucher = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['meal_voucher'], 'ru');
+            $max_vouchers_per_person = 4;
+            if (array_key_exists('ticket_type', $EM_Booking->booking_meta['booking'])) {
+                $ticket_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['ticket_type'], 'ru');
+                if ($ticket_type == 'все дни') {
+                    $max_vouchers_per_person = 4;
+                } elseif ($ticket_type == 'пятница') {
+                    $max_vouchers_per_person = 2;
+                } else {
+                    $max_vouchers_per_person = 1;
+                }
+            }
             if (preg_match('/(\d+)\s+ваучер/', $meal_voucher, $matches)) {
                 $voucher_count = intval($matches[1]);
                 EM_Limmud_Booking::calculate_participants($EM_Booking);
-                if ($voucher_count > 4 * (EM_Limmud_Booking::$adult_num + EM_Limmud_Booking::$child_num)) {
-                    $EM_Booking->add_error(__('[:ru]Максимальное количество ваучеров на питание - 4 на человека[:he]מספר הארוחות המקסימלי הוא 4 לכל משתתף/ת[:]'));
+                if ($voucher_count > $max_vouchers_per_person * (EM_Limmud_Booking::$adult_num + EM_Limmud_Booking::$child_num)) {
+                    $EM_Booking->add_error(__('[:ru]Максимальное количество ваучеров на питание - ' . $max_vouchers_per_person . ' на человека[:he]מספר הארוחות המקסימלי הוא ' . $max_vouchers_per_person . ' לכל משתתף/ת[:]'));
                     $result = false;
                 }
             }
