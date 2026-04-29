@@ -212,7 +212,7 @@ class EM_Limmud_Misc {
         unset($columns['price']);
 
         // change ticket type and spaces titles
-        // $columns['type'] = "<h5>[:ru]Количество участников[:he]כמות משתתפים/ות[:]</h5>";
+        // $columns['type'] = "<h5>[:ru]Количество участников[:he]מספר משתתפים/ות[:]</h5>";
         // $columns['spaces'] = "<h5>#</h5>";
         $columns['type'] = "";
         $columns['spaces'] = "";
@@ -636,9 +636,9 @@ class EM_Limmud_Misc {
             $max_vouchers_per_person = 4;
             if (array_key_exists('ticket_type', $EM_Booking->booking_meta['booking'])) {
                 $ticket_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['ticket_type'], 'ru');
-                if ($ticket_type == 'все дни') {
+                if (str_contains($ticket_type, 'все дни')) {
                     $max_vouchers_per_person = 4;
-                } elseif ($ticket_type == 'пятница') {
+                } elseif (str_contains($ticket_type, 'пятница')) {
                     $max_vouchers_per_person = 2;
                 } else {
                     $max_vouchers_per_person = 1;
