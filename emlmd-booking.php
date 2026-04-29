@@ -658,20 +658,25 @@ class EM_Limmud_Booking {
         self::calculate_participants($EM_Booking);
         if ((self::$adult_num > 0) || (self::$child_num > 0)) {
             ?>
-            <tr><th colspan="2"><h4>[:en]Number of participants[:ru]Количество участников[:he]כמות משתתפים[:]</h4></th></tr>
+            <tr><th colspan="2"><h4>[:en]Number of participants[:ru]Количество участников[:he]מספר משתתפים[:]</h4></th></tr>
             <tr>
-                <th>[:en]Adults and teenagers (12 years and older)[:ru]Взрослые и подростки (от 12 лет и старше)[:he]מבוגרים וילדים בני 12 ומעלה[:]</th>
+                <th>[:en]Adults and teenagers (<?php echo self::$adult_min_age ?> years and older)[:ru]Взрослые и подростки (от <?php echo self::$adult_min_age ?> лет и старше)[:he]מבוגרים ובני נוער (מגיל <?php echo self::$adult_min_age ?> ומעלה)[:]</th>
                 <td><?php echo strval(self::$adult_num) ?></td>
             </tr>
             <tr>
-                <th>[:en]Children (from 2 to 11 years)[:ru]Дети от 2 до 11 лет[:he]ילדים מגיל 2 עד 11 (כולל)[:]</th>
+                <th>[:en]Children (from <?php echo self::$child_min_age ?> to <?php echo self::$adult_min_age - 1 ?> years)[:ru]Дети (от <?php echo self::$child_min_age ?> до <?php echo self::$adult_min_age - 1 ?> лет)[:he]ילדים (מגיל <?php echo self::$child_min_age ?> עד <?php echo self::$adult_min_age - 1 ?>)[:]</th>
                 <td><?php echo strval(self::$child_num) ?></td>
             </tr>
             <?php
             if (self::$toddler_num > 0) {
+                if (self::$child_min_age <= 2) {
+                    $toddler_text = '[:en]Toddlers (up to ' . self::$child_min_age . ' years)[:ru]Младенцы (до ' . self::$child_min_age . ' лет)[:he]תינוקות (עד גיל ' . self::$child_min_age . ')[:]';
+                } else {
+                    $toddler_text = '[:en]Kids (up to ' . self::$child_min_age . ' years)[:ru]Малыши (до ' . self::$child_min_age . ' лет)[:he]קטנטנים (עד גיל ' . self::$child_min_age . ')[:]';
+                }
                 ?>
                 <tr>
-                    <th>[:en]Toddlers (up to 2 years)[:ru]Младенцы до 2 лет[:he]תינוקות עד גיל 2[:]</th>
+                    <th><?php echo $toddler_text ?></th>
                     <td><?php echo strval(self::$toddler_num) ?></td>
                 </tr>
                 <?php
@@ -893,8 +898,12 @@ class EM_Limmud_Booking {
     public static $organizer_num;
     public static $vip_num;
     public static $promo_num;
+
+    public static $child_min_age;
+    public static $adult_min_age;
+
     // calculate number of participants
-    public static function calculate_participants($EM_Booking, $child_min_age=2, $adult_min_age=12) {
+    public static function calculate_participants($EM_Booking) {
         self::$adult_num = 0;
         self::$child_num = 0;
         self::$toddler_num = 0;
@@ -904,6 +913,16 @@ class EM_Limmud_Booking {
         self::$organizer_num = 0;
         self::$vip_num = 0;
         self::$promo_num = 0;
+
+        // calculate number of adult and child participants
+        self::$child_min_age = 2;
+        self::$adult_min_age = 12;
+        if ($EM_Booking->event_id == 32) {
+            // 2026 registration for Limmud Camp
+            self::$child_min_age = 5;
+            self::$adult_min_age = 18;
+        }
+
         $last_name = '';
         $event_date = date("U", $EM_Booking->get_event()->start()->getTimestamp());
         $attendees_data = EM_Attendees_Form::get_booking_attendees($EM_Booking);
@@ -943,10 +962,10 @@ class EM_Limmud_Booking {
                             continue;
                         }
 
-                        if ($age >= $adult_min_age) {
+                        if ($age >= self::$adult_min_age) {
                             self::$adult_num++;
                         } else {
-                            if ($age >= $child_min_age) {
+                            if ($age >= self::$child_min_age) {
                                 self::$child_num++;
                             } else {
                                 self::$toddler_num++;
@@ -1000,16 +1019,7 @@ class EM_Limmud_Booking {
             }
         }
 
-        // calculate number of adult and child participants
-        $adult_min_age = 12;
-        if ($EM_Booking->event_id == 28) {
-            // 2025 registration for Limmud Camp
-            $child_min_age = 5;
-        } else {
-            $child_min_age = 2;
-        }
-
-        self::calculate_participants($EM_Booking, $child_min_age, $adult_min_age);
+        self::calculate_participants($EM_Booking);
 
         if (self::$adult_num + self::$child_num == 0) {
             return;
@@ -1246,6 +1256,55 @@ class EM_Limmud_Booking {
                 if ($transport == 'да, заинтересован') {
                     self::add_ticket($EM_Booking, 332, $tickets_num);
                 }
+            }
+        }
+
+        if ($EM_Booking->event_id == 32) {
+            // 2026 registration for Limmud Camp
+            $adult_ticket_id = 370;
+            $child_ticket_id = 371;
+
+            $participation_type = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['participation_type'], 'ru');
+            if ($participation_type == 'с проживанием') {
+                // we have "early bird" pricing before 2026-05-16
+                if (date("U") <= strtotime("2026-05-16")) {
+                    $adult_ticket_id = 368;
+                    $child_ticket_id = 369;
+                }
+            } else {
+                $adult_ticket_id = 372;
+                $child_ticket_id = 373;
+            }
+
+            $discount_ticket_id = 374;
+            $discount_ticket_num = 0;
+            $comment = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['comment'], 'ru');
+            # if comment contains #discount, add discount ticket(s)
+            if (str_contains($comment, '#discount')) {
+                if ($adult_ticket_id == 370) {
+                    # use early bird tickets for "last minute" volunteers
+                    $adult_ticket_id = 368;
+                    $child_ticket_id = 369;
+                }
+                if ($adult_ticket_id == 368) {
+                    $discount_ticket_num = 1;
+                    if (preg_match('/#discount-(\d+)/', $comment, $matches)) {
+                        $discount_num = intval($matches[1]);
+                        if ($discount_num > 0) {
+                            $discount_ticket_num = min($discount_num, self::$adult_num);
+                        }
+                    }
+                }
+            }
+
+            if (self::$adult_num > 0) {
+                self::add_ticket($EM_Booking, $adult_ticket_id, self::$adult_num);
+            }
+            if (self::$child_num > 0) {
+                self::add_ticket($EM_Booking, $child_ticket_id, self::$child_num);
+            }
+            if ($discount_ticket_num > 0) {
+                self::add_ticket($EM_Booking, $discount_ticket_id, $discount_ticket_num);
             }
         }
 

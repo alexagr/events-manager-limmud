@@ -159,7 +159,7 @@ class EM_Limmud_Emails {
         if ($lang == 'ru') {
             $replace = "<u>КОЛИЧЕСТВО УЧАСТНИКОВ</u>\n\n";
         } else {
-            $replace = "<u>כמות משתתפים</u>\n\n";
+            $replace = "<u>מספר משתתפים</u>\n\n";
         }
         foreach ($participants as $price => $descr) {
             $replace = $replace . $descr;

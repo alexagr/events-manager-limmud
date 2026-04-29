@@ -135,7 +135,7 @@ class EM_Limmud_Frontend {
             var registration = "";
             var participation_type = "";
 
-            var d1 = new Date("2025-12-04");
+            var d1 = new Date("2026-12-04");
             var els = document.getElementsByClassName("em-attendee-fieldset");
             for (var i = 0; i < els.length; i++) {
                 var inputs = els[i].querySelectorAll(".input-date-string");
@@ -314,7 +314,7 @@ class EM_Limmud_Frontend {
                         if (language == "ru") {
                             room_error = "Количество участников не соответствует типу номера";
                         } else {
-                            room_error = "כמות המשתתפים/ות לא תואמת את סוג החדר";
+                            room_error = "מספר משתתפים/ות לא תואם את סוג החדר";
                         }
                         updateComboBox("room_type", [ROOM_DOUBLE]);
                     }
