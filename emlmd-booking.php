@@ -335,6 +335,16 @@ class EM_Limmud_Booking {
             $children_approved_total = 0;
 
             $room_types = array();
+            $children_ages = array();
+            $adults_ages = array(
+                '18-24' => ['approved' => 0, 'pending' => 0],
+                '25-34' => ['approved' => 0, 'pending' => 0],
+                '35-44' => ['approved' => 0, 'pending' => 0],
+                '45-54' => ['approved' => 0, 'pending' => 0],
+                '55-64' => ['approved' => 0, 'pending' => 0],
+                '65-74' => ['approved' => 0, 'pending' => 0],
+                '75+'   => ['approved' => 0, 'pending' => 0],
+            );
 
             foreach ($EM_Event->get_bookings()->bookings as $EM_Booking) {
                 if ($EM_Booking->booking_status == 3) {  # Canceled
@@ -395,12 +405,32 @@ class EM_Limmud_Booking {
                                                     $adults_approved_total++;
                                                 }
                                                 $adults_num++;
+                                                if ($age >= 75) { $age_group = '75+'; }
+                                                elseif ($age >= 65) { $age_group = '65-74'; }
+                                                elseif ($age >= 55) { $age_group = '55-64'; }
+                                                elseif ($age >= 45) { $age_group = '45-54'; }
+                                                elseif ($age >= 35) { $age_group = '35-44'; }
+                                                elseif ($age >= 25) { $age_group = '25-34'; }
+                                                else { $age_group = '18-24'; }
+                                                if ($EM_Booking->booking_status == 1) {
+                                                    $adults_ages[$age_group]['approved']++;
+                                                } else {
+                                                    $adults_ages[$age_group]['pending']++;
+                                                }
                                             } else {
                                                 $children_total++;
                                                 if ($EM_Booking->booking_status == 1) {
                                                     $children_approved_total++;
                                                 }
                                                 $children_num++;
+                                                if (!array_key_exists($age, $children_ages)) {
+                                                    $children_ages[$age] = ['approved' => 0, 'pending' => 0];
+                                                }
+                                                if ($EM_Booking->booking_status == 1) {
+                                                    $children_ages[$age]['approved']++;
+                                                } else {
+                                                    $children_ages[$age]['pending']++;
+                                                }
                                             }
                                         }
                                     }
@@ -526,6 +556,130 @@ class EM_Limmud_Booking {
                     $content .= "<tr><td>" . $room_type . "</td><td>" . ($counts['approved'] + $counts['pending']) . "</td><td>" . $counts['approved'] . "</td><td>" . $counts['limit'] . "</td></tr>\n";
                 }
                 $content .= "</table>\n<br>";
+            }
+
+            if (!empty($children_ages)) {
+                ksort($children_ages);
+                $content .= "<h3>Возраст детей</h3>\n";
+                $content .= "<table class=\"summary-table\" style=\"max-width: 30em;\">\n";
+                $content .= "<tr><th>Возраст</th><th>Заполнено</th><th>Оплачено</th></tr>\n";
+                foreach ($children_ages as $age => $counts) {
+                    $content .= "<tr><td>" . $age . "</td><td>" . ($counts['approved'] + $counts['pending']) . "</td><td>" . $counts['approved'] . "</td></tr>\n";
+                }
+                $content .= "</table>\n<br>";
+            }
+
+            $adults_ages_nonempty = array_filter($adults_ages, function($c) { return ($c['approved'] + $c['pending']) > 0; });
+            if (!empty($adults_ages_nonempty)) {
+                $adults_grand_total = array_sum(array_column($adults_ages, 'approved')) + array_sum(array_column($adults_ages, 'pending'));
+                $adults_approved_grand = array_sum(array_column($adults_ages, 'approved'));
+                $content .= "<h3>Возраст взрослых</h3>\n";
+                $content .= "<table class=\"summary-table\" style=\"max-width: 30em;\">\n";
+                $content .= "<tr><th>Возраст</th><th>Заполнено</th><th>Оплачено</th></tr>\n";
+                $chart_labels = [];
+                $chart_total_data = [];
+                $chart_approved_data = [];
+
+                // prepend children age groups: <5, 5-11, 12-17
+                $children_groups = ['<5' => ['approved'=>0,'pending'=>0], '5-11' => ['approved'=>0,'pending'=>0], '12-17' => ['approved'=>0,'pending'=>0]];
+                foreach ($children_ages as $age => $counts) {
+                    if ($age < 5) { $grp = '<5'; }
+                    elseif ($age <= 11) { $grp = '5-11'; }
+                    else { $grp = '12-17'; }
+                    $children_groups[$grp]['approved'] += $counts['approved'];
+                    $children_groups[$grp]['pending']  += $counts['pending'];
+                }
+                foreach ($children_groups as $grp => $counts) {
+                    $chart_labels[] = $grp;
+                    $chart_total_data[] = $counts['approved'] + $counts['pending'];
+                    $chart_approved_data[] = $counts['approved'];
+                }
+
+                foreach ($adults_ages as $age_group => $counts) {
+                    $total = $counts['approved'] + $counts['pending'];
+                    $total_pct = $adults_grand_total > 0 ? round(100 * $total / $adults_grand_total) : 0;
+                    $appr_pct  = $adults_approved_grand > 0 ? round(100 * $counts['approved'] / $adults_approved_grand) : 0;
+                    $content .= "<tr><td>" . $age_group . "</td><td>" . $total . " (" . $total_pct . "%)" . "</td><td>" . $counts['approved'] . " (" . $appr_pct . "%)" . "</td></tr>\n";
+                    $chart_labels[] = $age_group;
+                    $chart_total_data[] = $total;
+                    $chart_approved_data[] = $counts['approved'];
+                }
+                $content .= "</table>\n<br>";
+
+                $labels_json   = json_encode($chart_labels);
+                $total_json    = json_encode($chart_total_data);
+                $approved_json = json_encode($chart_approved_data);
+                $content .= <<<HTML
+<div style="max-width: 480px; margin: 0 0 24px 0;">
+    <canvas id="adults-age-chart"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2/dist/chartjs-plugin-datalabels.min.js"></script>
+<script>
+(function() {
+    var labels   = {$labels_json};
+    var total    = {$total_json};
+    var approved = {$approved_json};
+    var colors   = ['#9c755f','#bab0ac','#ff9da7','#4e79a7','#f28e2b','#e15759','#76b7b2','#59a14f','#edc948','#b07aa1'];
+    Chart.register(ChartDataLabels);
+    new Chart(document.getElementById('adults-age-chart'), {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Оплачено',
+                    data: approved,
+                    backgroundColor: colors.map(function(c){ return c + 'bb'; }),
+                    borderColor: colors,
+                    borderWidth: 1
+                },
+                {
+                    label: 'Заполнено',
+                    data: total,
+                    backgroundColor: colors.map(function(c){ return c + '55'; }),
+                    borderColor: colors,
+                    borderWidth: 1,
+                    hidden: true
+                }
+            ]
+        },
+        options: {
+            plugins: {
+                legend: { position: 'right' },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            var sum = ctx.dataset.data.reduce(function(a,b){ return a+b; }, 0);
+                            var pct = sum > 0 ? Math.round(100 * ctx.parsed / sum) : 0;
+                            return ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+                        }
+                    }
+                },
+                datalabels: {
+                    color: '#fff',
+                    font: { weight: 'bold', size: 12 },
+                    anchor: 'center',
+                    align: 'center',
+                    formatter: function(value, ctx) {
+                        if (value === 0) return '';
+                        var sum = ctx.dataset.data.reduce(function(a,b){ return a+b; }, 0);
+                        var pct = sum > 0 ? Math.round(100 * value / sum) : 0;
+                        return labels[ctx.dataIndex] + ': ' + value + ' (' + pct + '%)';
+                    },
+                    display: function(ctx) {
+                        var value = ctx.dataset.data[ctx.dataIndex];
+                        if (value === 0) return false;
+                        var sum = ctx.dataset.data.reduce(function(a,b){ return a+b; }, 0);
+                        return sum > 0 && (value / sum) >= 0.07;
+                    }
+                }
+            }
+        }
+    });
+})();
+</script>
+HTML;
             }
 
             echo $content;
