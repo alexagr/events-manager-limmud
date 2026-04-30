@@ -336,6 +336,11 @@ class EM_Limmud_Booking {
 
             $room_types = array();
             $children_ages = array();
+            $children_chart_groups = array(
+                '<5' => ['approved' => 0, 'pending' => 0],
+                '5-11' => ['approved' => 0, 'pending' => 0],
+                '12-17' => ['approved' => 0, 'pending' => 0],
+            );
             $adults_ages = array(
                 '18-24' => ['approved' => 0, 'pending' => 0],
                 '25-34' => ['approved' => 0, 'pending' => 0],
@@ -423,6 +428,14 @@ class EM_Limmud_Booking {
                                                     $children_approved_total++;
                                                 }
                                                 $children_num++;
+                                                if ($age < 5) { $children_group = '<5'; }
+                                                elseif ($age <= 11) { $children_group = '5-11'; }
+                                                else { $children_group = '12-17'; }
+                                                if ($EM_Booking->booking_status == 1) {
+                                                    $children_chart_groups[$children_group]['approved']++;
+                                                } else {
+                                                    $children_chart_groups[$children_group]['pending']++;
+                                                }
                                                 if (!array_key_exists($age, $children_ages)) {
                                                     $children_ages[$age] = ['approved' => 0, 'pending' => 0];
                                                 }
@@ -571,8 +584,6 @@ class EM_Limmud_Booking {
 
             $adults_ages_nonempty = array_filter($adults_ages, function($c) { return ($c['approved'] + $c['pending']) > 0; });
             if (!empty($adults_ages_nonempty)) {
-                $adults_grand_total = array_sum(array_column($adults_ages, 'approved')) + array_sum(array_column($adults_ages, 'pending'));
-                $adults_approved_grand = array_sum(array_column($adults_ages, 'approved'));
                 $content .= "<h3>Возраст взрослых</h3>\n";
                 $content .= "<table class=\"summary-table\" style=\"max-width: 30em;\">\n";
                 $content .= "<tr><th>Возраст</th><th>Заполнено</th><th>Оплачено</th></tr>\n";
@@ -581,15 +592,7 @@ class EM_Limmud_Booking {
                 $chart_approved_data = [];
 
                 // prepend children age groups: <5, 5-11, 12-17
-                $children_groups = ['<5' => ['approved'=>0,'pending'=>0], '5-11' => ['approved'=>0,'pending'=>0], '12-17' => ['approved'=>0,'pending'=>0]];
-                foreach ($children_ages as $age => $counts) {
-                    if ($age < 5) { $grp = '<5'; }
-                    elseif ($age <= 11) { $grp = '5-11'; }
-                    else { $grp = '12-17'; }
-                    $children_groups[$grp]['approved'] += $counts['approved'];
-                    $children_groups[$grp]['pending']  += $counts['pending'];
-                }
-                foreach ($children_groups as $grp => $counts) {
+                foreach ($children_chart_groups as $grp => $counts) {
                     $chart_labels[] = $grp;
                     $chart_total_data[] = $counts['approved'] + $counts['pending'];
                     $chart_approved_data[] = $counts['approved'];
@@ -597,9 +600,7 @@ class EM_Limmud_Booking {
 
                 foreach ($adults_ages as $age_group => $counts) {
                     $total = $counts['approved'] + $counts['pending'];
-                    $total_pct = $adults_grand_total > 0 ? round(100 * $total / $adults_grand_total) : 0;
-                    $appr_pct  = $adults_approved_grand > 0 ? round(100 * $counts['approved'] / $adults_approved_grand) : 0;
-                    $content .= "<tr><td>" . $age_group . "</td><td>" . $total . " (" . $total_pct . "%)" . "</td><td>" . $counts['approved'] . " (" . $appr_pct . "%)" . "</td></tr>\n";
+                    $content .= "<tr><td>" . $age_group . "</td><td>" . $total . "</td><td>" . $counts['approved'] . "</td></tr>\n";
                     $chart_labels[] = $age_group;
                     $chart_total_data[] = $total;
                     $chart_approved_data[] = $counts['approved'];
@@ -610,8 +611,9 @@ class EM_Limmud_Booking {
                 $total_json    = json_encode($chart_total_data);
                 $approved_json = json_encode($chart_approved_data);
                 $content .= <<<HTML
-<div style="max-width: 480px; margin: 0 0 24px 0;">
-    <canvas id="adults-age-chart"></canvas>
+<h3 style="margin: 0 0 8px 0;">Возрастное распределение</h3>
+<div style="width: 600px; max-width: 100%; height: 420px; margin: 0 0 24px 0;">
+    <canvas id="adults-age-chart" style="width: 100%; height: 100%;"></canvas>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2/dist/chartjs-plugin-datalabels.min.js"></script>
@@ -645,8 +647,46 @@ class EM_Limmud_Booking {
             ]
         },
         options: {
+            maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    left: 0
+                }
+            },
             plugins: {
-                legend: { position: 'right' },
+                legend: {
+                    position: 'right',
+                    labels: {
+                        generateLabels: function(chart) {
+                            var activeDatasetIndex = 0;
+                            for (var i = 0; i < chart.data.datasets.length; i++) {
+                                if (chart.isDatasetVisible(i)) {
+                                    activeDatasetIndex = i;
+                                    break;
+                                }
+                            }
+                            var dataset = chart.data.datasets[activeDatasetIndex] || { data: [] };
+                            var data = dataset.data || [];
+                            var sum = data.reduce(function(a, b) { return a + b; }, 0);
+
+                            return chart.data.labels.map(function(label, index) {
+                                var value = data[index] || 0;
+                                var pct = sum > 0 ? Math.round(100 * value / sum) : 0;
+                                return {
+                                    text: label + ': ' + value + ' (' + pct + '%)',
+                                    fillStyle: colors[index],
+                                    strokeStyle: colors[index],
+                                    lineWidth: 1,
+                                    hidden: !chart.getDataVisibility(index),
+                                    index: index
+                                };
+                            });
+                        }
+                    }
+                },
                 tooltip: {
                     callbacks: {
                         label: function(ctx) {
