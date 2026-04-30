@@ -311,6 +311,14 @@ class EM_Limmud_Booking {
                     background-color: #f3f3f3;
                 }
 
+                .summary-table tr:nth-child(n+3):nth-child(even) td {
+                    background-color: #fafafa;
+                }
+
+                .summary-table tr:nth-child(n+3):nth-child(even) td:nth-child(n+4) {
+                    background-color: #efefef;
+                }
+
             </style>\n\n";
 
             $event_date = date("U", $EM_Event->start()->getTimestamp());
@@ -320,6 +328,7 @@ class EM_Limmud_Booking {
             $content .= "<div class=\"bookings-table-container\">\n";
             $content .= "<table class=\"bookings-table\">\n<tr><th>ID</th><th>status</th><th>people</th><th>name</th><th>email</th><th>phone</th><th>city</th>";
             $EM_Form = EM_Booking_Form::get_form($EM_Event);
+            $has_participation_type = array_key_exists('participation_type', $EM_Form->form_fields);
             foreach ($EM_Form->form_fields as $fieldid => $field) {
                 if (in_array($fieldid, $hidden_fields)) continue;
                 if ($field['type'] == 'html') { $hidden_fields[] = $fieldid; continue; }
@@ -336,6 +345,7 @@ class EM_Limmud_Booking {
 
             $room_types = array();
             $children_ages = array();
+            $participation_totals = array();
             $children_chart_groups = array(
                 '<5' => ['approved' => 0, 'pending' => 0],
                 '5-11' => ['approved' => 0, 'pending' => 0],
@@ -489,6 +499,43 @@ class EM_Limmud_Booking {
                     }
                 }
 
+                if ($has_participation_type) {
+                    $participation_type = 'N/A';
+                    if (array_key_exists('participation_type', $EM_Booking->booking_meta['booking'])) {
+                        $participation_type = $EM_Form->get_formatted_value(
+                            $EM_Form->form_fields['participation_type'],
+                            $EM_Booking->booking_meta['booking']['participation_type']
+                        );
+                        if (is_string($participation_type) && str_starts_with($participation_type, '[:')) {
+                            $participation_type = apply_filters('translate_text', $participation_type, 'ru');
+                        }
+                    }
+                    $participation_type = trim(strval($participation_type));
+                    if ($participation_type === '') {
+                        $participation_type = 'N/A';
+                    }
+
+                    if (!array_key_exists($participation_type, $participation_totals)) {
+                        $participation_totals[$participation_type] = [
+                            'bookings' => 0,
+                            'adults' => 0,
+                            'children' => 0,
+                            'approved_bookings' => 0,
+                            'approved_adults' => 0,
+                            'approved_children' => 0,
+                        ];
+                    }
+
+                    $participation_totals[$participation_type]['bookings']++;
+                    $participation_totals[$participation_type]['adults'] += $adults_num;
+                    $participation_totals[$participation_type]['children'] += $children_num;
+                    if ($EM_Booking->booking_status == 1) {
+                        $participation_totals[$participation_type]['approved_bookings']++;
+                        $participation_totals[$participation_type]['approved_adults'] += $adults_num;
+                        $participation_totals[$participation_type]['approved_children'] += $children_num;
+                    }
+                }
+
                 $EM_Person = $EM_Booking->get_person();
                 $content .= "<td>" . implode(', ', $names) . "</td>";
 
@@ -523,9 +570,36 @@ class EM_Limmud_Booking {
 
             $content .= "<br><h3>Итого</h3>\n";
             $content .= "<table class=\"summary-table\" style=\"max-width: 60em;\">\n";
-            $content .= "<tr><th colspan=\"3\">Заполнено</th><th colspan=\"3\">Оплачено</th></tr>\n";
+            if ($has_participation_type) {
+                $content .= "<tr><th rowspan=\"2\">Тип участия</th><th colspan=\"3\">Заполнено</th><th colspan=\"3\">Оплачено</th></tr>\n";
+            } else {
+                $content .= "<tr><th colspan=\"3\">Заполнено</th><th colspan=\"3\">Оплачено</th></tr>\n";
+            }
             $content .= "<tr><th>Регистрации</th><th>Взрослые</th><th>Дети</th><th>Регистрации</th><th>Взрослые</th><th>Дети</th></tr>\n";
-            $content .= "<tr><td>" . $bookings_total . "</td><td>" . $adults_total . "</td><td>" . $children_total . "</td><td>" . $bookings_approved_total . "</td><td>" . $adults_approved_total . "</td><td>" . $children_approved_total . "</td></tr>\n";
+            $content .= "<tr>";
+            if ($has_participation_type) {
+                $content .= "<td><strong>Всего</strong></td>";
+            }
+            $content .= "<td>" . $bookings_total . "</td><td>" . $adults_total . "</td><td>" . $children_total . "</td><td>" . $bookings_approved_total . "</td><td>" . $adults_approved_total . "</td><td>" . $children_approved_total . "</td></tr>\n";
+            if ($has_participation_type && !empty($participation_totals)) {
+                uksort($participation_totals, function($a, $b) {
+                    $priority = function($value) {
+                        if (strpos($value, 'с проживанием') !== false) return 0;
+                        if (strpos($value, 'без проживания') !== false) return 1;
+                        return 2;
+                    };
+
+                    $pa = $priority($a);
+                    $pb = $priority($b);
+                    if ($pa !== $pb) {
+                        return $pa <=> $pb;
+                    }
+                    return strcasecmp($a, $b);
+                });
+                foreach ($participation_totals as $participation_type => $counts) {
+                    $content .= "<tr><td>" . $participation_type . "</td><td>" . $counts['bookings'] . "</td><td>" . $counts['adults'] . "</td><td>" . $counts['children'] . "</td><td>" . $counts['approved_bookings'] . "</td><td>" . $counts['approved_adults'] . "</td><td>" . $counts['approved_children'] . "</td></tr>\n";
+                }
+            }
             $content .= "</table>\n<br>";
 
             if (!empty($room_types)) {
