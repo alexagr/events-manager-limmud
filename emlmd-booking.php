@@ -1546,6 +1546,8 @@ HTML;
 
             $discount_ticket_id = 374;
             $discount_ticket_num = 0;
+            $full_discount_ticket_id = 375;
+            $full_discount_ticket_num = 0;
             $comment = apply_filters('translate_text', $EM_Booking->booking_meta['booking']['comment'], 'ru');
             # if comment contains #discount, add discount ticket(s)
             if (str_contains($comment, '#discount')) {
@@ -1564,6 +1566,22 @@ HTML;
                     }
                 }
             }
+            # if comment contains #presenter, add full discount ticket(s)
+            if (str_contains($comment, '#presenter')) {
+                if ($adult_ticket_id == 370) {
+                    # use early bird tickets for "last minute" presenters
+                    $adult_ticket_id = 368;
+                    $child_ticket_id = 369;
+                }
+                if ($adult_ticket_id == 368) {
+                    # with accomodation - presenters gets full discount, family members pay full price
+                    $full_discount_ticket_num = 1;
+                } elseif ($adult_ticket_id == 372) {
+                    # without accomodation - presenter + 1 family member get full discount
+                    $full_discount_ticket_id = 376;
+                    $full_discount_ticket_num = min(2, self::$adult_num);
+                }
+            }
 
             if (self::$adult_num > 0) {
                 self::add_ticket($EM_Booking, $adult_ticket_id, self::$adult_num);
@@ -1573,6 +1591,9 @@ HTML;
             }
             if ($discount_ticket_num > 0) {
                 self::add_ticket($EM_Booking, $discount_ticket_id, $discount_ticket_num);
+            }
+            if ($full_discount_ticket_num > 0) {
+                self::add_ticket($EM_Booking, $full_discount_ticket_id, $full_discount_ticket_num);
             }
         }
 
