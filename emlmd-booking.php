@@ -1901,6 +1901,8 @@ HTML;
                     $EM_Booking->booking_status = 8;
                     $EM_Booking->add_note('Waiting List');
                     $EM_Booking->save();
+                } else {
+                    $EM_Booking->email();
                 }
             }
         } elseif (self::$ticket_error) {
